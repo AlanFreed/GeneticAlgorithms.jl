@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <Version Value="9"/>
+    <BuildModes Active="Default"/>
+    <Units Count="5">
+      <Unit0>
+        <Filename Value="demo1.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="demo1"/>
+        <EditorIndex Value="1"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="1"/>
+        <CursorPos X="69" Y="15"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="demo1form.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="Form1"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="demo1form"/>
+        <EditorIndex Value="0"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="1"/>
+        <CursorPos X="60" Y="16"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="gaData.pas"/>
+        <UnitName Value="gaData"/>
+        <EditorIndex Value="2"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="233"/>
+        <CursorPos X="17" Y="174"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="gaModel.pas"/>
+        <UnitName Value="gaModel"/>
+        <EditorIndex Value="3"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="37"/>
+        <CursorPos X="25" Y="47"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="gaSolver.pas"/>
+        <UnitName Value="gaSolver"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="4"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="258"/>
+        <CursorPos X="25" Y="265"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit4>
+    </Units>
+    <General>
+      <ActiveWindowIndexAtStart Value="0"/>
+    </General>
+    <JumpHistory Count="10" HistoryIndex="9">
+      <Position1>
+        <Filename Value="gaData.pas"/>
+        <Caret Line="106" Column="80" TopLine="78"/>
+      </Position1>
+      <Position2>
+        <Filename Value="gaData.pas"/>
+        <Caret Line="94" Column="19" TopLine="81"/>
+      </Position2>
+      <Position3>
+        <Filename Value="gaData.pas"/>
+        <Caret Line="150" Column="42" TopLine="150"/>
+      </Position3>
+      <Position4>
+        <Filename Value="gaData.pas"/>
+        <Caret Line="211" Column="34" TopLine="33"/>
+      </Position4>
+      <Position5>
+        <Filename Value="gaSolver.pas"/>
+        <Caret Line="309" Column="54" TopLine="289"/>
+      </Position5>
+      <Position6>
+        <Filename Value="demo1.lpr"/>
+        <Caret Line="20" Column="41" TopLine="1"/>
+      </Position6>
+      <Position7>
+        <Filename Value="demo1.lpr"/>
+        <Caret Line="25" Column="1" TopLine="1"/>
+      </Position7>
+      <Position8>
+        <Filename Value="gaSolver.pas"/>
+        <Caret Line="265" Column="25" TopLine="264"/>
+      </Position8>
+      <Position9>
+        <Filename Value="gaSolver.pas"/>
+        <Caret Line="139" Column="60" TopLine="120"/>
+      </Position9>
+      <Position10>
+        <Filename Value="gaSolver.pas"/>
+        <Caret Line="265" Column="22" TopLine="245"/>
+      </Position10>
+    </JumpHistory>
+  </ProjectSession>
+  <EditorMacros Count="0"/>
+</CONFIG>

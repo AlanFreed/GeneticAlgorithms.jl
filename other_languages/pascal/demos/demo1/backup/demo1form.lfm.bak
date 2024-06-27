@@ -1,0 +1,58 @@
+object Form1: TForm1
+  Left = 807
+  Height = 550
+  Top = 285
+  Width = 850
+  Caption = 'Form1'
+  ClientHeight = 550
+  ClientWidth = 850
+  OnCreate = FormCreate
+  LCLVersion = '1.2.4.0'
+  object Chart1: TChart
+    Left = 162
+    Height = 375
+    Top = 105
+    Width = 550
+    AxisList = <    
+      item
+        Minors = <>
+        Title.LabelFont.Orientation = 900
+        Title.Visible = True
+        Title.Caption = 'Y'
+      end    
+      item
+        Alignment = calBottom
+        Minors = <>
+        Title.Visible = True
+        Title.Caption = 'X'
+      end>
+    Foot.Brush.Color = clBtnFace
+    Foot.Font.Color = clBlue
+    Legend.Alignment = laBottomCenter
+    Legend.ColumnCount = 3
+    Legend.Visible = True
+    Title.Brush.Color = clBtnFace
+    Title.Font.Color = clBlue
+    Title.Text.Strings = (
+      'Compare Genetic Algorithm with Linear Regression'
+    )
+    Title.Visible = True
+    ParentColor = False
+    object Chart1LineSeries1: TLineSeries
+      Title = 'Experimental Data'
+    end
+    object Chart1LineSeries2: TLineSeries
+      Title = 'Genetic Algorithm'
+      LinePen.Color = clRed
+    end
+    object Chart1LineSeries3: TLineSeries
+      Title = 'Linear Regression'
+      LinePen.Color = clBlue
+      LinePen.Style = psDash
+    end
+  end
+  object SaveDialog1: TSaveDialog
+    left = 56
+    top = 464
+  end
+end
