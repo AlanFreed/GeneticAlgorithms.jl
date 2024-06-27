@@ -1,0 +1,217 @@
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(*       BBBB      EEEEE     L         The                                    *)
+(*       B   B     E         L           BIOLOGICAL                           *)
+(*       BBBB      EEE       L           ENGINEERING                          *)
+(*       B    B    E         L           LABORATORY                           *)
+(*       BBBBB     EEEEEE    LLLLLL        @ Saginaw Valley State University  *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Copyright 2008-2013, Alan D. Freed                                         *)
+(*                                                                            *)
+(* This file is part of BEL's core suite of .NET/Mono libraries.              *)
+(*                                                                            *)
+(* BEL is a free software: you can redistribute it and/or modify it under the *)
+(* terms of the GNU Lesser General Public License as published by the Free    *)
+(* Software Foundation, either version 3 of the License, or (at your option)  *)
+(* any later version.                                                         *)
+(*                                                                            *)
+(* BEL is distributed in the hope that it will be useful, but WITHOUT ANY     *)
+(* WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS  *)
+(* FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for   *)
+(* more details.                                                              *)
+(*                                                                            *)
+(* You should have received a copy of the GNU Lesser General Public License   *)
+(* along with BEL.  If not, see <http://www.gnu.org/licenses/>.               *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Sorts integer and real vectors from most negative to most positive.        *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* procedures                                                                 *)
+(*    IntegerVector  :  sorts a vector of type "array {math} * of integer"    *)
+(*       in/out   x  :  the vector that is sorted                             *)
+(*    RealVector     :  sorts a vector of type "array {math} * of real"       *)
+(*       in/out   x  :  the vector that is sorted                             *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+
+module {public} Bel.Sort;
+
+   import
+      Bel.Types as T;
+
+   const 
+		short = 7;   (* Short vectors sort faster with insertion. *)
+
+   var {private}
+      sortIntVec  : T.IntegerVector;
+      sortRealVec : T.RealVector;
+
+		procedure {private} ThreeSortInt(l, c, r : integer);  
+		   var 
+		      sortValue : integer;  
+		begin 
+			if sortIntVec[l] > sortIntVec[c] then 
+			   sortValue     := sortIntVec[l];
+			   sortIntVec[l] := sortIntVec[c];
+			   sortIntVec[c] := sortValue
+			end;  
+			if sortIntVec[l] > sortIntVec[r] then 
+			   sortValue     := sortIntVec[l];
+			   sortIntVec[l] := sortIntVec[r];
+			   sortIntVec[r] := sortValue
+			end;  
+			if sortIntVec[c] > sortIntVec[r] then 
+			   sortValue     := sortIntVec[c];  
+			   sortIntVec[c] := sortIntVec[r];  
+			   sortIntVec[r] := sortValue 
+			end
+		end ThreeSortInt;  
+
+		procedure {private} InsertionSortInt (l, r : integer);  
+		   var 
+		      i, j      : integer;  
+		      sortValue : integer;  
+		begin 
+			for i := l+1 to r do 
+				sortValue := sortIntVec[i];  
+				j    := i;  
+				while (j > 0) & (sortIntVec[j-1] > sortValue) do 
+				   sortIntVec[j] := sortIntVec[j-1];  
+				   dec(j) 
+				end;  
+				sortIntVec[j] := sortValue
+			end 
+		end InsertionSortInt;  
+
+		procedure {private} QuickSortInt (l, r : integer);  
+		   var 
+		      c, i, j    : integer;  
+		      sortValue, 
+		      tempValue  : integer;  
+		begin 
+			if r-l > short then  (* quick sort *)
+				c := (l + r) div 2;  
+				ThreeSortInt(l, c, r);  
+				sortValue := sortIntVec[r];  
+				i         := l - 1;  
+				j         := r;  
+				repeat 
+					repeat 
+					   inc(i) 
+					until sortIntVec[i] >= sortValue;  
+					repeat 
+					   dec(j) 
+					until sortIntVec[j] <= sortValue;  
+					tempValue     := sortIntVec[i];  
+					sortIntVec[i] := sortIntVec[j];  
+					sortIntVec[j] := tempValue
+				until j < i;  
+				sortIntVec[j] := sortIntVec[i];  
+				sortIntVec[i] := sortIntVec[r];  
+				sortIntVec[r] := tempValue;  
+				QuickSortInt(l,   j);  
+				QuickSortInt(i+1, r)
+			elsif r > l then 
+			   InsertionSortInt(l, r)
+			else  (* Nothing to sort. *)
+			end 
+		end QuickSortInt;  
+
+	procedure {public} IntegerVector (var x : T.IntegerVector); 
+	   var
+	      length : integer;
+	begin 
+	   length     := len(x);
+	   sortIntVec := new T.IntegerVector(length);
+	   sortIntVec := x;
+		if length > 1 then
+		   QuickSortInt(0, length-1)
+		end;
+		x := sortIntVec;
+		sortIntVec := nil
+	end IntegerVector;  
+
+		procedure {private} ThreeSortReal(l, c, r : integer);  
+		   var 
+		      sortValue : real;  
+		begin 
+			if sortRealVec[l] > sortRealVec[c] then 
+			   sortValue      := sortRealVec[l];
+			   sortRealVec[l] := sortRealVec[c];
+			   sortRealVec[c] := sortValue
+			end;  
+			if sortRealVec[l] > sortRealVec[r] then 
+			   sortValue      := sortRealVec[l];
+			   sortRealVec[l] := sortRealVec[r];
+			   sortRealVec[r] := sortValue
+			end;  
+			if sortRealVec[c] > sortRealVec[r] then 
+			   sortValue      := sortRealVec[c];  
+			   sortRealVec[c] := sortRealVec[r];  
+			   sortRealVec[r] := sortValue 
+			end
+		end ThreeSortReal;  
+
+		procedure {private} InsertionSortReal (l, r : integer);  
+		   var 
+		      i, j      : integer;  
+		      sortValue : real;  
+		begin 
+			for i := l+1 to r do 
+				sortValue := sortRealVec[i];  
+				j := i;  
+				while (j > 0) & (sortRealVec[j-1] > sortValue) do 
+				   sortRealVec[j] := sortRealVec[j-1];  
+				   dec(j) 
+				end;  
+				sortRealVec[j] := sortValue
+			end 
+		end InsertionSortReal;  
+
+		procedure {private} QuickSortReal (l, r : integer);  
+		   var 
+		      c, i, j    : integer;  
+		      sortValue, 
+		      tempValue  : real;  
+		begin 
+			if r-l > short then  (* quick sort *)
+				c := (l + r) div 2;  
+				ThreeSortReal(l, c, r);  
+				sortValue := sortRealVec[r];  
+				i         := l - 1;  
+				j         := r;  
+				repeat 
+					repeat 
+					   inc(i) 
+					until sortRealVec[i] >= sortValue;  
+					repeat 
+					   dec(j) 
+					until sortRealVec[j] <= sortValue;  
+					tempValue      := sortRealVec[i];  
+					sortRealVec[i] := sortRealVec[j];  
+					sortRealVec[j] := tempValue
+				until j < i;  
+				sortRealVec[j] := sortRealVec[i];  
+				sortRealVec[i] := sortRealVec[r];  
+				sortRealVec[r] := tempValue;  
+				QuickSortReal(l,   j);  
+				QuickSortReal(i+1, r)
+			elsif r > l then 
+			   InsertionSortReal(l, r)
+			else  (* Nothing to sort. *)
+			end 
+		end QuickSortReal;  
+
+	procedure {public} RealVector (var x : T.RealVector); 
+	   var
+	      length : integer;
+	begin 
+	   length     := len(x);
+	   sortRealVec := new T.RealVector(length);
+	   sortRealVec := x;
+		if length > 1 then
+		   QuickSortReal(0, length-1)
+		end;
+		x := sortRealVec;
+		sortRealVec := nil
+	end RealVector;  
+
+begin
+end Sort.

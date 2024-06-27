@@ -1,0 +1,158 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE MODE SYSTEM "xmode.dtd">
+
+<!-- Oberon-07 mode, written by                                                     -->
+<!--   Alan Freed adfreed@svsu.edu and Paul Reed March 15, 2013                     -->
+<!-- See http://www.inf.ethz.ch/personal/wirth/Articles/Oberon/Oberon07.Report.pdf  -->          
+
+<MODE>
+   <PROPS>
+      <PROPERTY NAME="commentStart" VALUE="(*" />
+      <PROPERTY NAME="commentEnd"   VALUE="*)" />
+   </PROPS>
+
+   <!-- allows for nested comments -->
+   <RULES SET="COMMENT" DEFAULT="COMMENT1" IGNORE_CASE="FALSE">
+      <SPAN TYPE="COMMENT1" DELEGATE="COMMENT" NO_LINE_BREAK="FALSE">
+         <BEGIN>(*</BEGIN>
+         <END>*)</END>
+      </SPAN>
+   </RULES>
+   
+   <RULES IGNORE_CASE="FALSE">
+		<!-- char literal -->
+		<SEQ_REGEXP HASH_CHARS="0123456789ABCDEF" TYPE="LITERAL2">\d+([0-9A-F]*)X</SEQ_REGEXP>
+
+		<!-- mark numbers as DIGIT -->
+		<SEQ_REGEXP HASH_CHARS="-0123456789." TYPE="DIGIT">\d+(([0-9A-F]*)H|([.]\d*)?([E][+-]?\d+)?)</SEQ_REGEXP>
+
+      <!-- empty comment -->
+      <SEQ TYPE="COMMENT1">(**)</SEQ>
+
+      <!-- coments -->
+      <SPAN TYPE="COMMENT1" DELEGATE="COMMENT" NO_LINE_BREAK="FALSE">
+         <BEGIN>(*</BEGIN>
+         <END>*)</END>
+      </SPAN>
+
+      <!-- string literals -->
+      <SPAN TYPE="LITERAL1" NO_LINE_BREAK="TRUE">
+         <BEGIN>"</BEGIN>
+         <END>"</END>
+      </SPAN>
+
+      <SPAN TYPE="LITERAL1" NO_LINE_BREAK="TRUE">
+         <BEGIN>'</BEGIN>
+         <END>'</END>
+      </SPAN>
+
+      <!-- operators -->
+      <SEQ TYPE="OPERATOR">(</SEQ>
+      <SEQ TYPE="OPERATOR">)</SEQ>
+      <SEQ TYPE="OPERATOR">[</SEQ>
+      <SEQ TYPE="OPERATOR">]</SEQ>
+      <SEQ TYPE="OPERATOR">{</SEQ>
+      <SEQ TYPE="OPERATOR">}</SEQ>
+      <SEQ TYPE="OPERATOR">|</SEQ>
+      <SEQ TYPE="OPERATOR">.</SEQ>
+      <SEQ TYPE="OPERATOR">..</SEQ>
+      <SEQ TYPE="OPERATOR">,</SEQ>
+      <SEQ TYPE="OPERATOR">;</SEQ>
+      <SEQ TYPE="OPERATOR">:</SEQ>
+      <SEQ TYPE="OPERATOR">:=</SEQ>
+      <SEQ TYPE="OPERATOR">~</SEQ>
+      <SEQ TYPE="OPERATOR">&amp;</SEQ>
+      <SEQ TYPE="OPERATOR">=</SEQ>
+      <SEQ TYPE="OPERATOR">#</SEQ>
+      <SEQ TYPE="OPERATOR">&lt;</SEQ>
+      <SEQ TYPE="OPERATOR">&lt;=</SEQ>
+      <SEQ TYPE="OPERATOR">&gt;</SEQ>
+      <SEQ TYPE="OPERATOR">&gt;=</SEQ>
+      <SEQ TYPE="OPERATOR">+</SEQ>
+      <SEQ TYPE="OPERATOR">-</SEQ>
+      <SEQ TYPE="OPERATOR">/</SEQ>
+      <SEQ TYPE="OPERATOR">*</SEQ>
+      <SEQ TYPE="OPERATOR">^</SEQ>
+
+      <KEYWORDS>
+
+         <!-- functions & procedures -->
+         <FUNCTION>ABS</FUNCTION>
+         <FUNCTION>ADR</FUNCTION>
+         <FUNCTION>ASR</FUNCTION>
+         <FUNCTION>ASSERT</FUNCTION>
+         <FUNCTION>BIT</FUNCTION>
+         <FUNCTION>CHR</FUNCTION>
+         <FUNCTION>COPY</FUNCTION>
+         <FUNCTION>DEC</FUNCTION>
+         <FUNCTION>EXCL</FUNCTION>
+         <FUNCTION>FLOOR</FUNCTION>
+         <FUNCTION>FLT</FUNCTION>
+         <FUNCTION>GET</FUNCTION>
+         <FUNCTION>INC</FUNCTION>
+         <FUNCTION>INCL</FUNCTION>
+         <FUNCTION>LEN</FUNCTION>
+         <FUNCTION>LONG</FUNCTION>
+         <FUNCTION>LSL</FUNCTION>
+         <FUNCTION>NEW</FUNCTION>
+         <FUNCTION>ODD</FUNCTION>
+         <FUNCTION>ORD</FUNCTION>
+         <FUNCTION>PACK</FUNCTION>
+         <FUNCTION>PUT</FUNCTION>
+         <FUNCTION>ROR</FUNCTION>
+         <FUNCTION>SHORT</FUNCTION>
+         <FUNCTION>SIZE</FUNCTION>
+         <FUNCTION>UNPK</FUNCTION>
+
+         <!-- reserved words -->
+         <!-- some appear elsewhere for a different highlighting -->
+         <KEYWORD1>ARRAY</KEYWORD1>
+         <KEYWORD1>BEGIN</KEYWORD1>
+         <KEYWORD1>BY</KEYWORD1>
+         <KEYWORD1>CASE</KEYWORD1>
+         <KEYWORD1>CONST</KEYWORD1>
+         <KEYWORD1>DIV</KEYWORD1>
+         <KEYWORD1>DO</KEYWORD1>
+         <KEYWORD1>ELSE</KEYWORD1>
+         <KEYWORD1>ELSIF</KEYWORD1>
+         <KEYWORD1>END</KEYWORD1>
+         <KEYWORD1>FOR</KEYWORD1>
+         <KEYWORD1>IF</KEYWORD1>
+         <KEYWORD1>IMPORT</KEYWORD1>
+         <KEYWORD1>IN</KEYWORD1>  
+         <KEYWORD1>IS</KEYWORD1>
+         <KEYWORD1>MOD</KEYWORD1>        
+         <KEYWORD1>MODULE</KEYWORD1>
+         <KEYWORD1>OF</KEYWORD1>
+         <KEYWORD1>OR</KEYWORD1>
+         <KEYWORD1>PROCEDURE</KEYWORD1>
+         <KEYWORD1>RECORD</KEYWORD1>
+         <KEYWORD1>REPEAT</KEYWORD1>
+         <KEYWORD1>RETURN</KEYWORD1>
+         <KEYWORD1>THEN</KEYWORD1>
+         <KEYWORD1>TO</KEYWORD1>
+         <KEYWORD1>TYPE</KEYWORD1>
+         <KEYWORD1>UNTIL</KEYWORD1>
+         <KEYWORD1>VAR</KEYWORD1>
+         <KEYWORD1>WHILE</KEYWORD1>
+
+         <!-- type names -->
+         <KEYWORD2>BOOLEAN</KEYWORD2>
+         <KEYWORD2>CHAR</KEYWORD2>
+         <KEYWORD2>INTEGER</KEYWORD2>
+         <KEYWORD2>REAL</KEYWORD2>
+         <KEYWORD2>LONGREAL</KEYWORD2>
+         <KEYWORD2>POINTER</KEYWORD2>
+         <KEYWORD2>SET</KEYWORD2>
+
+         <!-- values -->
+         <KEYWORD3>FALSE</KEYWORD3>
+         <KEYWORD3>NIL</KEYWORD3>
+         <KEYWORD3>TRUE</KEYWORD3>
+
+         </KEYWORDS>
+
+   </RULES>
+
+</MODE>

@@ -1,0 +1,325 @@
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(*       BBBB      EEEEE     L         The                                    *)
+(*       B   B     E         L           BIOLOGICAL                           *)
+(*       BBBB      EEE       L           ENGINEERING                          *)
+(*       B    B    E         L           LABORATORY                           *)
+(*       BBBBB     EEEEEE    LLLLLL        @ Saginaw Valley State University  *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Copyright 2008-2013, Alan D. Freed                                         *)
+(*                                                                            *)
+(* This file is part of the BEL-Math suite of .NET/Mono libraries.            *)
+(*                                                                            *)
+(* BEL is a free software: you can redistribute it and/or modify it under the *)
+(* terms of the GNU Lesser General Public License as published by the Free    *)
+(* Software Foundation, either version 3 of the License, or (at your option)  *)
+(* any later version.                                                         *)
+(*                                                                            *)
+(* BEL is distributed in the hope that it will be useful, but WITHOUT ANY     *)
+(* WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS  *)
+(* FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for   *)
+(* more details.                                                              *)
+(*                                                                            *)
+(* You should have received a copy of the GNU Lesser General Public License   *)
+(* along with BEL.  If not, see <http://www.gnu.org/licenses/>.               *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* A collection of special math functions.                                    *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Procedures                                                                 *)
+(*    Erf             - returns the error function of a real number           *)
+(*    Erfc            - returns the complementary error function              *)
+(*    Gamma           - returns the gamma function of a number                *)
+(*    Beta            - Beta(x,y) = Gamma(x)*Gamma(y)/Gamma(x+y)              *)
+(*    MittagLeffler   - MittagLeffler(alpha, beta, x) = E_{alpha,beta}(x)     *)
+(*                    :  alpha  -  restricted to real interval (0,1]          *)
+(*                    :  beta   -  restricted to integer set   {0,1}          *)
+(*                    :  x      -  argument restricted to positive reals      *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* References: Press et al., Numerical Recipes in C, Cambridge U. Press, 1992 *)
+(*             Spanier, J. and Oldham, K.B., An Atlas of Functions,           *)
+(*                   Hemisphere Publishing Corp., Washington DC, 1987.        *)
+(*             Pugh, G.R., "An analysis of the Lanczos gamma approximation,"  *)
+(*                   PhD thesis, Univ. British Columbia, Nov. 2004, pg. 116.  *)
+(*             Gorenflo, R, Loutchko, I., & Luchko, Y., "Computation of the   *)
+(*                   Mittag-Leffler function E_alpha,beta(z) and its          *)
+(*                   derivatives," Fractional Calculus & Applied Analysis,    *)
+(*                   5 (2002), 491-518. Erratum: 6 (2003) 111-112.            *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+
+module {public} BelMath.SpecialFunctions;
+
+   import
+      Bel.Log           as L,
+      Bel.Math          as Fn,
+      Bel.Series        as S,
+      Bel.Types         as T,
+      BelMath.Integrals as I;
+   
+   type {private}
+      Vector = array {math} * of real;
+
+   var {private}
+      (* the following are used by the Gamma function *)
+      a, lanczosGamma, 
+      lnTwoRootEOnPi, 
+      nearInfinity    : real;
+      lanczos         : Vector;
+      maxIterations   : integer;
+      (* the following are used by the Mittag-Leffler function calling K *)
+      ALPHA, X : real;
+      BETA     : integer;
+
+      procedure {public} ErfcCoefA
+                              (n : integer; x : real; var eos : boolean) : real;
+         var
+            coef : real;
+      begin
+         if n = 0 then
+            coef := 0.0
+         elsif n = 1 then
+            coef := 1.0
+         else
+            coef := real(n - 1) / 2.0
+         end;
+         if n > maxIterations then
+            eos := true
+         end;
+         return coef
+      end ErfcCoefA;
+      
+      procedure {public} ErfcCoefB
+                              (n : integer; x : real; var eos : boolean) : real;
+         var
+            coef : real;
+      begin
+         if n = 0 then
+            coef := 0.0
+         elsif odd(n) then
+            coef := x*x
+         else
+            coef := 1.0
+         end;
+         if n > maxIterations then
+            eos := true
+         end;
+         return coef
+      end ErfcCoefB;
+
+   procedure {public} Erfc (x : real) : real;
+      var
+         erf, erfc, x2 : real;
+   begin
+      if x > 2.0 then
+         x2   := x*x;
+         erf  := Fn.Sqrt(1.0 - Fn.Exp(-x2*(4/Fn.PI + a*x2)/(1.0 + a*x2)));
+         if erf < 1.0 then
+            erfc := 1.0 - erf
+         else
+            erfc := 0.0
+         end
+      elsif x > 0.05 then
+         erfc := x * (Fn.Exp(-(x*x)) / Fn.Sqrt(Fn.PI)) 
+               * S.ContinuedFraction(ErfcCoefA, ErfcCoefB, x)
+      elsif x > 0.0 then
+         x2   := x*x;
+         erfc := 1.0 
+               - Fn.Sqrt(1.0 - Fn.Exp(-x2*(4.0/Fn.PI + a*x2)/(1.0 + a*x2)))
+      elsif x = 0.0 then
+         erfc := 1.0
+      else
+         erfc := 2.0 - Erfc(-x)
+      end;
+      return erfc
+   end Erfc;
+   
+   procedure {public} Erf (x : real) : real;
+      var
+         erf : real;
+   begin
+      if x > 0.0 then
+         erf := 1.0 - Erfc(x)
+      elsif x = 0.0 then
+         erf := 0.0
+      else
+         erf := Erfc(-x) - 1.0
+      end;
+      return erf
+   end Erf;
+   
+      procedure {private} LnGammaFn (zPlusOne : real) : real;
+         var
+            i                       : integer;
+            lnGamma, series, z1, z2 : real;
+      begin
+         (* employs Lanczos algorithm for computing Gamma(z), z > 1 *)
+         z1     := zPlusOne - 0.5;
+         series := lanczos[0];
+         for i := 1 to 10 do
+            series := series + lanczos[i] / (zPlusOne + real(i - 1))
+         end;
+         z2 := (z1 + lanczosGamma) / Fn.E;
+         (* apply natural logarithm to Lanczos formula to avoid overflow *)
+         lnGamma := lnTwoRootEOnPi + z1*Fn.Ln(z2) + Fn.Ln(series);
+         return lnGamma
+      end LnGammaFn;
+
+   procedure {public} Gamma (x : real) : real;
+      var
+         x1, y : real;
+   begin
+      if T.IsFinite(x) then
+         if x > 0.0 then
+            y := Fn.Exp(LnGammaFn(1.0+x)) / x
+         else
+            x1 := Fn.Sin(Fn.PI*x);
+            if x1 = 0.0 then
+               (* at a positive pole *)
+               y := T.PositiveInfinity
+            elsif x1 = -0.0 then
+               (* at a negative pole *)
+               y := T.NegativeInfinity
+            else
+               (* apply Euler's reflection formula *)
+               y := Fn.PI / (x1 * Fn.Exp(LnGammaFn(1.0-x)))
+            end
+         end
+      elsif x = T.PositiveInfinity then
+         y := T.PositiveInfinity
+      else
+         y := T.NaN
+      end;
+      return y
+   end Gamma;
+
+   procedure {public} Beta (x, y : real) : real;
+      var
+         b : real;
+   begin
+      b := Fn.Exp(Fn.Ln(Gamma(x)) + Fn.Ln(Gamma(y)) - Fn.Ln(Gamma(x+y)));
+      return b
+   end Beta;
+
+      procedure {public} K (chi : real) : real;
+         var
+            k : real;
+      begin
+         k := X*Fn.Exp(-Fn.Power(chi, 1.0/ALPHA))
+            / (chi*chi - 2.0*chi*X*Fn.Cos(ALPHA*Fn.PI) + X*X);
+         if BETA = 0 then
+            k := k*Fn.Power(chi, 1.0/ALPHA)*Fn.Sin(Fn.PI*(1.0 + ALPHA))
+         else
+            k := k*Fn.Sin(ALPHA*Fn.PI)
+         end;
+         k := -k/(ALPHA*Fn.PI);
+         return k
+      end K;
+   
+   procedure {public} MittagLeffler 
+                                (alpha : real; beta : integer; x : real) : real;
+      var
+         absX, arg, chi0, 
+         mlf,  x2k, x2p  : real;
+         k,    k0        : integer;
+   begin
+      if (alpha <= 0.0) or (alpha > 1.0) then
+         L.Message("alpha must belong to (0,1] in this implementation");
+         L.ErrorMessage(405,20,"BelMath.SpecialFunctions.MittagLeffler")
+      end;
+      if (beta < 0) or (beta > 1) then
+         L.Message("beta can only be 0 or 1 in this implementation");
+         L.ErrorMessage(405,20,"BelMath.SpecialFunctions.MittagLeffler")
+      end;
+      absX  := Fn.Abs(x);
+      if x = 0.0 then
+         if beta = 0 then
+            mlf := 0.0
+         else
+            mlf := 1.0
+         end
+      elsif alpha = 1.0 then
+         if beta = 0 then
+            mlf := x*Fn.Exp(x)
+         else
+            mlf := Fn.Exp(x)
+         end
+      elsif absX < 0.6 then
+         k0 := integer(Fn.Ceiling(Fn.Ln(T.Epsilon*(1.0 - absX))/Fn.Ln(absX)));
+         if beta = 0 then
+            k0 := integer(Fn.Max(real(k0), Fn.Ceiling(1.0/alpha)))
+         end;
+         if beta = 0 then
+            mlf := 0.0
+         else
+            mlf := 1.0
+         end;
+         x2k := 1.0;
+         for k := 1 to k0 do
+            x2k := x*x2k;
+            mlf := mlf + x2k/Gamma(real(beta) + alpha*real(k))
+         end
+      elsif absX < Fn.Floor(10.0 + 5.0*alpha) then
+         ALPHA := alpha;
+         BETA  := beta;
+         X     := x;
+         chi0 := Fn.Max(2.0*absX, Fn.Power(-Fn.Ln(T.Epsilon*Fn.PI/6.0), alpha));
+         chi0 := Fn.Max(1.0, chi0);
+         mlf  := I.Integrate(K, 0.0, chi0, I.Method.gauss);
+         if x > 0.0 then
+            x2p := Fn.Power(x, 1.0/alpha);
+            if beta = 0 then
+               mlf := mlf + x2p*Fn.Exp(x2p)/alpha
+            else
+               mlf := mlf + Fn.Exp(x2p)/alpha
+            end
+         end
+      else
+         k0  := integer(Fn.Floor(-Fn.Ln(T.Epsilon)/Fn.Ln(absX)));
+         x2p := 1.0;
+         mlf := 0.0;
+         for k := 1 to k0 do
+            x2p := x2p/x;
+            arg := real(beta) - alpha*real(k);
+            if Fn.Abs(Fn.Sin(Fn.PI*arg)) > T.Epsilon then
+               mlf := mlf - x2p/Gamma(arg)
+               (* else Gamma function is +/- infinity so 1/Gamma = 0 *)
+            end
+         end;
+         if x > 0.0 then
+            x2p := Fn.Power(x, 1.0/alpha);
+            if beta = 0 then
+               mlf := mlf + x2p*Fn.Exp(x2p)/alpha
+            else
+               mlf := mlf + Fn.Exp(x2p)/alpha
+            end
+         end
+      end;
+      return mlf
+   end MittagLeffler;
+   
+begin
+   maxIterations := 1000;
+
+   (* parameters used to compute the gamma function *)
+   a              := 8.0*(Fn.PI - 3.0)/(3.0*Fn.PI*(4.0 - Fn.PI));
+   lnTwoRootEOnPi := Fn.Ln(2.0*Fn.Sqrt(Fn.E/Fn.PI));
+   nearInfinity   := Fn.Sqrt(T.MaximumReal);
+
+   (* Lanczos coefficients derived by Pugh for \gamma = 10.900511, N = 10 *)
+   lanczosGamma := 1.0900511E+1;
+   lanczos      := new Vector(11);
+   lanczos[0]   := 2.485740891387536E-5;
+   lanczos[1]   := 1.051423785817220E+0;
+   lanczos[2]   := -3.456870972220162E+0;
+   lanczos[3]   := 4.512277094668948E+0;
+   lanczos[4]   := -2.982852253235767E+0;
+   lanczos[5]   := 1.056397115771267E+0;
+   lanczos[6]   := -1.954287731916459E-1;
+   lanczos[7]   := 1.709705434044412E-2;
+   lanczos[8]   := -5.719261174043058E-4;
+   lanczos[9]   := 4.633994733599056E-6;
+   lanczos[10]  := -2.719949084886077E-9;
+   
+   (* passed parameters (to K) when computing the Mittag-Leffler function *)
+   ALPHA := 1.0;
+   BETA  := 1;
+   X     := 0.0
+end SpecialFunctions.

@@ -1,0 +1,925 @@
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(*       BBBB      EEEEE     L         The                                    *)
+(*       B   B     E         L           BIOLOGICAL                           *)
+(*       BBBB      EEE       L           ENGINEERING                          *)
+(*       B    B    E         L           LABORATORY                           *)
+(*       BBBBB     EEEEEE    LLLLLL        @ Saginaw Valley State University  *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Copyright 2008-2013, Alan D. Freed and Chandler Benjamin                   *)
+(*                                                                            *)
+(* This file is part of BEL's core suite of .NET/Mono libraries.              *)
+(*                                                                            *)
+(* BEL is a free software: you can redistribute it and/or modify it under the *)
+(* terms of the GNU Lesser General Public License as published by the Free    *)
+(* Software Foundation, either version 3 of the License, or (at your option)  *)
+(* any later version.                                                         *)
+(*                                                                            *)
+(* BEL is distributed in the hope that it will be useful, but WITHOUT ANY     *)
+(* WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS  *)
+(* FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for   *)
+(* more details.                                                              *)
+(*                                                                            *)
+(* You should have received a copy of the GNU Lesser General Public License   *)
+(* along with BEL.  If not, see <http://www.gnu.org/licenses/>.               *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* This module creates curves for 2D plots of XY data pairs drawn with NPlot. *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* NPlot home page:                                                           *)
+(*    http://netcontrols.org/nplot/wiki/.                                     *)
+(* It is released under the terms of a 3-clause-BSD license.  Specifically:   *)
+(*    NPlot - A charting library for .NET                                     *)
+(*    Copyright (C) 2003-2006 Matt Howlett and others.  All rights reserved.  *)
+(* Redistribution and use in source and binary forms, with or without modifi- *)
+(* cation, are permitted provided that the following conditions are met:      *)
+(* 1. Redistributions of source code must retain the above copyright notice,  *)
+(*    this list of conditions and the following disclaimer.                   *)
+(* 2. Redistributions in binary form must reproduce the above copyright       *)
+(*    notice, this list of conditions and the following disclaimer in the     *)
+(*    documentation and/or other materials provided with the distribution.    *)
+(* 3. Neither the name of NPlot nor the names of its contributors may be used *)
+(*    to endorse or promote products derived from this software without       *)
+(*    specific prior written permission.                                      *)
+(* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS    *)
+(* IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,  *)
+(* THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR     *)
+(* PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRI-   *)
+(* BUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, *)
+(* OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF    *)
+(* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS   *)
+(* INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN    *)
+(* CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)    *)
+(* ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE *)
+(* POSSIBILITY OF SUCH DAMAGE.                                                *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(*  types  -  enumerations                                                    *)
+(*    Color           :  what color a line or a mark is to be drawn in        *)
+(*       black                                                                *)
+(*       blue                                                                 *)
+(*       gray                                                                 *)
+(*       green                                                                *)
+(*       orange                                                               *)
+(*       pink                                                                 *)
+(*       purple                                                               *)
+(*       red                                                                  *)
+(*       yellow                                                               *)
+(*    Dimension       :  how wide is a line or how large is a mark to be      *)
+(*       tiny                                                                 *)
+(*       small                                                                *)
+(*       medium                                                               *)
+(*       large                                                                *)
+(*       huge                                                                 *)
+(*    Marker          :  for point plots, what kind of mark is to be drawn    *)
+(*       circle                                                               *)
+(*       cross                                                                *)
+(*       diamond                                                              *)
+(*       flagDown                                                             *)
+(*       flagUp                                                               *)
+(*       none                                                                 *)
+(*       plus                                                                 *)
+(*       square                                                               *)
+(*       triangle                                                             *)
+(*       triangleDown                                                         *)
+(*       triangleUp                                                           *)
+(* types  -  arrays                                                           *)
+(*    SingleVector    :  array of System.Single, the array type used by NPlot *)
+(* types  -  objects                                                          *)
+(*    Attributes      :  a record that provides curve attributes              *)
+(*       var                                                                  *)
+(*          centered  :  boolean    |  segements centered?: histogram & step  *)
+(*          color     :  Color      |  color that the data are to be drawn in *)
+(*          dimension :  Dimension  |  width of the line, or size of the mark *)
+(*          filled    :  boolean    |  images filled?: marks and histograms   *)
+(*          label     :  string     |  name given to the curve in the legend  *)
+(*          mark      :  Marker     |  the type of symbol to be drawn         *)
+(*       method                                                               *)
+(*          Initialize                                                        *)
+(*    DataY            : abscissa data sequence in a count or integer manner  *)
+(*       var                                                                  *)
+(*          attributes : Attributes   |  the attributes of the curve          *)
+(*          data       : SingleVector |  the ordinate data                    *)
+(*       methods                                                              *)
+(*          Initialize                                                        *)
+(*          Assign     : takes a Zonnon array and assigns it to a .NET array  *)
+(*    DataXY           : supply both abscissa and ordinate data for a curve   *)
+(*       var                                                                  *)
+(*          attributes : Attributes   |  the attributes of the curve          *)
+(*          xdata      : SingleVector |  the abscissa data                    *)
+(*          yData      : SingleVector |  the ordinate data                    *)
+(*       methods                                                              *)
+(*          Initialize                                                        *)
+(*          AssignX    : takes a Zonnon array and assigns it to a .NET array  *)
+(*          AssignY    : takes a Zonnon array and assigns it to a .NET array  *)
+(*  procedures                                                                *)
+(*    Histogram       :  creates bar-chart data for constructing a histogram  *)
+(*       inputs                                                               *)
+(*          histogramData  :  an instance of DataY                            *)
+(*          normalCurve    :  an instance of Attributes                       *)
+(*       outputs                                                              *)
+(*          mean           :  sample mean of the histogram data               *)
+(*          median         :  median of the historgram data                   *)
+(*          stdDev         :  sample standard deviation of historgram data    *)
+(*          histogram      :  an instance of type NPlot.HistogramPlot         *)
+(*          normalPlot     :  an instance of type NPlot.LinePlot              *)
+(*    LineCurveXY     :  creates a data curve to be drawn as a line           *)
+(*       argument                                                             *)
+(*          data      :  an instance of type  DataXY                          *)
+(*       returns      :  an instance of type  NPlot.LinePlot                  *)
+(*    LineCurveY      :  creates a data curve to be drawn as a line           *)
+(*       argument                                                             *)
+(*          data      :  an instance of type  DataY                           *)
+(*       returns      :  an instance of type  NPlot.LinePlot                  *)
+(*    PointCurveXY    :  creates a data curve to be drawn as a set of points  *)
+(*       argument                                                             *)
+(*          data      :  an instance of type  DataXY                          *)
+(*       returns      :  an instance of type  NPlot.PointPlot                 *)
+(*    PointCurveY     :  creates a data curve to be drawn as a set of points  *)
+(*       argument                                                             *)
+(*          data      :  an instance of type  DataY                           *)
+(*       returns      :  an instance of type  NPlot.PointPlot                 *)
+(*    StepCurve       :  creates a data curve to be drawn as a segmented line *)
+(*       argument                                                             *)
+(*          data      :  an instance of type  DataY                           *)
+(*       returns      :  an instance of type  NPlot.StepPlot                  *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* An obvious omission is the presence of line types like dotted and dashed.  *)
+(* To add this capability requires System.Drawing.Drawing2D, which is a .NET  *)
+(* proprietary software.  So, in an effort to keep this software compatible   *)
+(* between the platforms of .NET and MONO, these features are not introduced. *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+
+module {public} Bel.Curves;
+
+   import
+      System.Convert as Convert,
+      System.Drawing as Drawing,
+      System.Int32   as Integer,
+      System.Single  as Single,
+      System.Double  as Double,
+      System.Math    as Math,
+      NPlot          as NP,
+      Bel.Math       as Fn,
+      Bel.Types      as T;
+
+   type {public}
+      Color     = (black, blue, gray, green, orange, pink, purple, red, yellow);
+      Dimension = (tiny, small, medium, large, huge);
+      Marker    = (circle, cross, diamond, flagDown, flagUp, none, plus, square,
+                      triangle, triangleDown, triangleUp);
+                      
+   type {public}
+      SingleVector = array * of Single;
+
+
+   type {public, value} Attributes = object
+
+      var {public}
+         centered  : boolean;
+         color     : Color;
+         dimension : Dimension;
+         filled    : boolean;
+         label     : string;
+         mark      : Marker;
+ 
+      procedure {public} Initialize;
+      begin
+         centered  := true;
+         color     := Color.black;
+         dimension := Dimension.medium;
+         filled    := false;
+         label     := "";
+         mark      := Marker.none
+      end Initialize;
+
+   begin
+      Initialize
+   end Attributes;
+   
+
+   (* Abscissa data sequence in a count or integer manner *)
+   type {public, ref} DataY = object
+
+      var {public}
+         attributes : Attributes;
+         data       : SingleVector;
+
+      procedure {public} Initialize;
+      begin
+         attributes.Initialize;
+         data := nil
+      end Initialize;
+
+      procedure {public} Assign (vec : T.RealVector);
+         var
+            i, length : integer;
+            r         : Double;
+      begin
+         length := len(vec);
+         data   := new SingleVector(length);
+         for i := 0 to length-1 do
+            r       := real(vec[i],64);
+            data[i] := Convert.ToSingle(r)
+         end
+      end Assign;
+
+   begin
+      Initialize
+   end DataY;
+   
+   
+   type {public, ref} DataXY = object
+
+      var {public}
+         attributes   : Attributes;
+         xData, yData : SingleVector;
+
+      procedure {public} Initialize;
+      begin
+         attributes.Initialize;
+         xData := nil;
+         yData := nil
+      end Initialize;
+
+      procedure {public} AssignX (vec : T.RealVector);
+         var
+            i, length : integer;
+            r         : Double;
+      begin
+         length := len(vec);
+         xData  := new SingleVector(length);
+         for i := 0 to length-1 do
+            r        := real(vec[i],64);
+            xData[i] := Convert.ToSingle(r)
+         end
+      end AssignX;
+
+      procedure {public} AssignY (vec : T.RealVector);
+         var
+            i, length : integer;
+            r         : Double;
+      begin
+         length := len(vec);
+         yData  := new SingleVector(length);
+         for i := 0 to length-1 do
+            r        := real(vec[i],64);
+            yData[i] := Convert.ToSingle(r)
+         end
+      end AssignY;
+
+   begin
+      Initialize
+   end DataXY;
+   
+        
+   (* sorting *)
+   var {private}
+      sortVec : SingleVector;
+
+		procedure ThreeSort(l, c, r : integer);  
+		   var 
+		      sortValue : Single;  
+		begin 
+			if sortVec[l] > sortVec[c] then 
+			   sortValue  := sortVec[l];
+			   sortVec[l] := sortVec[c];
+			   sortVec[c] := sortValue
+			end;  
+			if sortVec[l] > sortVec[r] then 
+			   sortValue  := sortVec[l];
+			   sortVec[l] := sortVec[r];
+			   sortVec[r] := sortValue
+			end;  
+			if sortVec[c] > sortVec[r] then 
+			   sortValue  := sortVec[c];  
+			   sortVec[c] := sortVec[r];  
+			   sortVec[r] := sortValue 
+			end
+		end ThreeSort;  
+
+		procedure {private} InsertionSort (l, r : integer);  
+		   var 
+		      i, j      : integer;  
+		      sortValue : Single;  
+		begin 
+			for i := l+1 to r do 
+				sortValue := sortVec[i];  
+				j    := i;  
+				while (j > 0) & (sortVec[j-1] > sortValue) do 
+				   sortVec[j] := sortVec[j-1];  
+				   dec(j) 
+				end;  
+				sortVec[j] := sortValue
+			end 
+		end InsertionSort;  
+
+		procedure {private} QuickSort (l, r : integer);  
+		   const 
+		      short = 7;   (* Short vectors sort faster with insertion. *)
+		   var 
+		      c, i, j    : integer;  
+		      sortValue, 
+		      tempValue  : Single;  
+		begin 
+			if r-l > short then  (* quick sort *)
+				c := (l + r) div 2;  
+				ThreeSort(l, c, r);  
+				sortValue := sortVec[r];  
+				i         := l - 1;  
+				j         := r;  
+				repeat 
+					repeat 
+					   inc(i) 
+					until sortVec[i] >= sortValue;  
+					repeat 
+					   dec(j) 
+					until sortVec[j] <= sortValue;  
+					tempValue  := sortVec[i];  
+					sortVec[i] := sortVec[j];  
+					sortVec[j] := tempValue
+				until j < i;  
+				sortVec[j] := sortVec[i];  
+				sortVec[i] := sortVec[r];  
+				sortVec[r] := tempValue;  
+				QuickSort(l,   j);  
+				QuickSort(i+1, r)
+			elsif r > l then 
+			   InsertionSort(l, r)
+			else  (* Nothing to sort. *)
+			end 
+		end QuickSort;  
+
+	procedure {private} Sort (var x : SingleVector); 
+	   var
+	      length : integer;
+	begin 
+	   length  := len(x);
+	   sortVec := new SingleVector(length);
+	   sortVec := x;
+		if length > 1 then
+		   QuickSort(0, length-1)
+		end;
+		x       := sortVec;
+		sortVec := nil
+	end Sort;  
+
+   
+   procedure {private} HistogramTheData (var dataIn    : SingleVector;
+                                         var mean      : Single;
+                                         var median    : Single;
+                                         var stdDev    : Single;
+                                         var xHistData : SingleVector;
+                                         var yHistData : SingleVector;
+                                         var xNormData : SingleVector;
+                                         var yNormData : SingleVector);
+      var
+         area,
+         difference,
+         leftEdge,
+         maxValue,
+         minValue,
+         scaleFactor,
+         stdNormalDev,
+         stepSize,
+         variance       : Single;
+         boundaries    : SingleVector;
+         cells, i, j, 
+         length, steps : integer;
+         count,  dim   : Integer;
+   begin
+      Sort(dataIn);
+      steps      := 151;
+      length     := len(dataIn);
+      dim        := integer(length,32);
+      cells      := integer(Math.Round(Math.Sqrt(Convert.ToDouble(dim))),32);
+      boundaries := new SingleVector(cells+3);
+      xHistData  := new SingleVector(cells+2);
+      yHistData  := new SingleVector(cells+2);
+      xNormData  := new SingleVector(steps);
+      yNormData  := new SingleVector(steps);
+      (* determine the returned sample statistics *)
+      if odd(length) then
+         median := dataIn[(length div 2) + 1]
+      else
+         median := Convert.ToSingle(
+                   (dataIn[length div 2] + dataIn[(length div 2) + 1])
+                 / Convert.ToSingle(2))
+      end;
+      mean := Convert.ToSingle(0);
+      for i := 0 to length-1 do
+         mean := mean + dataIn[i]
+      end;
+      mean     := Convert.ToSingle(mean / Convert.ToSingle(dim));
+      variance := Convert.ToSingle(0);
+      for i := 0 to length-1 do
+         difference := dataIn[i] - mean;
+         variance   := variance + difference*difference
+      end;
+      stdDev := Convert.ToSingle(Math.Sqrt(variance/Convert.ToSingle(dim-1)));
+      (* determine the returned vectors *)
+      minValue := dataIn[0];
+      maxValue := dataIn[length-1];
+      stepSize := Convert.ToSingle(1.1*(maxValue - minValue)
+                / Convert.ToSingle(cells+2));
+      leftEdge := Convert.ToSingle(0.5*(maxValue + minValue) 
+                - 0.55*(maxValue - minValue));
+      for i := 0 to cells+2 do
+         boundaries[i] := Convert.ToSingle(leftEdge 
+                        + Convert.ToSingle(i)*stepSize)
+      end;
+      j := 0;
+      for i := 1 to cells+2 do
+         count := 0;
+         while (j < length) & (dataIn[j] < boundaries[i]) do
+            inc(j);
+            count := count + 1
+         end;
+         xHistData[i-1] := Convert.ToSingle((boundaries[i-1] + boundaries[i])
+                         / Convert.ToSingle(2));
+         yHistData[i-1] := Convert.ToSingle(count)
+      end;
+      area        := Convert.ToSingle(
+                     Convert.ToSingle(dim)*(boundaries[1] - boundaries[0]));
+      minValue    := boundaries[0];
+      maxValue    := boundaries[cells+2];
+      scaleFactor := Convert.ToSingle(area
+                   / (stdDev*Math.Sqrt(Convert.ToSingle(2.0*Math.PI))));
+      stepSize    := Convert.ToSingle(
+                     (maxValue - minValue)/Convert.ToSingle(steps-1));
+      for i := 0 to steps-1 do
+         xNormData[i] := minValue + Convert.ToSingle(i)*stepSize;
+         stdNormalDev := Convert.ToSingle((xNormData[i] - mean)/stdDev);
+         yNormData[i] := scaleFactor
+                       * Convert.ToSingle(Math.Exp(-(stdNormalDev*stdNormalDev 
+                       / Convert.ToSingle(2))))
+      end
+   end HistogramTheData;
+
+   
+   procedure {public} Histogram (histogramData  : DataY;
+                                 normalCurve    : Attributes;
+                                 var mean       : real;
+                                 var median     : real;
+                                 var stdDev     : real;
+                                 var histogram  : NP.HistogramPlot;
+                                 var normalPlot : NP.LinePlot);
+      var
+         fMean,
+         fMedian,
+         fStdDev,
+         width      : Single;
+         pen        : Drawing.Pen;
+         xHistData, 
+         xNormData,
+         yHistData,
+         yNormData  : SingleVector;
+   begin
+      HistogramTheData(histogramData.data, fMean, fMedian, fStdDev, 
+                       xHistData, yHistData, xNormData, yNormData);
+      mean   := Convert.ToDouble(fMean);
+      median := Convert.ToDouble(fMedian);
+      stdDev := Convert.ToDouble(fStdDev);
+      (* create histogram *)
+      case histogramData.attributes.color of
+      | Color.blue   :
+         pen := new Drawing.Pen(Drawing.Color.Blue)
+      | Color.gray   :
+         pen := new Drawing.Pen(Drawing.Color.Gray)
+      | Color.green  :
+         pen := new Drawing.Pen(Drawing.Color.Green)
+      | Color.orange :
+         pen := new Drawing.Pen(Drawing.Color.Orange)
+      | Color.pink   :
+         pen := new Drawing.Pen(Drawing.Color.Pink)
+      | Color.purple :
+         pen := new Drawing.Pen(Drawing.Color.Purple)
+      | Color.red    :
+         pen := new Drawing.Pen(Drawing.Color.Red)
+      | Color.yellow :
+         pen := new Drawing.Pen(Drawing.Color.Yellow)
+      else (* Color.black *)
+         pen := new Drawing.Pen(Drawing.Color.Black)
+      end;
+      case histogramData.attributes.dimension of
+      | Dimension.tiny  :
+         width := Convert.ToSingle(1)
+      | Dimension.small :
+         width := Convert.ToSingle(2)
+      | Dimension.large :
+         width := Convert.ToSingle(4)
+      | Dimension.huge  :
+         width := Convert.ToSingle(5)
+      else (* Dimension.medium *)
+         width := Convert.ToSingle(3)
+      end;
+      pen.Width := width;
+      histogram := new NP.HistogramPlot();
+      histogram.BaseOffset   := Convert.ToSingle(0);
+      histogram.BaseWidth    := Convert.ToSingle(1);
+      histogram.Center       := histogramData.attributes.centered;
+      histogram.Filled       := histogramData.attributes.filled;
+      histogram.Label        := histogramData.attributes.label;
+      histogram.Pen          := pen;
+      histogram.AbscissaData := xHistData;
+      histogram.OrdinateData := yHistData;
+      (* create normal curve *)
+      case normalCurve.color of
+      | Color.blue   :
+         pen := new Drawing.Pen(Drawing.Color.Blue)
+      | Color.gray   :
+         pen := new Drawing.Pen(Drawing.Color.Gray)
+      | Color.green  :
+         pen := new Drawing.Pen(Drawing.Color.Green)
+      | Color.orange :
+         pen := new Drawing.Pen(Drawing.Color.Orange)
+      | Color.pink   :
+         pen := new Drawing.Pen(Drawing.Color.Pink)
+      | Color.purple :
+         pen := new Drawing.Pen(Drawing.Color.Purple)
+      | Color.red    :
+         pen := new Drawing.Pen(Drawing.Color.Red)
+      | Color.yellow :
+         pen := new Drawing.Pen(Drawing.Color.Yellow)
+      else (* Color.black *)
+         pen := new Drawing.Pen(Drawing.Color.Black)
+      end;
+      case normalCurve.dimension of
+      | Dimension.tiny  :
+         width := Convert.ToSingle(1)
+      | Dimension.small :
+         width := Convert.ToSingle(2)
+      | Dimension.large :
+         width := Convert.ToSingle(4)
+      | Dimension.huge  :
+         width := Convert.ToSingle(5)
+      else (* Dimension.medium *)
+         width := Convert.ToSingle(3)
+      end;
+      pen.Width               := width;
+      normalPlot              := new NP.LinePlot();
+      normalPlot.Label        := normalCurve.label;
+      normalPlot.Pen          := pen;
+      normalPlot.AbscissaData := xNormData;
+      normalPlot.OrdinateData := yNormData
+   end Histogram;
+
+   
+   procedure {public} LineCurveXY (data : DataXY) : NP.LinePlot;
+      var
+         pen   : Drawing.Pen;
+         plot  : NP.LinePlot;
+         width : Single;
+   begin
+      case data.attributes.dimension of
+      | Dimension.tiny  :
+         width := Convert.ToSingle(1)
+      | Dimension.small :
+         width := Convert.ToSingle(2)
+      | Dimension.large :
+         width := Convert.ToSingle(4)
+      | Dimension.huge  :
+         width := Convert.ToSingle(5)
+      else (* Dimension.medium *)
+         width := Convert.ToSingle(3)
+      end;
+      case data.attributes.color of
+      | Color.blue   :
+         pen := new Drawing.Pen(Drawing.Color.Blue)
+      | Color.gray   :
+         pen := new Drawing.Pen(Drawing.Color.Gray)
+      | Color.green  :
+         pen := new Drawing.Pen(Drawing.Color.Green)
+      | Color.orange :
+         pen := new Drawing.Pen(Drawing.Color.Orange)
+      | Color.pink   :
+         pen := new Drawing.Pen(Drawing.Color.Pink)
+      | Color.purple :
+         pen := new Drawing.Pen(Drawing.Color.Purple)
+      | Color.red    :
+         pen := new Drawing.Pen(Drawing.Color.Red)
+      | Color.yellow :
+         pen := new Drawing.Pen(Drawing.Color.Yellow)
+      else (* Color.black *)
+         pen := new Drawing.Pen(Drawing.Color.Black)
+      end;
+      pen.Width         := width;
+      plot              := new NP.LinePlot();
+      plot.Label        := data.attributes.label;
+      plot.Pen          := pen;
+      plot.AbscissaData := data.xData;
+      plot.OrdinateData := data.yData;
+      return plot;
+   end LineCurveXY;
+
+   
+   procedure {public} LineCurveY (data : DataY) : NP.LinePlot;
+      var
+         i     : integer;
+         pen   : Drawing.Pen;
+         plot  : NP.LinePlot;
+         width : Single;
+         xData : SingleVector;
+   begin
+      case data.attributes.dimension of
+      | Dimension.tiny  :
+         width := Convert.ToSingle(1)
+      | Dimension.small :
+         width := Convert.ToSingle(2)
+      | Dimension.large :
+         width := Convert.ToSingle(4)
+      | Dimension.huge  :
+         width := Convert.ToSingle(5)
+      else (* Dimension.medium *)
+         width := Convert.ToSingle(3)
+      end;
+      case data.attributes.color of
+      | Color.blue   :
+         pen := new Drawing.Pen(Drawing.Color.Blue)
+      | Color.gray   :
+         pen := new Drawing.Pen(Drawing.Color.Gray)
+      | Color.green  :
+         pen := new Drawing.Pen(Drawing.Color.Green)
+      | Color.orange :
+         pen := new Drawing.Pen(Drawing.Color.Orange)
+      | Color.pink   :
+         pen := new Drawing.Pen(Drawing.Color.Pink)
+      | Color.purple :
+         pen := new Drawing.Pen(Drawing.Color.Purple)
+      | Color.red    :
+         pen := new Drawing.Pen(Drawing.Color.Red)
+      | Color.yellow :
+         pen := new Drawing.Pen(Drawing.Color.Yellow)
+      else (* Color.black *)
+         pen := new Drawing.Pen(Drawing.Color.Black)
+      end;
+      pen.Width := width;
+      xData := new SingleVector(len(data.data));
+      for i := 1 to len(xData) do
+         xData[i-1] := Convert.ToSingle(i)
+      end;
+      plot              := new NP.LinePlot();
+      plot.Label        := data.attributes.label;
+      plot.Pen          := pen;
+      plot.AbscissaData := xData;
+      plot.OrdinateData := data.data;
+      return plot;
+   end LineCurveY;
+
+   
+   procedure {public} PointCurveXY (data : DataXY) : NP.PointPlot;
+      var
+         big   : Integer;
+         mark  : NP.Marker;
+         pen   : Drawing.Pen;
+         plot  : NP.PointPlot;
+         width : Single;
+   begin
+      case data.attributes.dimension of
+      | Dimension.tiny  :
+         big := 2
+      | Dimension.small :
+         big := 3
+      | Dimension.large :
+         big := 5
+      | Dimension.huge  :
+         big := 6
+      else (* Dimension.medium *)
+         big := 4
+      end;
+      case data.attributes.color of
+      | Color.blue   :
+         pen := new Drawing.Pen(Drawing.Color.Blue)
+      | Color.gray   :
+         pen := new Drawing.Pen(Drawing.Color.Gray)
+      | Color.green  :
+         pen := new Drawing.Pen(Drawing.Color.Green)
+      | Color.orange :
+         pen := new Drawing.Pen(Drawing.Color.Orange)
+      | Color.pink   :
+         pen := new Drawing.Pen(Drawing.Color.Pink)
+      | Color.purple :
+         pen := new Drawing.Pen(Drawing.Color.Purple)
+      | Color.red    :
+         pen := new Drawing.Pen(Drawing.Color.Red)
+      | Color.yellow :
+         pen := new Drawing.Pen(Drawing.Color.Yellow)
+      else (* Color.black *)
+         pen := new Drawing.Pen(Drawing.Color.Black)
+      end;
+      case data.attributes.dimension of
+      | Dimension.tiny  :
+         width := Convert.ToSingle(1)
+      | Dimension.small :
+         width := Convert.ToSingle(1)
+      | Dimension.large :
+         width := Convert.ToSingle(2)
+      | Dimension.huge  :
+         width := Convert.ToSingle(2)
+      else (* Dimension.medium *)
+         width := Convert.ToSingle(1.5)
+      end;
+      pen.Width := width;
+      case data.attributes.mark of
+      | Marker.circle       :
+         if data.attributes.filled then
+            mark := new NP.Marker(NP.Marker.MarkerType.FilledCircle, big, pen)
+         else
+            mark := new NP.Marker(NP.Marker.MarkerType.Circle, big, pen)
+         end
+      | Marker.cross        :
+         mark := new NP.Marker(NP.Marker.MarkerType.Cross1, big, pen)
+      | Marker.diamond      :
+         mark := new NP.Marker(NP.Marker.MarkerType.Diamond, big, pen)
+      | Marker.flagDown     :
+         mark := new NP.Marker(NP.Marker.MarkerType.FlagDown, big, pen)
+      | Marker.flagUp       :
+         mark := new NP.Marker(NP.Marker.MarkerType.FlagUp, big, pen)
+      | Marker.square       :
+         if data.attributes.filled then
+            mark := new NP.Marker(NP.Marker.MarkerType.FilledSquare, big, pen)
+         else
+            mark := new NP.Marker(NP.Marker.MarkerType.Square, big, pen)
+         end
+      | Marker.triangle     :
+         if data.attributes.filled then
+            mark := new NP.Marker(NP.Marker.MarkerType.FilledTriangle, big, pen)
+         else
+            mark := new NP.Marker(NP.Marker.MarkerType.Triangle, big, pen)
+         end
+      | Marker.triangleDown :
+         mark := new NP.Marker(NP.Marker.MarkerType.TriangleDown, big, pen)
+      | Marker.triangleUp   :
+         mark := new NP.Marker(NP.Marker.MarkerType.TriangleUp, big, pen)
+      | Marker.plus         :
+         mark := new NP.Marker(NP.Marker.MarkerType.Cross2, big, pen)
+      else (* Marker.none *)
+         mark := new NP.Marker(NP.Marker.MarkerType.None, big, pen)
+      end;
+      plot              := new NP.PointPlot(mark);
+      plot.Label        := data.attributes.label;
+      plot.AbscissaData := data.xData;
+      plot.OrdinateData := data.yData;
+      return plot
+   end PointCurveXY;
+
+   
+   procedure {public} PointCurveY (data : DataY) : NP.PointPlot;
+      var
+         big   : Integer;
+         i     : integer;
+         mark  : NP.Marker;
+         pen   : Drawing.Pen;
+         plot  : NP.PointPlot;
+         width : Single;
+         xData : SingleVector;
+   begin
+      case data.attributes.dimension of
+      | Dimension.tiny  :
+         big := 2
+      | Dimension.small :
+         big := 3
+      | Dimension.large :
+         big := 5
+      | Dimension.huge  :
+         big := 6
+      else (* Dimension.medium *)
+         big := 4
+      end;
+      case data.attributes.color of
+      | Color.blue   :
+         pen := new Drawing.Pen(Drawing.Color.Blue)
+      | Color.gray   :
+         pen := new Drawing.Pen(Drawing.Color.Gray)
+      | Color.green  :
+         pen := new Drawing.Pen(Drawing.Color.Green)
+      | Color.orange :
+         pen := new Drawing.Pen(Drawing.Color.Orange)
+      | Color.pink   :
+         pen := new Drawing.Pen(Drawing.Color.Pink)
+      | Color.purple :
+         pen := new Drawing.Pen(Drawing.Color.Purple)
+      | Color.red    :
+         pen := new Drawing.Pen(Drawing.Color.Red)
+      | Color.yellow :
+         pen := new Drawing.Pen(Drawing.Color.Yellow)
+      else (* Color.black *)
+         pen := new Drawing.Pen(Drawing.Color.Black)
+      end;
+      case data.attributes.dimension of
+      | Dimension.tiny  :
+         width := Convert.ToSingle(1)
+      | Dimension.small :
+         width := Convert.ToSingle(1)
+      | Dimension.large :
+         width := Convert.ToSingle(2)
+      | Dimension.huge  :
+         width := Convert.ToSingle(2)
+      else (* Dimension.medium *)
+         width := Convert.ToSingle(1.5)
+      end;
+      pen.Width := width;
+      case data.attributes.mark of
+      | Marker.circle       :
+         if data.attributes.filled then
+            mark := new NP.Marker(NP.Marker.MarkerType.FilledCircle, big, pen)
+         else
+            mark := new NP.Marker(NP.Marker.MarkerType.Circle, big, pen)
+         end
+      | Marker.cross        :
+         mark := new NP.Marker(NP.Marker.MarkerType.Cross1, big, pen)
+      | Marker.diamond      :
+         mark := new NP.Marker(NP.Marker.MarkerType.Diamond, big, pen)
+      | Marker.flagDown     :
+         mark := new NP.Marker(NP.Marker.MarkerType.FlagDown, big, pen)
+      | Marker.flagUp       :
+         mark := new NP.Marker(NP.Marker.MarkerType.FlagUp, big, pen)
+      | Marker.square       :
+         if data.attributes.filled then
+            mark := new NP.Marker(NP.Marker.MarkerType.FilledSquare, big, pen)
+         else
+            mark := new NP.Marker(NP.Marker.MarkerType.Square, big, pen)
+         end
+      | Marker.triangle     :
+         if data.attributes.filled then
+            mark := new NP.Marker(NP.Marker.MarkerType.FilledTriangle, big, pen)
+         else
+            mark := new NP.Marker(NP.Marker.MarkerType.Triangle, big, pen)
+         end
+      | Marker.triangleDown :
+         mark := new NP.Marker(NP.Marker.MarkerType.TriangleDown, big, pen)
+      | Marker.triangleUp   :
+         mark := new NP.Marker(NP.Marker.MarkerType.TriangleUp, big, pen)
+      | Marker.plus         :
+         mark := new NP.Marker(NP.Marker.MarkerType.Cross2, big, pen)
+      else (* Marker.none *)
+         mark := new NP.Marker(NP.Marker.MarkerType.None, big, pen)
+      end;
+      xData := new SingleVector(len(data.data));
+      for i := 1 to len(xData) do
+         xData[i-1] := Convert.ToSingle(i)
+      end;
+      plot              := new NP.PointPlot(mark);
+      plot.Label        := data.attributes.label;
+      plot.AbscissaData := xData;
+      plot.OrdinateData := data.data;
+      return plot
+   end PointCurveY;
+
+   
+   procedure {public} StepCurve (yData : DataY) : NP.StepPlot;
+      var
+         i     : integer;
+         pen   : Drawing.Pen;
+         plot  : NP.StepPlot;
+         width : Single;
+         x     : Single;
+         xData : SingleVector;
+   begin
+      case yData.attributes.color of
+      | Color.blue   :
+         pen := new Drawing.Pen(Drawing.Color.Blue)
+      | Color.gray   :
+         pen := new Drawing.Pen(Drawing.Color.Gray)
+      | Color.green  :
+         pen := new Drawing.Pen(Drawing.Color.Green)
+      | Color.orange :
+         pen := new Drawing.Pen(Drawing.Color.Orange)
+      | Color.pink   :
+         pen := new Drawing.Pen(Drawing.Color.Pink)
+      | Color.purple :
+         pen := new Drawing.Pen(Drawing.Color.Purple)
+      | Color.red    :
+         pen := new Drawing.Pen(Drawing.Color.Red)
+      | Color.yellow :
+         pen := new Drawing.Pen(Drawing.Color.Yellow)
+      else (* Color.black *)
+         pen := new Drawing.Pen(Drawing.Color.Black)
+      end;
+      case yData.attributes.dimension of
+      | Dimension.tiny  :
+         width := Convert.ToSingle(1)
+      | Dimension.small :
+         width := Convert.ToSingle(2)
+      | Dimension.large :
+         width := Convert.ToSingle(4)
+      | Dimension.huge  :
+         width := Convert.ToSingle(5)
+      else (* Dimension.medium *)
+         width := Convert.ToSingle(3)
+      end;
+      xData := new SingleVector(len(yData.data));
+      for i := 1 to len(xData) do
+         xData[i-1] := Convert.ToSingle(i)
+      end;
+      pen.Width                   := width;
+      plot                        := new NP.StepPlot();
+      plot.Center                 := yData.attributes.centered;
+      plot.HideHorizontalSegments := false;
+      plot.HideVerticalSegments   := false;
+      plot.Label                  := yData.attributes.label;
+      plot.Pen                    := pen;
+      plot.AbscissaData           := xData; 
+      plot.OrdinateData           := yData.data;
+      return plot
+   end StepCurve;
+
+begin
+end Curves.

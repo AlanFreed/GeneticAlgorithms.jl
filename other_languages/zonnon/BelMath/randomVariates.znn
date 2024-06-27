@@ -1,0 +1,207 @@
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(*       BBBB      EEEEE     L         The                                    *)
+(*       B   B     E         L           BIOLOGICAL                           *)
+(*       BBBB      EEE       L           ENGINEERING                          *)
+(*       B    B    E         L           LABORATORY                           *)
+(*       BBBBB     EEEEEE    LLLLLL        @ Saginaw Valley State University  *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Copyright 2008-2013, Alan D. Freed                                         *)
+(*                                                                            *)
+(* This file is part of the BEL-Math suite of .NET/Mono libraries.            *)
+(*                                                                            *)
+(* BEL is a free software: you can redistribute it and/or modify it under the *)
+(* terms of the GNU Lesser General Public License as published by the Free    *)
+(* Software Foundation, either version 3 of the License, or (at your option)  *)
+(* any later version.                                                         *)
+(*                                                                            *)
+(* BEL is distributed in the hope that it will be useful, but WITHOUT ANY     *)
+(* WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS  *)
+(* FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for   *)
+(* more details.                                                              *)
+(*                                                                            *)
+(* You should have received a copy of the GNU Lesser General Public License   *)
+(* along with BEL.  If not, see <http://www.gnu.org/licenses/>.               *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* procedures                                                                 *)
+(*    Normal       - returns normally distributed random variable             *)
+(*                   normalized for a mean of 0 and standard deviation of 1   *)
+(*    Exponential  - returns exponentially distributed random variable        *)
+(*                   mean and standard deviation are both taken to be 1       *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* reference: G. Marsaglia and W. W. Tsang, "A fast, easily implemented       *)
+(*            method for sampling from decreasing or symmetric unimodal       *)
+(*            density functions," SIAM J. Sci. Stat. Comput., 5 (2), 1984,    *)
+(*            349-359.                                                        *)
+(*                                                                            *)
+(* Variables are named as they appear in the published FORTRAN subroutines.   *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+
+module {public} BelMath.RandomVariates;
+
+   import System.Math     as Fn, 
+          System.Random   as RandomGenerator,
+          System.DateTime as DateTime;
+          
+   type {public}
+      Array = array {math} * of real;
+
+   var
+	   VE, VN : Array;
+      random : RandomGenerator;
+
+   (* wrappers for three FORTRAN random number generator calls *)
+   
+   procedure {private} UNI () : real;
+      var
+         rv : real;
+   begin
+	   rv := random.NextDouble();
+      return rv
+   end UNI;
+	
+   procedure {private} IUNI () : integer;
+      var
+         rv : integer;
+   begin
+	   rv := random.Next(0, 2147483647);
+      return rv
+   end IUNI;
+   
+	(* Generate a random number between -2^31+1 + 1 and 2^31-1 -1.  *)
+	(* You have to use this interval because the max is exclusive,  *)
+	(* meaning System.Random doesn't include it.                    *)
+   procedure {private} IVNI () : integer;
+   var
+	   rv : integer;
+   begin
+	   rv := random.Next(-2147483647, 2147483647);
+	   return rv
+   end IVNI;
+
+   procedure {public} Normal () : real;
+      var
+         I, J                    : integer;
+         AA, B, C, C1, C2, PC, 
+         RMAX, RNOR, S, X, XN, Y : real;
+   begin
+	   AA   := 12.37586;
+	   B    := 0.4878992;
+	   C    := 12.67706;
+	   C1   := 0.9689279;
+	   C2   := 1.301198;
+	   PC   := 0.01958303;
+	   RMAX := 0.4656613E-9;
+	   XN   := 2.776994;
+      (* fast part *)
+      I    := IVNI();
+      J    := (abs(I) mod 64) + 1;
+      RNOR := real(I) * RMAX * VN[J];
+      if abs(RNOR) <= VN[J-1] then
+         return RNOR
+      end;	
+      (* slow part *)
+      X := (abs(RNOR) - VN[J-1])/(VN[J] - VN[J-1]);
+      Y := UNI();
+      S := X + Y;
+   	if S > C2 then  
+   	   RNOR := Fn.Sign(RNOR)*abs(B - B*X);
+		   return RNOR
+   	end; 
+   	if S <= C1 then 
+   	   return RNOR
+   	end;
+      if Y > (C - AA * Fn.Exp(-0.5 * (B - B*X)**2)) then 
+         RNOR := Fn.Sign(RNOR)*abs(B - B*X);
+         return RNOR
+   	end;
+   	if (Fn.Exp(-0.5 * VN[J]**2) + Y*PC/VN[J]) <= Fn.Exp(-0.5 * RNOR**2) then 
+        return RNOR
+		end;
+      (* tail part *)
+      repeat
+   	   X := 0.3601016 * Fn.Log(UNI());
+   	until ((-2.0 * Fn.Log(UNI())) > X*X);
+      RNOR := Fn.Sign(RNOR) * abs(XN - X);
+      return RNOR
+   end Normal;
+
+   procedure {public} Exponential () : real;
+      var
+         I, J                    : integer;
+         A, B, C, C1, C2, P, 
+         REXP, RMAX, S, X, XN, Y : real;
+   begin
+	   A    := 4.780222;
+	   B    := 0.233901;
+	   C    := 4.807275;
+	   C1   := 0.9130147;
+	   C2   := 1.055764;
+	   P    := 0.015625;
+	   RMAX := 0.4656613E-9;
+	   XN   := 5.940712;
+      (* fast part *)
+      I    := IUNI();
+      J    := (I mod 64) + 1;
+      REXP := real(I) * RMAX * VE[J];
+      if REXP <= VE[J-1] then
+         return REXP
+      end;	
+      (* slow part *)
+      X := (REXP - VE[J-1])/(VE[J] - VE[J-1]);
+      Y := UNI();
+      S := X + Y;
+   	if S > C2 then  
+   	   REXP := B - B*X;
+		   return REXP
+   	end; 
+   	if S <= C1 then 
+   	   return REXP
+   	end;
+      if Y > (C - A * Fn.Exp(B*X - B)) then 
+         REXP := B - B*X;
+         return REXP
+   	end;
+   	if (Fn.Exp(-VE[J]) + Y*P/VE[J]) <= Fn.Exp(-REXP) then 
+        return REXP
+		end;
+      (* tail part *)
+      REXP := XN - Fn.Log(UNI());
+      return REXP
+   end Exponential;
+
+   procedure {private} Create;
+   begin
+	   VE := new Array(65);
+	   VE := [0.2275733, 0.2961199, 0.3568076, 0.4124534, 0.4645906,
+	          0.5141596, 0.5617859, 0.6079111, 0.6528617, 0.6968884,
+	          0.7401897, 0.7829269, 0.8252345, 0.8672267, 0.9090027,
+	          0.9506499, 0.9922470, 1.033865,  1.075572,  1.117430,
+	          1.159497,  1.201832,  1.244491,  1.287529,  1.331001,
+	          1.374964,  1.419475,  1.464591,  1.510374,  1.556887,
+	          1.604196,  1.652370,  1.701488,  1.751625,  1.802871,
+	          1.855318,  1.909067,  1.964230,  2.020929,  2.079300,
+	          2.139492,  2.201675,  2.266037,  2.332792,  2.402185,
+	          2.474495,  2.550045,  2.629211,  2.712438,  2.800248,
+	          2.893275,  2.992284,  3.098219,  3.212264,  3.335930,
+	          3.471187,  3.620674,  3.788045,  3.978562,  4.200208,
+	          4.465950,  4.799011,  5.247564,  5.940712,  5.940712];
+      VN := new Array(65);
+	   VN := [0.3409450, 0.4573146, 0.5397792, 0.6062427, 0.6631690, 
+	          0.7136974, 0.7596124, 0.8020356, 0.8417227, 0.8792102, 
+	          0.9148948, 0.9490791, 0.9820005, 1.013848,  1.044780, 
+	          1.074924,  1.104391,  1.133273,  1.161653,  1.189601, 
+	          1.217181,  1.244452,  1.271463,  1.298265,  1.324901, 
+	          1.351412,  1.377839,  1.404221,  1.430593,  1.456991, 
+	          1.483452,  1.510012,  1.536706,  1.563571,  1.590645, 
+	          1.617968,  1.645579,  1.673525,  1.701850,  1.730604, 
+	          1.759842,  1.789622,  1.820009,  1.851076,  1.882904, 
+	          1.915583,  1.949216,  1.983924,  2.019842,  2.057135, 
+	          2.095992,  2.136644,  2.179371,  2.224517,  2.272518, 
+	          2.323934,  2.379500,  2.440222,  2.507511,  2.583466, 
+	          2.671391,  2.776994,  2.776994,  2.776994,  2.776994];
+      random := new RandomGenerator();
+   end Create;
+   
+begin
+	Create
+end RandomVariates.

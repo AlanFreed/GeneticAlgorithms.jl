@@ -1,0 +1,643 @@
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(*       BBBB      EEEEE     L         The                                    *)
+(*       B   B     E         L           BIOLOGICAL                           *)
+(*       BBBB      EEE       L           ENGINEERING                          *)
+(*       B    B    E         L           LABORATORY                           *)
+(*       BBBBB     EEEEEE    LLLLLL        @ Saginaw Valley State University  *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Copyright 2008-2013, Alan D. Freed                                         *)
+(*                                                                            *)
+(* This file is part of the BEL-Math suite of .NET/Mono libraries.            *)
+(*                                                                            *)
+(* BEL is a free software: you can redistribute it and/or modify it under the *)
+(* terms of the GNU Lesser General Public License as published by the Free    *)
+(* Software Foundation, either version 3 of the License, or (at your option)  *)
+(* any later version.                                                         *)
+(*                                                                            *)
+(* BEL is distributed in the hope that it will be useful, but WITHOUT ANY     *)
+(* WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS  *)
+(* FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for   *)
+(* more details.                                                              *)
+(*                                                                            *)
+(* You should have received a copy of the GNU Lesser General Public License   *)
+(* along with BEL.  If not, see <http://www.gnu.org/licenses/>.               *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* An accurate and efficient numerical solver for convolution integrals.      *)
+(*   The level of effort required by this algorithm is  O(N log N).           *)
+(*   The accuracy of the algorithm is of  O(h^5)  convergent.                 *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Solves the convolution integral:                                           *)
+(*    y = integral from 0 to X of k(x-s) f(g(s), g(x)) ds                     *)
+(* or equivalently:                                                           *)
+(*    y = integral from 0 to X of k(u) f(g(x-u), g(x)) du                     *)
+(* The input parameters are:                                                  *)
+(*    X  is the upper limit of integration                                    *)
+(*       the lower limit is set to zero,  X > 0                               *)
+(*    k  is an univariate kernel function                                     *)
+(*       which must be positive valued with a monotonic decay                 *)
+(*       k(0) = infinity  is allowed                                          *)
+(*    f  is a bivariate  forcing function                                     *)
+(*    g  is a univariate control function                                     *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* The algorithm is designed so that it can be sequentually called to obtain  *)
+(* a set of input/output pairs  {xN, qN}  where  xN = n * X / N  with  qN     *)
+(* being an approximation to the integral at  xN  for  n = 1, 2, 3, ..., N.   *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* type                                                                       *)
+(*   ConvQuad        convolution integrals with arrays for forcing functions  *)
+(*     var                                                                    *)
+(*       n                   the next integration step will have count 'n'    *)
+(*       N                   the total number of integration steps required   *)
+(*       xN                  dependent variable 'x' at end of next step 'n'   *)
+(*     SetUp         prepares the integrator for integration                  *)
+(*       inputs:                                                              *)
+(*         qualityPara       goes by 'Q' in the document, Q = 3, 5, 7, ...    *)
+(*         stepsPerCharTime  goes by 'S' in the document, S > 3               *)
+(*         xMax              goes by 'X' in the document, X > 0               *)
+(*         charTime          goes by 'T' in the document, 0 < T < X           *)
+(*         gAt0              goes by 'g(0)' in the document                   *)
+(*                           where 'g' is some array-valued control function  *)
+(*         kernelFn          goes by 'k(u)' in the document                   *)
+(*                           where k(u) >= 0 and k(v) < k(u) for all v > u    *)
+(*         forcingFn         goes by 'f(g(x-u), g(x))' in the document        *)
+(*                           the forcing function 'f' returns an array value  *)
+(*     Integrate     advances the solution by one step: from 'n-1' to 'n'     *)
+(*       inputs:                                                              *)
+(*         gAtN              array-valued control function at 'g(xN)'         *)
+(*       return:                                                              *)
+(*         qN                array-valued integral at the end of step 'n'     *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Reference:                                                                 *)
+(*    Diethelm, K. and Freed, A.D., "An Efficient Algorithm for the           *)
+(*    Evaluation of Convolution Integrals," Computers and Mathematics with    *)
+(*    Applications, Vol. 51 (2006), 51-72.                                    *)
+(* The reverse communication version of the integrator is implemented here.   *)
+(* This is comprised of Algorithms 3-6 from the Diethelm-Freed reference.     *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+
+module {public} BelMath.ConvolutionIntegrals;
+
+   import
+      Bel.Entity             as Entity,
+      Bel.Log                as L,
+      Bel.Math               as Fn,
+      BelMath.Interpolations as I;
+
+   type {public}
+      IntegerVector = array {math} * of integer;
+      RealVector    = array {math} * of real;
+      RealMatrix    = array {math} *,* of real;
+
+   var {private}
+      ii, jj     : integer;
+      laplaceVec : RealVector;
+      laplaceMtx : RealMatrix;
+
+   type {public}
+      (* kernel function of the convolution *)
+      Kernel = procedure (real) : real;
+      (* forcing functions of the convolution *)
+      ForcingFn = procedure (RealVector;  RealVector) : RealVector;
+
+   type {public, value} Integral = object implements Entity
+
+      var {private}
+         gIdx, pLenN, pLenNm1, Q, S : integer;
+         h, T                       : real;
+         pArrayN, pArrayNm1         : IntegerVector;
+         kArray, xArray             : RealVector;
+         kFn                        : Kernel;
+         (* these depend upon the kind of the forcing function being used *)
+         gLen     : integer;
+         gNm1, gN : RealVector;
+         gArray   : RealMatrix;
+         fFn      : ForcingFn;
+
+      var {public, immutable}
+         n  : integer;      (* the next integration step will have count 'n'  *)
+         N  : integer;      (* the total number of integration steps required *)
+         xN : real;         (* dependent variable 'x' at end of next step 'n' *)
+
+      procedure {public} Initialize
+         implements Entity.Initialize;
+      begin
+         n         := 0;
+         N         := 0;
+         xN        := 0.0;
+         gIdx      := 0;
+         pLenN     := 0;
+         pLenNm1   := 0;
+         Q         := 0;
+         S         := 0;
+         h         := 0.0;
+         T         := 0.0;
+         pArrayN   := nil;
+         pArrayNm1 := nil;
+         kArray    := nil;
+         xArray    := nil;
+         kFn       := nil;
+         gLen      := 0;
+         gNm1      := nil;
+         gN        := nil;
+         gArray    := nil;
+         fFn       := nil
+      end Initialize;
+
+      procedure {public} Nullify
+         implements Entity.Nullify;
+      begin
+         Initialize
+      end Nullify;
+
+      (* Prepare the integrator for use.  The passed parameters are:          *)
+      (*    qualityPara       goes by 'Q' in the document, Q = 3, 5, 7, ...   *)
+      (*    stepsPerCharTime  goes by 'S' in the document, S > 3              *)
+      (*    xMax              goes by 'X' in the document, X > 0              *)
+      (*    charTime          goes by 'T' in the document, 0 < T < X          *)
+      (*    gAt0              goes by 'g(0)' in the document                  *)
+      (*                      where 'g' is some control function              *)
+      (*    kernelFn          goes by 'k(u)' in the document                  *)
+      (*                      where k(u) >= 0 and k(v) < k(u) for all v > u   *)
+      (*    forcingFn         goes by 'f(g(x-u), g(x))' in the document       *)
+      procedure {public} SetUp (qualityPara, stepsPerCharTime : integer;
+                                xMax, charTime                : real;
+                                gAt0                          : RealVector;
+                                kernelFn                      : Kernel;
+                                forcingFn                     : ForcingFn);
+         var
+            i, j, l, Len, m           : integer;
+            log, logQ, stepSize, x, y : real;
+            zeroArr                   : RealVector;
+      begin
+         (* assign the global variables *)
+         n    := 1;
+         gIdx := 0;
+         Q    := qualityPara;
+         if ~odd(Q) then
+            inc(Q)
+         end;
+         if Q < 3 then
+            Q := 3
+         end;
+         if stepsPerCharTime > 3 then
+            S := stepsPerCharTime
+         else
+            S := 4
+         end;
+         if xMax <= 0.0 then
+            L.Message("The upper limit of integration must be positive.");
+            L.ErrorMessage(405,415,
+                             "BelMath.ConvolutionIntegrals.Integral.Initialize")
+         end;
+         if charTime > 0.0 then
+            if charTime < xMax then
+               T := charTime
+            else
+               T := xMax
+            end;
+            h  := T / real(S);
+            xN := h;
+            x  := Fn.Ceiling(xMax/h);
+            N  := integer(x)
+         else
+            L.Message("Characteristic time of the kernel must be positive.");
+            L.ErrorMessage(405,415,
+                             "BelMath.ConvolutionIntegrals.Integral.Initialize")
+         end;
+         x    := real(N) / real(S);
+         y    := real(Q);
+         logQ := Fn.Log(x) / Fn.Log(y);
+         (* setup Algorithm 3: create the p-adic arrays and populate them *)
+         log       := Fn.Floor(logQ);
+         Len       := integer(log) + 1;
+         pArrayNm1 := new IntegerVector(Len+1);
+         pArrayN   := new IntegerVector(Len+1);
+         PAdic(0, pLenNm1, pArrayNm1);
+         PAdic(1, pLenN,   pArrayN);
+         (* setup Algorithm 4: create the gArray and initialize it *)
+         log := Fn.Ceiling(logQ);
+         Len := integer(log);
+         if gAt0 # nil then
+            l      := S * (1 + Q * (1 + Len));
+            gLen   := len(gAt0);
+            gN     := new RealVector(gLen);
+            gNm1   := new RealVector(gLen);
+            gArray := new RealMatrix(gLen,l+1);
+            for i := 0 to gLen-1 do
+               gNm1[i]     := gAt0[i];
+               gN[i]       := 0.0;
+               gArray[i,0] := gAt0[i];
+               for j := 1 to l do
+                  gArray[i,j] := 0.0
+               end
+            end
+         else
+            L.Message("Array 'gAt0' was not created.");
+            L.ErrorMessage(230,415,
+                             "BelMath.ConvolutionIntegrals.Integral.Initialize")
+         end;
+         (* assign the kernel and forcing functions *)
+         if kernelFn # nil then
+            kFn := kernelFn
+         else
+            L.Message("The supplied kernel function was NIL.");
+            L.ErrorMessage(410,415,
+                             "BelMath.ConvolutionIntegrals.Integral.Initialize")
+         end;
+         if forcingFn # nil then
+            fFn := forcingFn
+         else
+            L.Message("The supplied forcing function was NIL.");
+            L.ErrorMessage(410,415,
+                             "BelMath.ConvolutionIntegrals.Integral.Initialize")
+         end;
+         (* setup Algorithm 5: create the xArray and populate it *)
+         l      := Len * S * (Q - 1) + S - 1;
+         xArray := new RealVector(l+1);
+         m      := 0;
+         for i := 1 to S*Q-1 do
+            inc(m);
+            x         := (real(i) - 0.5) * h;
+            xArray[m] := x
+         end;
+         y        := real(S * Q - 1) * h;
+         stepSize := h;
+         for i := 2 to Len do
+            stepSize := Q * stepSize;
+            for j := 1 to S*(Q-1) do
+               inc(m);
+               x         := y + (real(j) - 0.5) * stepSize;
+               xArray[m] := x
+            end;
+            y := y + real(S * (Q - 1)) * stepSize
+         end;
+         (* create the kArray and populate it *)
+         kArray := new RealVector(l+1);
+         for i := 1 to l do
+            x         := xArray[i];
+            kArray[i] := kFn(x)
+         end
+      end SetUp;
+
+      (* A non-standard p-adic representation of integer 'step', returned as  *)
+      (* elements in 'pArray'.  Each one denotes the number of integration    *)
+      (* nodes for that subinterval. A total of 'subintervals' of integration *)
+      (* exist for integration 'step'.  This is algorithm 3 in our paper.     *)
+      procedure {private} PAdic (step       : integer;
+                                 var pLen   : integer;
+                                 var pArray : IntegerVector);
+         var
+            i, l, m    : integer;
+            logQ, x, y : real;
+      begin
+         x    := real(N) / real(S);
+         y    := real(Q);
+         logQ := Fn.Log(x) / Fn.Log(y);
+         logQ := Fn.Floor(logQ);
+         l    := integer(logQ) + 1;
+         m    := step div S;
+         (* standard p-adic representation of 'm' *)
+         if m = 0 then
+            pLen      := 1;
+            pArray[1] := 0
+         else
+            pLen := 0;
+            while m > 0 do
+               inc(pLen);
+               pArray[pLen] := m mod Q;
+               m            := m div Q
+            end;
+            for i := pLen+1 to l do
+              pArray[i] := 0
+            end;
+            (* put into a non-standard p-adic form to ensure  *)
+            (* that no element is zero over its active length *)
+            for i := 1 to pLen-1 do
+               if pArray[i] < 1 then
+                  pArray[i]   := pArray[i]   + Q;
+                  pArray[i+1] := pArray[i+1] - 1
+               end
+            end;
+            if pArray[pLen] = 0 then
+               dec(pLen)
+            end
+         end;
+         (* determine number of steps needed per subinterval of integration   *)
+         for i := 1 to pLen do
+            pArray[i] := S * pArray[i]
+         end;
+         pArray[1] := pArray[1] + step mod S
+      end PAdic;
+
+      (* Manages the stored history variables.  Prepares integrator for the   *)
+      (* next integration step.  This is Algorithm  4 in our paper.           *)
+      procedure {private} UpdateHistory;
+         var
+            collect                : boolean;
+            a, b, c, d, i, j, k, l : integer;
+      begin
+         (* attach current field to the history array *)
+         if gIdx = 1 then
+            for i := 0 to gLen-1 do
+               gArray[i,0] := gNm1[i]
+            end
+         end;
+         for i := 0 to gLen-1 do
+            gArray[i,gIdx] := (gNm1[i] + gN[i]) / 2.0
+         end;
+         collect := (n-1 > S) & ((n-S) mod (Q*S) = 0);
+         if collect then
+            (* perform a garbage collection over the history array *)
+            c := (Q - 1) div 2; (* this is why Q must be 3, 5, ... *)
+            d := (Q - 1) * S;
+            for k := 1 to pLenN do
+               if pArrayN[k] < pArrayNm1[k] then
+                  a := 0;
+                  for i := k+1 to pLenN do
+                     a := a + pArrayNm1[i]
+                  end;
+                  b := S;
+                  for i := 1 to k-1 do
+                     b := b + pArrayN[i]
+                  end;
+                  for i := 1 to S do
+                     for j := 0 to gLen-1 do
+                        gArray[j,a+i] := gArray[j,a+i*Q-c]
+                     end
+                  end;
+                  l := a + S;
+                  for i := 1 to b do
+                     for j := 0 to gLen-1 do
+                        gArray[j,l+i] := gArray[j,l+i+d]
+                     end
+                  end
+               end
+            end
+         end;
+         (* advance all indexed variables - these are held internally *)
+         inc(n);
+         pLenNm1 := pLenN;
+         for i := 1 to pLenN do
+            pArrayNm1[i] := pArrayN[i]
+         end;
+         PAdic(n, pLenN, pArrayN);
+         gNm1 := gN;
+         gIdx := 0;
+         for i := 1 to pLenNm1 do
+            gIdx := gIdx + pArrayNm1[i]
+         end;
+         xN := real(n) * h
+      end UpdateHistory;
+
+      (* This is Algorithm 5 in our paper. *)
+         (* a quick-sort like algorithm    *)
+         procedure {private} QuickLocate (x : real; var lo, hi : integer);
+            var
+               mid : integer;
+         begin
+            repeat
+               mid := (lo + hi) div 2;
+               if x > xArray[mid] then
+                  lo := mid
+               else
+                  hi := mid
+               end
+            until (lo = hi - 1)
+         end QuickLocate;
+
+      (* Interpolates to obtain an estimate of the kernel function. *)
+      procedure {private} K (x : real) : real;
+         var
+            hi, i, l, lo, m, z : integer;
+            xVec, yVec         : RealVector;
+            y                  : real;
+      begin
+         y  := 0.0;
+         l  := len(xArray);
+         (* choose order of interpolation *)
+         if l < 5 then
+            z := 3   (* 3rd order accurate interpolation *)
+         else
+            z := 5   (* 5th order accurate interpolation *)
+         end;
+         lo := 1;
+         hi := l;
+         (* finds array location such that             *)
+         (* xArray[lo] < x <= xArray[hi], hi := lo + 1 *)
+         QuickLocate(x, lo, hi);
+         (* set indexer for interpolation *)
+         if lo < z then
+            m := 1
+         elsif lo < l-z-1 then
+            m := lo - z div 2
+         else
+            m := l - z
+         end;
+         (* Neville-Aitken interpolation - uses 5th order instead of 3rd *)
+         xVec := new RealVector(z+1);
+         yVec := new RealVector(z+1);
+         for i := 0 to z do
+            xVec[i] := xArray[m+i];
+            yVec[i] := kArray[m+i]
+         end;
+         y := I.Neville(xVec, yVec, x);
+         return y
+      end K;
+
+      (* Returns the solution 'qN' at the end of integration step 'n'.    *)
+      (* Parameter 'gAtN' is the value of the control function 'g(xN)'    *)
+      (* at the end of this step.  It is the second argument in calls     *)
+      (* made to the forcing function.  This is Alogrithm 6 in the paper. *)
+      procedure {public} Integrate (gAtN : RealVector) : RealVector;
+         var
+            a0, a1, a2, g1, g2, g3, g4, gI, qN : RealVector;
+            hJ, t, weight, y                   : real;
+            i, j, k, l, m                      : integer;
+      begin
+         qN := nil;
+         if (gAtN # nil) & (len(gAtN) = gLen) then
+            gN := gAtN
+         else
+            L.Message("The supplied control function 'gAtN' was NIL.");
+            L.ErrorMessage(410,415,
+                              "BelMath.ConvolutionIntegrals.Integral.Integrate")
+         end;
+         if n < 4 then
+            g1 := new RealVector(gLen);
+            g2 := new RealVector(gLen);
+            g3 := new RealVector(gLen);
+            g4 := new RealVector(gLen);
+            (* use MacLaurin's method for integration *)
+            if n = 1 then
+               g1 := gNm1 + 0.125*(gN - gNm1);
+               g2 := gNm1 + 0.375*(gN - gNm1);
+               g3 := gNm1 + 0.625*(gN - gNm1);
+               g4 := gNm1 + 0.875*(gN - gNm1)
+            elsif n = 2 then
+               a0 := new RealVector(gLen);
+               a1 := new RealVector(gLen);
+               for i := 0 to gLen-1 do
+                  a0[i] := gArray[i,0];
+                  a1[i] := gArray[i,1]
+               end;
+               g1 := a0   + 0.5*(a1 - a0);
+               g2 := a1   + 0.5*(gNm1 - a1);
+               g3 := gNm1 + 0.25*(gN - gNm1);
+               g4 := gNm1 + 0.75*(gN - gNm1)
+            else (* n = 3 *)
+               a0 := new RealVector(gLen);
+               a1 := new RealVector(gLen);
+               a2 := new RealVector(gLen);
+               for i := 0 to gLen-1 do
+                  a0[i] := gArray[i,0];
+                  a1[i] := gArray[i,1];
+                  a2[i] := gArray[i,2]
+               end;
+               g1 := a0   + 0.75*(a1 - a0);
+               g2 := a1   + 0.625*(a2 - a1);
+               g3 := a2   + 0.75*(gNm1 - a2);
+               g4 := gNm1 + 0.625*(gN - gNm1)
+            end;
+            qN := xN * (13.0 * (kFn(0.875*xN) * fFn(g1, gN)
+                     +          kFn(0.125*xN) * fFn(g4, gN))
+                     +  11.0 * (kFn(0.625*xN) * fFn(g2, gN)
+                     +          kFn(0.375*xN) * fFn(g3, gN))) / 48.0
+         else
+            gI := new RealVector(gLen);
+            (* use Laplace's method for integration *)
+            m := gIdx;
+            (*   integrate the first step of the first subinterval *)
+            (*   whose step size is 'h' *)
+            l := pArrayNm1[1];
+            if l < 7 then
+               weight := laplaceMtx[1,l+1]
+            else
+               weight := laplaceVec[1]
+            end;
+            t  := h / 2.0;
+            gI := (gNm1 + gN) / 2.0;
+            qN := h * weight * K(t) * fFn(gI, gN);
+            (* integrate remaining steps in the first subinterval *)
+            (* whose step sizes are all 'h' *)
+            if l < 7 then
+               for i := 2 to l+1 do
+                  t  := (real(i) - 0.5) * h;
+                  for j := 0 to gLen-1 do
+                     gI[j] := gArray[j,m]
+                  end;
+                  qN := qN + h * laplaceMtx[i,l+1] * K(t) * fFn(gI, gN);
+                  dec(m)
+               end
+            else
+               for i := 2 to 4 do
+                  t  := (real(i) - 0.5) * h;
+                  for j := 0 to gLen-1 do
+                     gI[j] := gArray[j,m]
+                  end;
+                  qN := qN + h * laplaceVec[i] * K(t) * fFn(gI, gN);
+                  dec(m)
+               end;
+               for i := 5 to l-3 do
+                  t  := (real(i) - 0.5) * h;
+                  for j := 0 to gLen-1 do
+                     gI[j] := gArray[j,m]
+                  end;
+                  qN := qN + h * K(t) * fFn(gI, gN);
+                  dec(m)
+               end;
+               for i := l-2 to l+1 do
+                  t := (real(i) - 0.5) * h;
+                  for j := 0 to gLen-1 do
+                     gI[j] := gArray[j,m]
+                  end;
+                  qN := qN + h * laplaceVec[l+2-i] * K(t) * fFn(gI, gN);
+                  dec(m)
+               end
+            end;
+            (* integrate over remaining subintervals *)
+            (* whose step sizes are 'Q^(j-1) h' *)
+            hJ := h;
+            y := (pArrayNm1[1] + 1) * h;
+            for j := 2 to pLenNm1 do
+               l := pArrayNm1[j];
+               hJ := Q * hJ;
+               if l < 8 then
+                  for i := 1 to l do
+                     t  := y + (real(i) - 0.5) * hJ;
+                     for k := 0 to gLen-1 do
+                        gI[k] := gArray[k,m]
+                     end;
+                     qN := qN + hJ * laplaceMtx[i,l] * K(t) * fFn(gI, gN);
+                     dec(m)
+                  end
+               else
+                  for i := 1 to 4 do
+                     t  := y + (real(i) - 0.5) * hJ;
+                     for k := 0 to gLen-1 do
+                        gI[k] := gArray[k,m]
+                     end;
+                     qN := qN + hJ * laplaceVec[i] * K(t) * fFn(gI, gN);
+                     dec(m)
+                  end;
+                  for i := 5 to l-4 do
+                     t  := y + (real(i) - 0.5) * hJ;
+                     for k := 0 to gLen-1 do
+                        gI[k] := gArray[k,m]
+                     end;
+                     qN := qN + hJ * K(t) * fFn(gI, gN);
+                     dec(m)
+                  end;
+                  for i := l-3 to l do
+                     t  := y + (real(i) - 0.5) * hJ;
+                     for k := 0 to gLen-1 do
+                        gI[k] := gArray[k,m]
+                     end;
+                     qN := qN + hJ * laplaceVec[l+1-i] * K(t) * fFn(gI, gN);
+                     dec(m)
+                  end
+               end;
+               y := y + real(l) * hJ
+            end
+         end;
+         if n < N then
+            UpdateHistory
+         else
+            xN := real(N) * h
+         end;
+         return qN
+      end Integrate;
+
+   begin
+      Initialize
+   end Integral;
+
+
+begin
+   (* determine weights of Laplace quadratures with 4, 5, 6 or 7 nodes: *)
+   laplaceMtx := new RealMatrix(8,8);
+   for ii := 0 to 7 do
+      for jj := 0 to 7 do
+         laplaceMtx[ii,jj] := 0.0
+      end
+   end;
+   for jj := 4 to 7 do
+      for ii := 1 to jj do
+         laplaceMtx[ii, jj] := 1.0
+      end;
+      laplaceMtx[1, jj]    := laplaceMtx[1, jj]    + 703.0/5760.0;
+      laplaceMtx[2, jj]    := laplaceMtx[2, jj]    - 463.0/1920.0;
+      laplaceMtx[3, jj]    := laplaceMtx[3, jj]    + 101.0/640.0;
+      laplaceMtx[4, jj]    := laplaceMtx[4, jj]    - 223.0/5760.0;
+      laplaceMtx[jj, jj]   := laplaceMtx[jj, jj]   + 703.0/5760.0;
+      laplaceMtx[jj-1, jj] := laplaceMtx[jj-1, jj] - 463.0/1920.0;
+      laplaceMtx[jj-2, jj] := laplaceMtx[jj-2, jj] + 101.0/640.0;
+      laplaceMtx[jj-3, jj] := laplaceMtx[jj-3, jj] - 223.0/5760.0
+   end;
+   (* determine boundary weights of Laplace quadratures, node >= 8 *)
+   laplaceVec := new RealVector(5);
+   laplaceVec[0] := 0.0;
+   laplaceVec[1] := 1.0 + 703.0/5760.0;
+   laplaceVec[2] := 1.0 - 463.0/1920.0;
+   laplaceVec[3] := 1.0 + 101.0/640.0;
+   laplaceVec[4] := 1.0 - 223.0/5760.0
+end ConvolutionIntegrals.

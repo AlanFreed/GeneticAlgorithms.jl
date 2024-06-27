@@ -1,0 +1,275 @@
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(*       BBBB      EEEEE     L         The                                    *)
+(*       B   B     E         L           BIOLOGICAL                           *)
+(*       BBBB      EEE       L           ENGINEERING                          *)
+(*       B    B    E         L           LABORATORY                           *)
+(*       BBBBB     EEEEEE    LLLLLL        @ Saginaw Valley State University  *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Copyright 2008-2013, Alan D. Freed                                         *)
+(*                                                                            *)
+(* This file is part of BEL's core suite of .NET/Mono libraries.              *)
+(*                                                                            *)
+(* BEL is a free software: you can redistribute it and/or modify it under the *)
+(* terms of the GNU Lesser General Public License as published by the Free    *)
+(* Software Foundation, either version 3 of the License, or (at your option)  *)
+(* any later version.                                                         *)
+(*                                                                            *)
+(* BEL is distributed in the hope that it will be useful, but WITHOUT ANY     *)
+(* WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS  *)
+(* FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for   *)
+(* more details.                                                              *)
+(*                                                                            *)
+(* You should have received a copy of the GNU Lesser General Public License   *)
+(* along with BEL.  If not, see <http://www.gnu.org/licenses/>.               *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Procedures for computing various types of math series for the framework.   *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* References: Lentz, W.J., Applied Optics, 15, 1976, 668-671.                *)
+(*             Press et al., Numerical Recipes in C, Cambridge U. Press, 1992 *)
+(*             Spanier, J. and Oldham, K.B., An Atlas of Functions,           *)
+(*                         Hemisphere Publishing Corp., Washington DC, 1987.  *)
+(*             Cuyt, A., Brevik Petersen, V., Verdonk, B., Waadeland, H. and  *)
+(*                         Jones, W.B., Handbook of Continued Fractions for   *)
+(*                         Special Functions, Springer, 2008.                 *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* type                                                                       *)
+(*   procedure  : EvaluateSeries - defines the coefficients for a series      *)
+(*     arguments                                                              *)
+(*                               - n, coefficient indexer of the series       *)
+(*                               - x, argument of function being evaluated    *)
+(*     var                       - eos, End-Of-Series boolean flag            *)
+(*     returned                  - coefficient for the nth term in series     *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* procedures  : ContinuedFraction           - solve a continued fraction     *)
+(*             : TruncatedContinuedFraction                                   *)
+(*             : PowerSeries                 - solve a power series           *)
+(*             : TruncatedPowerSeries                                         *)
+(*             : RationalSeries              - solve a rational power series  *)
+(*             : TruncatedRationalSeries                                      *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+
+module {public} Bel.Series;
+
+   import
+      Bel.Types as T;
+
+   type {public}
+      GetCoef = procedure (integer; real; var boolean) : real;
+
+   var {private}
+      tiny, tolerance : real;
+
+   (* a continued fraction
+                  a1(x)
+      y = b0(x) + -------------
+                  b1(x) + a2(x)
+                          -------------
+                          b2(x) + a3(x)
+                                  -----------
+                                  b3(x) + ...
+      coefficients may be functions of x:
+         an(x), n = 1, 2, 3, ...
+         bn(x), n = 0, 1, 2, ...
+      returns
+         NaN if x is a NaN or Infinity *)
+
+   procedure {public} ContinuedFraction (getA, getB : GetCoef; x : real) : real;
+   (* based on the Lentz algorithm *)
+      var
+         aCoef, bCoef, c, d, del, diff, f         : real;
+         an, bn                                   : integer;
+         convergedLast, convergedThis, eosA, eosB : boolean;
+   begin
+      eosA := false;
+      eosB := false;
+      if ((getA # nil) & (getB # nil) & T.IsFinite(x)) then
+         (* initialize  a and b  and get leading coefficient  b0 *)
+         an    := 0;
+         bn    := 0;
+         bCoef := getB(bn, x, eosB);
+         (* modified Lentz recursion algorithm
+            cf. Press et al., Numerical Recipies *)
+         if abs(bCoef) < tiny then
+            f := tiny
+         else
+            f := bCoef
+         end;
+         c := f;
+         d := 0.0;
+         convergedThis := false;
+         repeat
+            inc(an);
+            aCoef := getA(an, x, eosA);
+            inc(bn);
+            bCoef := getB(bn, x, eosB);
+            c     := bCoef + aCoef / c;
+            if abs(c) < tiny then
+               c := tiny
+            end;
+            d := bCoef + aCoef * d;
+            if abs(d) < tiny then
+               d := tiny
+            end;
+            d             := 1.0 / d;
+            del           := c * d;
+            f             := del * f;
+            convergedLast := convergedThis;
+            diff          := del - 1.0;
+            convergedThis := (abs(diff) < tolerance)
+         until ((convergedLast & convergedThis)
+                                             or eosA or eosB or T.IsInfinite(f))
+      else
+         f := T.NaN
+      end;
+      return f
+   end ContinuedFraction;
+
+   (* a truncated continued fraction
+               a1*x
+      y = b0 + ---------
+               b1 + a2*x
+                    ---------
+                    b2 + a3*x
+                         --------------
+                         ... + a(n-1)*x
+                               -------------
+                               b(n-1) + an*x
+                                        ----
+                                         bn
+      coefficients are constants
+      returns
+         NaN if x is a NaN or Infinity *)
+
+   procedure {public} TruncatedContinuedFraction
+                                        (a, b : T.RealVector;  x : real) : real;
+      var
+         aLen, bLen, i : integer;
+         c, d, f       : real;
+   begin
+      aLen := len(a);
+      bLen := len(b);
+      if (aLen = bLen) & T.IsFinite(x) then
+         if abs(b[0]) < tiny then
+            b[0] := tiny
+         end;
+         f := b[0];
+         c := f;
+         d := 0.0;
+         i := 1;
+         repeat
+            c := b[i] + a[i] * x / c;
+            d := 1.0 / (b[i] + a[i] * x * d);
+            f := c * d * f;
+            inc(i)
+         until i = aLen;
+      else
+         f := T.NaN
+      end;
+      return f
+   end TruncatedContinuedFraction;
+
+   (* a power series
+         y = a0 + a1*x + a2*x^2 + a3*x^3 + ...
+      coefficients may be functions of x:
+         an(x), n = 0, 1, 2, ...
+      returns
+         infinity  if  x = infinity
+         NaN       if  x = -infinity or x is a NaN *)
+
+   procedure {public} PowerSeries (getA : GetCoef;  x : real) : real;
+      var
+         add, coef, diff, sumLast, x2n     : real;
+         convergedLast, convergedThis, eos : boolean;
+         n                                 : integer;
+   begin
+      eos := false;
+      if (getA # nil) & T.IsFinite(x) then
+         n   := 0;
+         add := getA(n, x, eos);
+         x2n := 1.0;
+         convergedThis := false;
+         repeat
+            inc(n);
+            sumLast       := add;
+            coef          := getA(n, x, eos);
+            x2n           := x * x2n;
+            add           := sumLast + coef * x2n;
+            convergedLast := convergedThis;
+            diff          := add - sumLast;
+            convergedThis := (abs(diff) < tolerance)
+         until ((convergedLast & convergedThis) or eos or T.IsInfinite(add))
+      elsif x = T.PositiveInfinity then
+         add := T.PositiveInfinity
+      else
+         add := T.NaN
+      end;
+      return add
+   end PowerSeries;
+
+   (* coefficients are constants *)
+
+   procedure {public} TruncatedPowerSeries (a : T.RealVector; x : real) : real;
+      var
+         add  : real;
+         i, l : integer;
+   begin
+      if T.IsFinite(x) then
+         l   := len(a);
+         add := a[l-1] * x;
+         for i := l-2 to 1 by -1 do
+            add := (a[i] + add)*x
+         end;
+         add := a[0] + add
+      elsif x = T.PositiveInfinity then
+         add := T.PositiveInfinity
+      else
+         add := T.NaN
+      end;
+      return add
+   end TruncatedPowerSeries;
+
+   (* a rational function
+          a0 + a1*x + a2*x^2 + a3*x^3 + ...
+      y = ---------------------------------
+          b0 + b1*x + b2*x^2 + b3*x^3 + ...
+      coefficients:
+         an(x), n = 0, 1, 2, ...
+         bn(x), n = 0, 1, 2, ...
+      return
+         NaN  if x = +/-infinity or x is a NaN *)
+
+   procedure {public} RationalSeries (getA, getB : GetCoef; x : real) : real;
+      var
+         denom, numer, ratio : real;
+   begin
+      if ((getA # nil) & (getB # nil)) & T.IsFinite(x) then
+         numer := PowerSeries(getA, x);
+         denom := PowerSeries(getB, x);
+         ratio := numer / denom
+      else
+         ratio := T.NaN
+      end;
+      return ratio
+   end RationalSeries;
+
+   (* coefficients are constants *)
+
+   procedure {public} TruncatedRationalSeries
+                                         (a, b : T.RealVector; x : real) : real;
+      var
+         denom, numer, ratio : real;
+   begin
+      if T.IsFinite(x) then
+         numer := TruncatedPowerSeries(a, x);
+         denom := TruncatedPowerSeries(b, x);
+         ratio := numer / denom
+      else
+         ratio := T.NaN
+      end;
+      return ratio
+   end TruncatedRationalSeries;
+
+begin
+   tiny := T.Epsilon * T.Epsilon;
+   tolerance := 10.0 * T.Epsilon
+end Series.

@@ -1,0 +1,175 @@
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(*       BBBB      EEEEE     L         The                                    *)
+(*       B   B     E         L           BIOLOGICAL                           *)
+(*       BBBB      EEE       L           ENGINEERING                          *)
+(*       B    B    E         L           LABORATORY                           *)
+(*       BBBBB     EEEEEE    LLLLLL        @ Saginaw Valley State University  *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Copyright 2008-2013, Alan D. Freed                                         *)
+(*                                                                            *)
+(* This file is part of the BEL-GAlg suite of .NET/Mono libraries.            *)
+(*                                                                            *)
+(* BEL is a free software: you can redistribute it and/or modify it under the *)
+(* terms of the GNU Lesser General Public License as published by the Free    *)
+(* Software Foundation, either version 3 of the License, or (at your option)  *)
+(* any later version.                                                         *)
+(*                                                                            *)
+(* BEL is distributed in the hope that it will be useful, but WITHOUT ANY     *)
+(* WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS  *)
+(* FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for   *)
+(* more details.                                                              *)
+(*                                                                            *)
+(* You should have received a copy of the GNU Lesser General Public License   *)
+(* along with BEL.  If not, see <http://www.gnu.org/licenses/>.               *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* BEL-GAlg is an application for the BEL framework.  They are .NET libraries *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* This file is 7 of 7 creating a genetic algorithm for parameter estimation. *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Procedure                                                                  *)
+(*   Optimize  : interface to lower-level modules of the genetic algorithm    *)
+(*      fileNameForReport                                                     *)
+(*         string containing the name you want to assign to the output file   *)
+(*      expInput                                                              *)
+(*         matrix that contains the inputs for the input/output pairs         *)
+(*            rows    same number as the dependent variables at each datum    *)
+(*            columns have the individual experimental/measured datum points  *)
+(*      expOutput                                                             *)
+(*         matrix that contains the outputs for the input/output pairs        *)
+(*            rows    have the dependent variables recorded at each datum     *)
+(*            columns have the individual experimental/measured datum points  *)
+(*      decimateTo                                                            *)
+(*         array that specifies how many of the data to use per experiment    *)
+(*            length  equals the number of concatenated experiments           *)
+(*      numericalModel                                                        *)
+(*         a function with the footprint                                      *)
+(*            model(parameters : A.Array; controlOrInputs : M.Matrix;         *)
+(*                  var responseOrOutputs : M.Matrix)                         *)
+(*      varyParameters                                                        *)
+(*         boolean toggles specifying if each parameter is fixed or varies    *)
+(*      fixedParameters                                                       *)
+(*         those parameters whose values are not allowed to vary              *)
+(*      alienParameters                                                       *)
+(*         initial guesses for those parameters that are allowed to vary      *)
+(*      minParameters                                                         *)
+(*         lower bounds on the range for those parameters allowed to vary     *)
+(*      maxParameters                                                         *)
+(*         upper bounds on the range for those parameters allowed to vary     *)
+(*      dimensionOfSchema                                                     *)
+(*         provides the largest building block size to be captured            *)
+(*      numberOfSignificantFigures                                            *)
+(*         significant figures assigned to the decoder; typically, 2-4        *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+
+module {public} BelGAlg.GeneticAlgorithm;
+
+   import
+      System.IO.StreamWriter as StreamWriter,
+      Bel.TextFiles          as F,
+      Bel.Types              as T,
+      BelGAlg.Colonies       as C,
+      BelGAlg.Genomes        as G,
+      BelGAlg.Statistics     as S;
+
+   const {private}
+      maxSteps = 250;
+
+   procedure {public} Optimize (fileNameForReport          : string;
+                                expInput,
+                                expOutput                  : S.RealMatrix;
+                                decimateTo                 : integer;
+                                numericalModel             : S.Model;
+                                varyParameters             : S.BooleanVector;
+                                fixedParameters,
+                                alienParameters,
+                                minParameters,
+                                maxParameters              : S.RealVector;
+                                dimensionOfSchemata,
+                                numberOfSignificantFigures : integer)
+                                                           : S.RealVector;
+      var
+         colony              : C.Colony;
+         steps               : integer;
+         converged, finished : boolean;
+         optimumParameters   : S.RealVector;
+         s                   : string;
+         sw                  : StreamWriter;
+   begin
+      s := "";
+      writeln;
+      writeln("Optimization has begun.");
+      writeln;
+      finished := false;
+      sw       := F.OpenWriter(fileNameForReport);
+      colony   := new C.Colony;
+      colony.Create(expInput, expOutput, decimateTo, numericalModel,
+                    varyParameters, fixedParameters, alienParameters,
+                    minParameters, maxParameters, dimensionOfSchemata,
+                    numberOfSignificantFigures);
+      colony.ReportHeader(sw);
+      colony.ReportBody(sw);
+      steps := 0;
+      repeat
+         inc(steps);
+         colony.Propagate(converged);
+         colony.ReportBody(sw);
+         if converged then
+            colony.CheckOnTheState(finished);
+         end;
+         if steps = maxSteps then
+            finished := true
+         end
+      until finished;
+      colony.ReportFooter(sw);
+      F.CloseWriter(sw);
+      writeln;
+      writeln("Optimization has finished.");
+      writeln;
+      s := "Statistics for this run can be found in file: ";
+      writeln(s);
+      s := "   " + fileNameForReport + ".txt.";
+      writeln(s);
+      writeln;
+      optimumParameters := new S.RealVector(len(varyParameters));
+      optimumParameters := colony.Parameters();
+      return optimumParameters
+   end Optimize;
+
+   procedure {public} EasyOptimize (fileNameForReport : string;
+                                    expInput,
+                                    expOutput         : S.RealMatrix;
+                                    numericalModel    : S.Model;
+                                    minParameters,
+                                    maxParameters     : S.RealVector)
+                                                      : S.RealVector;
+      var
+         alienParameters, fixedParameters,
+            optimumParameters             : S.RealVector;
+         decimateTo, i, length,
+            dimensionOfSchemata,
+            numberOfSignificantFigures    : integer;
+         varyParameters                   : S.BooleanVector;
+   begin
+      decimateTo := len(expInput, 1);
+      length     := len(minParameters);
+      alienParameters := new S.RealVector(length);
+      fixedParameters := nil;
+      varyParameters  := new S.BooleanVector(length);
+      for i := 0 to length-1 do
+         alienParameters[i] := (minParameters[i] + maxParameters[i]) / 2.0;
+         varyParameters[i]  := true
+      end;
+      dimensionOfSchemata        := 6;
+      numberOfSignificantFigures := 4;
+      optimumParameters := new S.RealVector(length);
+      optimumParameters := Optimize (fileNameForReport, expInput, expOutput,
+                                     decimateTo, numericalModel, varyParameters,
+                                     fixedParameters, alienParameters,
+                                     minParameters, maxParameters,
+                                     dimensionOfSchemata,
+                                     numberOfSignificantFigures);
+      return optimumParameters
+   end EasyOptimize;
+
+begin
+end GeneticAlgorithm.

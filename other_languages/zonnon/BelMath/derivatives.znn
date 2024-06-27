@@ -1,0 +1,137 @@
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(*       BBBB      EEEEE     L         The                                    *)
+(*       B   B     E         L           BIOLOGICAL                           *)
+(*       BBBB      EEE       L           ENGINEERING                          *)
+(*       B    B    E         L           LABORATORY                           *)
+(*       BBBBB     EEEEEE    LLLLLL        @ Saginaw Valley State University  *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Copyright 2008-2013, Alan D. Freed                                         *)
+(*                                                                            *)
+(* This file is part of the BEL-Math suite of .NET/Mono libraries.            *)
+(*                                                                            *)
+(* BEL is a free software: you can redistribute it and/or modify it under the *)
+(* terms of the GNU Lesser General Public License as published by the Free    *)
+(* Software Foundation, either version 3 of the License, or (at your option)  *)
+(* any later version.                                                         *)
+(*                                                                            *)
+(* BEL is distributed in the hope that it will be useful, but WITHOUT ANY     *)
+(* WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS  *)
+(* FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for   *)
+(* more details.                                                              *)
+(*                                                                            *)
+(* You should have received a copy of the GNU Lesser General Public License   *)
+(* along with BEL.  If not, see <http://www.gnu.org/licenses/>.               *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Provides procedures for estimating the derivative of a function: dy(x)/dx  *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Type       : Method         -  select method for estimating a derivative   *)
+(*                  forward    :  (df(x+h) - df(x))/h                         *)
+(*                  central    :  (df(x+h) - df(x-h))/2h                      *)
+(*                  backward   :  (df(x) - df(x-h))/h                         *)
+(*                  richardson :  extrapolate to specified tolerance          *)
+(* Type       : Y              -  a procedure type                            *)
+(*                  x          :  argument of the function                    *)
+(* Procedure  : Differentiate  -  dy(x)/dx                                    *)
+(*                  y          :  an instance of Y                            *)
+(*                  x          :  location where the derivative is sought     *)
+(*                  h          :  step size to employ in the differencing     *)
+(*                  d          :  an instance of Method                       *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+
+module {public} BelMath.Derivatives;
+
+   import
+      Bel.Log   as L,
+      Bel.Math  as Fn,
+      Bel.Types as T;
+
+   type {public}
+      (* selects the method of differencing *)
+      Method = (forward, central, backward, richardson);
+      (* function type whose derivative is sought *)
+      Y = procedure (real) : real;
+
+   type {private}
+      RealVector = array {math} * of real;
+
+   const
+      (* stops Richardson extrapolation when the count hits this number *)
+      maxIterations = 100;
+      (* stops Richardson extrapolation when the error goes below this  *)
+      tolerance     = 0.0000000001;
+
+   procedure {public} Differentiate (y : Y; x, h : real; m : Method) : real;
+      var
+         dCurr, dLast          : RealVector;
+         dydx, eCurr, eLast, p : real;
+         i, k                  : integer;
+   begin
+      dCurr := nil;
+      dLast := nil;
+      dydx  := 0.0;
+      if y # nil then
+         case m of Method.forward :
+            dydx := (y(x+h) - y(x))/h
+         | Method.central :
+            dydx := (y(x+h) - y(x-h))/(2.0*h)
+         | Method.backward :
+            dydx := (y(x) - y(x-h))/h
+         | Method.richardson :
+            k        := 1;
+            dCurr    := new RealVector(k);
+            dCurr[0] := Differentiate(y, x, h, Method.central);
+            eCurr    := T.MaximumReal;
+            loop
+               dLast := nil;
+               dLast := new RealVector(k);
+               dLast := dCurr;
+               h     := h / 2.0;
+               p     := 4.0;
+               inc(k);
+               dCurr    := nil;
+               dCurr    := new RealVector(k);
+               dCurr[0] := Differentiate(y, x, h, Method.central);
+               for i := 1 to k-1 do
+                  p        := 4.0 * p;
+                  dCurr[i] := dCurr[i-1] + (dCurr[i-1] - dLast[i-1])/(p - 1.0)
+               end;
+               eLast := eCurr;
+               if abs(dCurr[k-1]) < 1.0 then
+                  eCurr := abs(dCurr[k-1] - dLast[k-2])
+               else
+                  eCurr := abs((dCurr[k-1] - dLast[k-2])/dCurr[k-1])
+               end;
+               if eCurr < tolerance then
+                  dydx := dCurr[k-1];
+                  exit
+               end;
+               if eCurr > eLast then
+                  dydx := dLast[k-2];
+                  L.WarningMessage(55,-1, "BelMath.Derivatives.Differentiate");
+                  exit
+               end;
+               if k > maxIterations then
+                  dydx := dCurr[k-1];
+                  L.WarningMessage(80,-1, "BelMath.Derivatives.Differentiate");
+                  exit
+               end
+            end
+         else
+            L.WarningMessage(70,415, "BelMath.Derivatives.Differentiate")
+         end
+      else
+         L.WarningMessage(500,415, "BelMath.Derivatives.Differentiate")
+      end;
+      return dydx
+   end Differentiate;
+
+   procedure {public} OptimalStepSize (atX : real) : real;
+      var
+         h : real;
+   begin
+      h := Fn.Sqrt(T.Epsilon) * Fn.Max(abs(atX), 1.0);
+      return h
+   end OptimalStepSize;
+
+begin
+end Derivatives.

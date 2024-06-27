@@ -1,0 +1,32 @@
+\begin{thebibliography}{1}
+\newcommand{\enquote}[1]{``#1''}
+\providecommand{\selectlanguage}[1]{\relax}
+\providecommand{\bibAnnoteFile}[1]{%
+  \IfFileExists{#1}{\begin{quotation}\noindent\textsc{Key:} #1\\
+  \textsc{Annotation:}\ \input{#1}\end{quotation}}{}}
+\providecommand{\bibAnnote}[2]{%
+  \begin{quotation}\noindent\textsc{Key:} #1\\
+  \textsc{Annotation:}\ #2\end{quotation}}
+
+\bibitem{Zonnon09}
+Gutknecht, J., 2009, \emph{Zonnon Language Report}, ETH Z{\"u}rich,
+  Switzerland, 4th ed., available online at www.zonnon.ethz.ch.
+\bibAnnoteFile{Zonnon09}
+
+\bibitem{Zonnon10}
+Gutknecht, J., Mitin, R., and Gonova, N., 2010, \emph{Zonnon Tutorial}, ETH
+  Zurich, Switzerland, available online at www.zonnon.ethz.ch.
+\bibAnnoteFile{Zonnon10}
+
+\bibitem{Hartetal68}
+Hart, J.~F., Cheney, E.~W., Lawson, C.~L., Maehly, H.~J., Mesztenyi, C.~K.,
+  Rice, J.~R., {Thacher, Jr.}, H.~G., and Witzgall, C., 1968, \emph{Computer
+  Approximations}, The {SIAM} Series in Applied Mathematics, Wiley, New York.
+\bibAnnoteFile{Hartetal68}
+
+\bibitem{Wirth86}
+Wirth, N., 1986, \emph{Algorithms + Data Structures = Programs}, 2nd ed.,
+  Prentic-Hall.
+\bibAnnoteFile{Wirth86}
+
+\end{thebibliography}

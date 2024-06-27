@@ -1,0 +1,428 @@
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(*       BBBB      EEEEE     L         The                                    *)
+(*       B   B     E         L           BIOLOGICAL                           *)
+(*       BBBB      EEE       L           ENGINEERING                          *)
+(*       B    B    E         L           LABORATORY                           *)
+(*       BBBBB     EEEEEE    LLLLLL        @ Saginaw Valley State University  *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Copyright 2008-2013, Alan D. Freed                                         *)
+(*                                                                            *)
+(* This file is part of the BEL-Math suite of .NET/Mono libraries.            *)
+(*                                                                            *)
+(* BEL is a free software: you can redistribute it and/or modify it under the *)
+(* terms of the GNU Lesser General Public License as published by the Free    *)
+(* Software Foundation, either version 3 of the License, or (at your option)  *)
+(* any later version.                                                         *)
+(*                                                                            *)
+(* BEL is distributed in the hope that it will be useful, but WITHOUT ANY     *)
+(* WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS  *)
+(* FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for   *)
+(* more details.                                                              *)
+(*                                                                            *)
+(* You should have received a copy of the GNU Lesser General Public License   *)
+(* along with BEL.  If not, see <http://www.gnu.org/licenses/>.               *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* This module exports Runge-Kutta integrators that advance the solution to a *)
+(* system of first-order ODEs over a single integration step  h  such that    *)
+(*    dy[n]/dx = f[n](x, y[k])   with   y[n](x0) = y0[n]   where   n = 1..N   *)
+(* wherein                                                                    *)
+(*       x  is the independent variable                                       *)
+(*       y  is the vector of dependent variables                              *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* A second-order Runge-Kutta integrator that utilizes the weights and        *)
+(* quadrature points of the trapezoidal rule has a Butcher tableau of         *)
+(*           [  0      ]                                                      *)
+(*       A = [  1   0  ]                                                      *)
+(*       b = { 1/2 1/2 }^T                                                    *)
+(*       c = {  0   1  }^T                                                    *)
+(* A third-order Runge-Kutta integrator that utilizes the weights and         *)
+(* quadrature points of Simpson's rule (a.k.a. Kepler's cask rule) has a      *)
+(* Butcher tableau of                                                         *)
+(*           [  0          ]                                                  *)
+(*       A = [ 1/2  0      ]                                                  *)
+(*           [ -1   2   0  ]                                                  *)
+(*       b = { 1/6 2/3 1/6 }^T                                                *)
+(*       c = {  0  1/2  1  }^T                                                *)
+(* Kutta's 3/8 rule is a fourth-order integrator with a Butcher tableau of    *)
+(*           [  0              ]                                              *)
+(*           [ 1/3  0          ]                                              *)
+(*       A = [-1/3  1   0      ]                                              *)
+(*           [  1  -1   1   0  ]                                              *)
+(*       b = { 1/8 3/8 3/8 1/8 }^T                                            *)
+(*       c = {  0  1/3 2/3  1  }^T                                            *)
+(* The fifth-order method came from Butcher's 2008 textbook, pg 191:          *)
+(*           [  0                                   ]                         *)
+(*           [ 1/4     0                            ]                         *)
+(*           [ 1/8    1/8    0                      ]                         *)
+(*       A = [  0      0    1/2    0                ]                         *)
+(*           [ 3/16  -3/8   3/8   9/16    0         ]                         *)
+(*           [ -3/7   8/7   6/7  -12/7   8/7    0   ]                         *)
+(*       b = { 7/90    0   16/45  2/15  16/45  7/90 }^T                       *)
+(*       c = {  0     1/4   1/4   1/2    3/4    1   }^T                       *)
+(* The sixth-order method also came from Butcher's 2008 textbook, pg 194:     *)
+(*           [     0                                                    ]     *)
+(*           [    1/3       0                                           ]     *)
+(*           [     0       2/3     0                                    ]     *)
+(*           [    1/12     1/3   -1/12       0                          ]     *)
+(*       A = [   25/48   -55/24  35/48     15/8     0                   ]     *)
+(*           [    3/20   -11/24  -1/8       1/2    1/10     0           ]     *)
+(*           [ -261/260   33/13  43/156  -118/39  32/195  80/39    0    ]     *)
+(*       b = {   13/200     0    11/40     11/40   4/25    4/25  13/200 }^T   *)
+(*       c = {     0       1/3    2/3       1/3    5/6     1/6     1    }^T   *)
+(* Here                                                                       *)
+(*   matrix  A  contains coupling coefficients of the Runge-Kutta integrator  *)
+(*   vector  b  contains the weights of integration                           *)
+(*   vector  c  contains the quadrature points of integration                 *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Consider a step size of  h.  Construct two solutions over this step        *)
+(*   y1  is the solution got by calling an RK integrator once over  h         *)
+(*   y2  is the solution got by calling RK twice over two intervals of  h/2   *)
+(* The solutions have an asymptotically correct estimate for the local        *)
+(* truncation error given by                                                  *)
+(*   error = (1 - 2^{-p})^{-1}*(y2 - y1) + O(h^{p+2})                         *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Exported types                                                             *)
+(*    Order = (second, third, fourth, fifth, sixth)      integrator accuracy  *)
+(*    dy/dx = F(x : real; y : I.RealVector)              non-autonomous ODE   *)
+(* Type                                                                       *)
+(*    Integrator                                                              *)
+(*       read-only variables                                                  *)
+(*          functionEvaluations  number of times that  f(x,y)  was calculated *)
+(*          integrationSteps     number successful steps to advance solution  *)
+(*          restarts             number failed attempts at advancing solution *)
+(*       methods                                                              *)
+(*          SetUp                                                             *)
+(*             f    is an instance of  F, viz., the ODE to be integrated      *)
+(*             h    is the initial step size for integration                  *)
+(*             tol  is the tolerance below which the truncation error is held *)
+(*             ord  is the order of the integrator to be used                 *)
+(*          Integrate                                                         *)
+(*             x    independent variable:  send  x_{n-1}   returns  x_n       *)
+(*             y    dependent variables:   send  y_{n-1}   returns  y_n       *)
+(*             err  is the relative error:                 returns  err_n     *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* At the suggestion of John Butcher, Richardson extrapolation is used to     *)
+(* obtain asymptotically correct estimates for the local truncation error,    *)
+(* to which a PI controller is attached to adjust the integrator's step size. *)
+(* Because Richardson extrapolation is used, the second-order method actually *)
+(* returns third-order accurate results, the third-order method returns       *)
+(* fourth-order accurate results, etc.  Consequently, setting the tolerance   *)
+(* at 0.01 and selecting the second-order accurate method will supply answers *)
+(* with three significant figures in accuracy, etc.  For example, if six      *)
+(* significant figures were desired, then a tolerance of 0.00001 and a        *)
+(* selection of the fifth-order method for integration should be sufficient.  *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Reference : J.C. Butcher, "Numerical Methods for Ordinary Differential     *)
+(*             Equations", second edition, Wiley, Chirchester, 2008.          *)
+(* Reference : G. S\"oderlind, "Automatic control and adaptive time-stepping",*)
+(*             Numerical Algorithms, Vol. 31 (2002), 281-310.                 *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+
+module {public} BelMath.RungeKutta;
+
+   import
+      Bel.Log                as L,
+      Bel.Entity             as Entity,
+      Bel.Types              as T,
+      Bel.Math               as Fn,
+      BelMath.Interpolations as I;
+
+
+   type {public}
+      Order = (second, third, fourth, fifth, sixth);
+
+   type {public}
+      F = procedure (real; I.RealVector) : I.RealVector;
+
+   type {public, value} Integrator = object implements Entity
+
+      var {private}
+         ec, ee, hh, pI, pP, pp, sf, tt : real;
+         ff                             : F;
+         oo                             : Order;
+
+      var {public, immutable}
+         functionEvaluations, integrationSteps, restarts : integer;
+
+      procedure {public} Initialize
+         implements Entity.Initialize;
+      begin
+         ec := 0.0;
+         ee := 0.0;
+         hh := 0.0;
+         pI := 0.0;
+         pP := 0.0;
+         pp := 0.0;
+         sf := 0.0;
+         tt := 0.0;
+         ff := nil;
+         oo := Order.fourth;
+         functionEvaluations := 0;
+         integrationSteps    := 0;
+         restarts            := 0
+      end Initialize;
+
+      procedure {public} Nullify
+         implements Entity.Nullify;
+      begin
+         Initialize
+      end Nullify;
+
+      procedure {public} SetUp
+         (f   : F;             (* the right-hand side of  dy/dx = f(x,y)      *)
+          h   : real;          (* the initial step-size for integration       *)
+          tol : real;          (* the error tolerance of integration          *)
+          ord : Order);        (* the order of the RK integrator to be used   *)
+      begin
+         Initialize;
+         if f = nil then
+            L.ErrorMessage(410,-1, "BelMath.RungeKutta.Integrator.Setup")
+         end;
+         ff := f;
+         hh := h;
+         tt := tol;
+         oo := ord;
+         if ord = Order.second then
+            ec := 4.0 / 3.0;
+            pp := 2.0
+         elsif ord = Order.third then
+            ec := 8.0 / 7.0;
+            pp := 3.0
+         elsif ord = Order.fourth then
+            ec := 16.0 / 15.0;
+            pp := 4.0
+         elsif ord = Order.fifth then
+            ec := 32.0 / 31.0;
+            pp := 5.0
+         else (* ord = Order.sixth *)
+            ec := 64.0 / 63.0;
+            pp := 6.0
+         end;
+         pI := 0.4;   (* gain coefficient governing the I controller *)
+         pP := 0.2;   (* gain coefficient governing the P controller *)
+         sf := 0.9;   (* safety factor used by step-size controller  *)
+      end SetUp;
+
+      procedure {public} Integrate(
+         var x   : real;           (* the controlled or independent variable  *)
+         var y   : I.RealVector;   (* the response   or  dependent  variables *)
+         var err : real);          (* asymptotically correct error estimate   *)
+         var
+            diff, yMid, yOne, yTwo   : I.RealVector;
+            en, h, hHlf, r, xMid, yn : real;
+      begin
+         diff := nil;
+         yMid := nil;
+         yOne := nil;
+         yTwo := nil;
+         hHlf := hh / 2.0;
+         xMid := x + hHlf;
+         (* employ Richardson extrapolation to get truncation error estimate  *)
+         if oo = Order.second then
+            inc(functionEvaluations, 2*3);
+            yOne := RK2(ff, hh, x, y);
+            yMid := RK2(ff, hHlf, x, y);
+            yTwo := RK2(ff, hHlf, xMid, yMid)
+         elsif oo = Order.third then
+            inc(functionEvaluations, 3*3);
+            yOne := RK3(ff, hh, x, y);
+            yMid := RK3(ff, hHlf, x, y);
+            yTwo := RK3(ff, hHlf, xMid, yMid)
+         elsif oo = Order.fourth then
+            inc(functionEvaluations, 4*3);
+            yOne := RK4(ff, hh, x, y);
+            yMid := RK4(ff, hHlf, x, y);
+            yTwo := RK4(ff, hHlf, xMid, yMid)
+         elsif oo = Order.fifth then
+            inc(functionEvaluations, 6*3);
+            yOne := RK5(ff, hh, x, y);
+            yMid := RK5(ff, hHlf, x, y);
+            yTwo := RK5(ff, hHlf, xMid, yMid)
+         else (* oo = Order.sixth *)
+            inc(functionEvaluations, 7*3);
+            yOne := RK6(ff, hh, x, y);
+            yMid := RK6(ff, hHlf, x, y);
+            yTwo := RK6(ff, hHlf, xMid, yMid)
+         end;
+         diff := yTwo - yOne;
+         en := ec * Fn.Sqrt(diff +* diff);
+         (* choose absolute or relative error *)
+         yn := Fn.Max(1.0, Fn.Sqrt(yTwo +* yTwo));
+         if en < yn * T.Epsilon then
+            en := yn * T.Epsilon
+         end;
+         if en <= tt * yn then
+            inc(integrationSteps);
+            x   := x + hh;
+            y   := yTwo;
+            err := en / yn;
+            if ee > 0.0 then
+               (* PI controller *)
+               r := Fn.Power(sf * tt / err, pI / (pp + 1.0))
+                  * Fn.Power(     ee / err, pP / (pp + 1.0))
+            else
+               (* I controller - start or restart an integration *)
+               r := Fn.Power(sf * tt / err, 1.0 / (pp + 1.0))
+            end;
+            ee := err;
+            (* anti wind-up and wind-down to mitigate oscillations *)
+            h := abs(hh);
+            h := Fn.Max(h / 2.0, Fn.Min(r * h, 2.0 * h));
+            if hh > 0.0 then
+               hh := h
+            else
+               hh := -h
+            end
+         else
+            inc(restarts);
+            hh := hh / 2.0;
+            ee := 0.0;
+            Integrate(x, y, err)
+         end
+      end Integrate;
+
+   begin
+      Initialize
+   end Integrator;
+
+
+   procedure {private} RK2 
+                        (f : F; h, x0 : real; y0 : I.RealVector) : I.RealVector;
+      var
+         x1             : real;
+         f0, f1, y1, ys : I.RealVector;
+   begin
+      f0 := nil;
+      f1 := nil;
+      (* uses trapezoidal quadrature *)
+      f0 := f(x0, y0);
+      x1 := x0 + h;
+      y1 := y0 + h * f0;
+      f1 := f(x1, y1);
+      ys := y0 + (h / 2.0) * (f0 + f1);
+      return ys
+   end RK2;
+
+   procedure {private} RK3 
+                        (f : F; h, x0 : real; y0 : I.RealVector) : I.RealVector;
+      var
+         x1, x2                 : real;
+         f0, f1, f2, y1, y2, ys : I.RealVector;
+   begin
+      f0 := nil;
+      f1 := nil;
+      f2 := nil;
+      (* uses Simpson's quadrature *)
+      f0 := f(x0, y0);
+      x1 := x0 + h / 2.0;
+      y1 := y0 + (h / 2.0) * f0;
+      f1 := f(x1, y1);
+      x2 := x0 + h;
+      y2 := y0 + h * (2.0 * f1 - f0);
+      f2 := f(x2, y2);
+      ys := y0 + (h / 6.0) * (f0 + 4.0 * f1 + f2);
+      return ys
+   end RK3;
+
+   procedure {private} RK4
+                        (f : F; h, x0 : real; y0 : I.RealVector) : I.RealVector;
+      var
+         x1, x2, x3                     : real;
+         f0, f1, f2, f3, y1, y2, y3, ys : I.RealVector;
+   begin
+      f0 := nil;
+      f1 := nil;
+      f2 := nil;
+      f3 := nil;
+      (* Kutta's 3/8ths rule *)
+      f0 := f(x0, y0);
+      x1 := x0 + h / 3.0;
+      y1 := y0 + (h / 3.0) * f0;
+      f1 := f(x1, y1);
+      x2 := x0 + (2.0 * h) / 3.0;
+      y2 := y0 + h*(f1 - f0 / 3.0);
+      f2 := f(x2, y2);
+      x3 := x0 + h;
+      y3 := y0 + h*(f0 - f1 + f2);
+      f3 := f(x3, y3);
+      ys := y0 + (h / 8.0)*(f0 + 3.0 * (f1 + f2) + f3);
+      return ys
+   end RK4;
+
+   procedure {private} RK5
+                        (f : F; h, x0 : real; y0 : I.RealVector) : I.RealVector;
+      var
+         x1, x2, x3, x4, x5                             : real;
+         f0, f1, f2, f3, f4, f5, y1, y2, y3, y4, y5, ys : I.RealVector;
+   begin
+      f0 := nil;
+      f1 := nil;
+      f2 := nil;
+      f3 := nil;
+      f4 := nil;
+      f5 := nil;
+      (* from page 191 in John Butcher's 2008 book *)
+      f0 := f(x0, y0);
+      x1 := x0 + h / 4.0;
+      y1 := y0 + (h / 4.0) * f0;
+      f1 := f(x1, y1);
+      x2 := x1;
+      y2 := y0 + (h / 8.0) * (f0 + f1);
+      f2 := f(x2, y2);
+      x3 := x0 + h / 2.0;
+      y3 := y0 + (h / 2.0) * f2;
+      f3 := f(x3, y3);
+      x4 := x0 + 3.0 * h / 4.0;
+      y4 := y0 + (h / 16.0) * (3.0 * f0 - 6.0 * f1 + 6.0 * f2 + 9.0 * f3);
+      f4 := f(x4, y4);
+      x5 := x0 + h;
+      y5 := y0 + (h / 7.0) * (-3.0 * f0 + 8.0 * f1 + 6.0 * f2 - 12.0 * f3
+          + 8.0 * f4);
+      f5 := f(x5, y5);
+      ys := y0 + (h / 90.0) * (7.0 * f0 + 32.0 * f2 + 12.0 * f3 + 32.0 * f4
+          + 7.0 * f5);
+      return ys
+   end RK5;
+
+   procedure {private} RK6
+                        (f : F; h, x0 : real; y0 : I.RealVector) : I.RealVector;
+      var
+         x1, x2, x3, x4, x5, x6                                 : real;
+         f0, f1, f2, f3, f4, f5, f6, y1, y2, y3, y4, y5, y6, ys : I.RealVector;
+   begin
+      f0 := nil;
+      f1 := nil;
+      f2 := nil;
+      f3 := nil;
+      f4 := nil;
+      f5 := nil;
+      f6 := nil;
+      (* from page 194 in John Butcher's 2008 book *)
+      f0 := f(x0, y0);
+      x1 := x0 + h / 3.0;
+      y1 := y0 + (h / 3.0) * f0;
+      f1 := f(x1, y1);
+      x2 := x0 + 2.0 * h / 3.0;
+      y2 := y0 + (2.0 * h / 3.0) * f1;
+      f2 := f(x2, y2);
+      x3 := x1;
+      y3 := y0 + (h / 12.0)*(f0 + 4.0 * f1 - f2);
+      f3 := f(x3, y3);
+      x4 := x0 + 5.0 * h / 6.0;
+      y4 := y0 + (h / 48.0) * (25.0 * f0 - 110.0 * f1 + 35.0 * f2 + 90.0 * f3);
+      f4 := f(x4, y4);
+      x5 := x0 + h / 6.0;
+      y5 := y0 + (h / 120.0) * (18.0 * f0 - 55.0 * f1 - 15.0 * f2 + 60.0 * f3
+          + 12.0 * f4);
+      f5 := f(x5, y5);
+      x6 := x0 + h;
+      y6 := y0 + (h / 395460.0) * (-396981.0 * f0 + 1003860.0 * f1
+          + 109005.0 * f2 - 1196520.0 * f3 + 64896.0 * f4 + 811200.0 * f5);
+      f6 := f(x6, y6);
+      ys := y0 + (h / 200.0) * (13.0 * f0 + 55.0 * f2 + 55.0 * f3 + 32.0 * f4
+          + 32.0 * f5 + 13.0 * f6);
+      return ys
+   end RK6;
+
+begin
+end RungeKutta.

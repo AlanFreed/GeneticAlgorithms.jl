@@ -1,0 +1,2038 @@
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(*       BBBB      EEEEE     L         The                                    *)
+(*       B   B     E         L           BIOLOGICAL                           *)
+(*       BBBB      EEE       L           ENGINEERING                          *)
+(*       B    B    E         L           LABORATORY                           *)
+(*       BBBBB     EEEEEE    LLLLLL        @ Saginaw Valley State University  *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Copyright 2008-2013, Alan D. Freed                                         *)
+(*                                                                            *)
+(* This file is part of the BEL-Math suite of .NET/Mono libraries.            *)
+(*                                                                            *)
+(* BEL is a free software: you can redistribute it and/or modify it under the *)
+(* terms of the GNU Lesser General Public License as published by the Free    *)
+(* Software Foundation, either version 3 of the License, or (at your option)  *)
+(* any later version.                                                         *)
+(*                                                                            *)
+(* BEL is distributed in the hope that it will be useful, but WITHOUT ANY     *)
+(* WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS  *)
+(* FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for   *)
+(* more details.                                                              *)
+(*                                                                            *)
+(* You should have received a copy of the GNU Lesser General Public License   *)
+(* along with BEL.  If not, see <http://www.gnu.org/licenses/>.               *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Returns the percentage-point statistics for various distribution functions *)
+(*   Type      : Certainty      - percentage points of certainty              *)
+(*                              - "ninety"                 90.0%              *)
+(*                              - "ninetyFive"             95.0%              *)
+(*                              - "ninetySevenPointFive"   97.5%              *)
+(*                              - "ninetyNine"             99.0%              *)
+(*                              - "ninetyNinePointFive"    99.5%              *)
+(*   Procedure : ChiSquaredLow  - returns chi-squared percentage points       *)
+(*                              - X^2_{alpha}    for  (1-alpha)100%           *)
+(*                  percentagePoint  : instance of Certainty                  *)
+(*                  degreesOfFreedom : an integer between  1 and 100          *)
+(*   Procedure : ChiSquaredHigh - returns chi-squared percentage points       *)
+(*                              - X^2_{1-alpha}  for  (1-alpha)100%           *)
+(*                  percentagePoint  : instance of Certainty                  *)
+(*                  degreesOfFreedom : an integer between  1 and 100          *)
+(*             : StudentT       - returns student-t precentage points         *)
+(*                              - t_{alpha}      for  (1-alpha)100%           *)
+(*                  percentagePoint  : instance of Certainty                  *)
+(*                  degreesOfFreedom : an integer between  > 1                *)
+(*             : F              - returns F-distribution percentage points    *)
+(*                              - F_{1-alpha}(N1,N2)    for  (1-alpha)100%    *)
+(*                                   N1  :  degrees of freedom in numerator   *)
+(*                                   N2  :  degrees of freedom in denominator *)
+(*                  percentagePoint  : instance of Certainty                  *)
+(*                  degreesOfFreedom : an integer between  1 and 250          *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Reference: M. Abramowitz and I.A. Stegun, "Handbook of Mathematical        *)
+(*            Functions," Dover Publications, New York, 1965.                 *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+
+module {public} BelMath.Distributions;
+
+   import
+      Bel.Log                as L,
+      BelMath.Interpolations as I;
+
+   type {public}
+      Certainty = (ninety, ninetyFive, ninetySevenPointFive,
+                   ninetyNine, ninetyNinePointFive);
+
+   var {private}
+      f90, f95, f975, f99, f995, t, xl, xh : I.RealMatrix;
+
+   procedure {public} ChiSquaredLow (percentagePoint  : Certainty;
+                                     degreesOfFreedom : integer) : real;
+      var
+         r, xVal, x1, x2, x3, x4, x5, y, y1, y2, y3, y4, y5 : real;
+         xVec, yVec                                         : I.RealVector;
+   begin
+      y := 0.0;
+      if (degreesOfFreedom >= 1) & (degreesOfFreedom <= 6) then
+         case percentagePoint of
+         |  Certainty.ninety :
+            r := xl[degreesOfFreedom, 1]
+         |  Certainty.ninetyFive :
+            r := xl[degreesOfFreedom, 2]
+         |  Certainty.ninetySevenPointFive :
+            r := xl[degreesOfFreedom, 3]
+         |  Certainty.ninetyNine :
+            r := xl[degreesOfFreedom, 4]
+         else
+            r := xl[degreesOfFreedom, 5]
+         end;
+         y := r
+      elsif (degreesOfFreedom > 6) & (degreesOfFreedom <= 100) then
+         xVec := new I.RealVector(5);
+         yVec := new I.RealVector(5);
+         xVal := real(degreesOfFreedom);
+         if (degreesOfFreedom > 6) & (degreesOfFreedom <= 12) then
+            x1 := xl[5,0];
+            x2 := xl[6,0];
+            x3 := xl[7,0];
+            x4 := xl[8,0];
+            x5 := xl[9,0];
+            case percentagePoint of
+            |  Certainty.ninety :
+               y1 := xl[5,1];
+               y2 := xl[6,1];
+               y3 := xl[7,1];
+               y4 := xl[8,1];
+               y5 := xl[9,1]
+            |  Certainty.ninetyFive :
+               y1 := xl[5,2];
+               y2 := xl[6,2];
+               y3 := xl[7,2];
+               y4 := xl[8,2];
+               y5 := xl[9,2]
+            |  Certainty.ninetySevenPointFive :
+               y1 := xl[5,3];
+               y2 := xl[6,3];
+               y3 := xl[7,3];
+               y4 := xl[8,3];
+               y5 := xl[9,3]
+            |  Certainty.ninetyNine :
+               y1 := xl[5,4];
+               y2 := xl[6,4];
+               y3 := xl[7,4];
+               y4 := xl[8,4];
+               y5 := xl[9,4]
+            else
+               y1 := xl[5,5];
+               y2 := xl[6,5];
+               y3 := xl[7,5];
+               y4 := xl[8,5];
+               y5 := xl[9,5]
+            end
+         elsif (degreesOfFreedom > 12) & (degreesOfFreedom <= 20) then
+            x1 := xl[7,0];
+            x2 := xl[8,0];
+            x3 := xl[9,0];
+            x4 := xl[10,0];
+            x5 := xl[11,0];
+            case percentagePoint of
+            |  Certainty.ninety :
+               y1 := xl[7,1];
+               y2 := xl[8,1];
+               y3 := xl[9,1];
+               y4 := xl[10,1];
+               y5 := xl[11,1]
+            |  Certainty.ninetyFive :
+               y1 := xl[7,2];
+               y2 := xl[8,2];
+               y3 := xl[9,2];
+               y4 := xl[10,2];
+               y5 := xl[11,2]
+            |  Certainty.ninetySevenPointFive :
+               y1 := xl[7,3];
+               y2 := xl[8,3];
+               y3 := xl[9,3];
+               y4 := xl[10,3];
+               y5 := xl[11,3]
+            |  Certainty.ninetyNine :
+               y1 := xl[7,4];
+               y2 := xl[8,4];
+               y3 := xl[9,4];
+               y4 := xl[10,4];
+               y5 := xl[11,4]
+            else
+               y1 := xl[7,5];
+               y2 := xl[8,5];
+               y3 := xl[9,5];
+               y4 := xl[10,5];
+               y5 := xl[11,5]
+            end
+         else
+            x1 := xl[9,0];
+            x2 := xl[10,0];
+            x3 := xl[11,0];
+            x4 := xl[12,0];
+            x5 := xl[13,0];
+            case percentagePoint of
+            |  Certainty.ninety :
+               y1 := xl[9,1];
+               y2 := xl[10,1];
+               y3 := xl[11,1];
+               y4 := xl[12,1];
+               y5 := xl[13,1]
+            |  Certainty.ninetyFive :
+               y1 := xl[9,2];
+               y2 := xl[10,2];
+               y3 := xl[11,2];
+               y4 := xl[12,2];
+               y5 := xl[13,2]
+            |  Certainty.ninetySevenPointFive :
+               y1 := xl[9,3];
+               y2 := xl[10,3];
+               y3 := xl[11,3];
+               y4 := xl[12,3];
+               y5 := xl[13,3]
+            |  Certainty.ninetyNine :
+               y1 := xl[9,4];
+               y2 := xl[10,4];
+               y3 := xl[11,4];
+               y4 := xl[12,4];
+               y5 := xl[13,4]
+            else
+               y1 := xl[9,5];
+               y2 := xl[10,5];
+               y3 := xl[11,5];
+               y4 := xl[12,5];
+               y5 := xl[13,5]
+            end
+         end;
+         xVec[0] := x1;
+         xVec[1] := x2;
+         xVec[2] := x3;
+         xVec[3] := x4;
+         xVec[4] := x5;
+         yVec[0] := y1;
+         yVec[1] := y2;
+         yVec[2] := y3;
+         yVec[3] := y4;
+         yVec[4] := y5;
+         y := I.Neville(xVec, yVec, xVal)
+      else
+         L.ErrorMessage(405,-1, "BelMath.Distributions.ChiSquaredLow")
+      end;
+      return y
+   end ChiSquaredLow;
+
+   procedure {public} ChiSquaredHigh (percentagePoint  : Certainty;
+                                      degreesOfFreedom : integer) : real;
+      var
+         r, xVal, x1, x2, x3, x4, x5, y, y1, y2, y3, y4, y5 : real;
+         xVec, yVec                                         : I.RealVector;
+   begin
+      y := 0.0;
+      if (degreesOfFreedom >= 1) & (degreesOfFreedom <= 6) then
+         case percentagePoint of
+         |  Certainty.ninety :
+            r := xh[degreesOfFreedom, 1]
+         |  Certainty.ninetyFive :
+            r := xh[degreesOfFreedom, 2]
+         |  Certainty.ninetySevenPointFive :
+            r := xh[degreesOfFreedom, 3]
+         |  Certainty.ninetyNine :
+            r := xh[degreesOfFreedom, 4]
+         else
+            r := xh[degreesOfFreedom, 5]
+         end;
+         y := r
+      elsif (degreesOfFreedom > 6) & (degreesOfFreedom <= 100) then
+         xVec := new I.RealVector(5);
+         yVec := new I.RealVector(5);
+         xVal := real(degreesOfFreedom);
+         if (degreesOfFreedom > 6) & (degreesOfFreedom <= 12) then
+            x1 := xh[5,0];
+            x2 := xh[6,0];
+            x3 := xh[7,0];
+            x4 := xh[8,0];
+            x5 := xh[9,0];
+            case percentagePoint of
+            |  Certainty.ninety :
+               y1 := xh[5,1];
+               y2 := xh[6,1];
+               y3 := xh[7,1];
+               y4 := xh[8,1];
+               y5 := xh[9,1]
+            |  Certainty.ninetyFive :
+               y1 := xh[5,2];
+               y2 := xh[6,2];
+               y3 := xh[7,2];
+               y4 := xh[8,2];
+               y5 := xh[9,2]
+            |  Certainty.ninetySevenPointFive :
+               y1 := xh[5,3];
+               y2 := xh[6,3];
+               y3 := xh[7,3];
+               y4 := xh[8,3];
+               y5 := xh[9,3]
+            |  Certainty.ninetyNine :
+               y1 := xh[5,4];
+               y2 := xh[6,4];
+               y3 := xh[7,4];
+               y4 := xh[8,4];
+               y5 := xh[9,4]
+            else
+               y1 := xh[5,5];
+               y2 := xh[6,5];
+               y3 := xh[7,5];
+               y4 := xh[8,5];
+               y5 := xh[9,5]
+            end
+         elsif (degreesOfFreedom > 12) & (degreesOfFreedom <= 20) then
+            x1 := xh[7,0];
+            x2 := xh[8,0];
+            x3 := xh[9,0];
+            x4 := xh[10,0];
+            x5 := xh[11,0];
+            case percentagePoint of
+            |  Certainty.ninety :
+               y1 := xh[7,1];
+               y2 := xh[8,1];
+               y3 := xh[9,1];
+               y4 := xh[10,1];
+               y5 := xh[11,1]
+            |  Certainty.ninetyFive :
+               y1 := xh[7,2];
+               y2 := xh[8,2];
+               y3 := xh[9,2];
+               y4 := xh[10,2];
+               y5 := xh[11,2]
+            |  Certainty.ninetySevenPointFive :
+               y1 := xh[7,3];
+               y2 := xh[8,3];
+               y3 := xh[9,3];
+               y4 := xh[10,3];
+               y5 := xh[11,3]
+            |  Certainty.ninetyNine :
+               y1 := xh[7,4];
+               y2 := xh[8,4];
+               y3 := xh[9,4];
+               y4 := xh[10,4];
+               y5 := xh[11,4]
+            else
+               y1 := xh[7,5];
+               y2 := xh[8,5];
+               y3 := xh[9,5];
+               y4 := xh[10,5];
+               y5 := xh[11,5]
+            end
+         else
+            x1 := xh[9,0];
+            x2 := xh[10,0];
+            x3 := xh[11,0];
+            x4 := xh[12,0];
+            x5 := xh[13,0];
+            case percentagePoint of
+            |  Certainty.ninety :
+               y1 := xh[9,1];
+               y2 := xh[10,1];
+               y3 := xh[11,1];
+               y4 := xh[12,1];
+               y5 := xh[13,1]
+            |  Certainty.ninetyFive :
+               y1 := xh[9,2];
+               y2 := xh[10,2];
+               y3 := xh[11,2];
+               y4 := xh[12,2];
+               y5 := xh[13,2]
+            |  Certainty.ninetySevenPointFive :
+               y1 := xh[9,3];
+               y2 := xh[10,3];
+               y3 := xh[11,3];
+               y4 := xh[12,3];
+               y5 := xh[13,3]
+            |  Certainty.ninetyNine :
+               y1 := xh[9,4];
+               y2 := xh[10,4];
+               y3 := xh[11,4];
+               y4 := xh[12,4];
+               y5 := xh[13,4]
+            else
+               y1 := xh[9,5];
+               y2 := xh[10,5];
+               y3 := xh[11,5];
+               y4 := xh[12,5];
+               y5 := xh[13,5]
+            end
+         end;
+         xVec[0] := x1;
+         xVec[1] := x2;
+         xVec[2] := x3;
+         xVec[3] := x4;
+         xVec[4] := x5;
+         yVec[0] := y1;
+         yVec[1] := y2;
+         yVec[2] := y3;
+         yVec[3] := y4;
+         yVec[4] := y5;
+         y := I.Neville(xVec, yVec, xVal)
+      else
+         L.ErrorMessage(405,-1, "BelMath.Distributions.ChiSquaredHigh")
+      end;
+      return y
+   end ChiSquaredHigh;
+
+   procedure {public} StudentT (percentagePoint  : Certainty;
+                                degreesOfFreedom : integer) : real;
+      var
+         r, xVal, x1, x2, x3, x4, x5, y, y1, y2, y3, y4, y5 : real;
+         xVec, yVec                                         : I.RealVector;
+   begin
+      y := 0.0;
+      if (degreesOfFreedom >= 1) & (degreesOfFreedom <= 6) then
+         case percentagePoint of
+         |  Certainty.ninety :
+            r := t[degreesOfFreedom, 1]
+         |  Certainty.ninetyFive :
+            r := t[degreesOfFreedom, 2]
+         |  Certainty.ninetySevenPointFive :
+            r := t[degreesOfFreedom, 3]
+         |  Certainty.ninetyNine :
+            r := t[degreesOfFreedom, 4]
+         else
+            r := t[degreesOfFreedom, 5]
+         end;
+         y := r
+      elsif (degreesOfFreedom > 6) & (degreesOfFreedom <= 240) then
+         x1 := 0.0;
+         x2 := 0.0;
+         x3 := 0.0;
+         x4 := 0.0;
+         x5 := 0.0;
+         y1 := 0.0;
+         y2 := 0.0;
+         y3 := 0.0;
+         y4 := 0.0;
+         y5 := 0.0;
+         xVec := new I.RealVector(5);
+         yVec := new I.RealVector(5);
+         xVal := real(degreesOfFreedom);
+         if (degreesOfFreedom > 6) & (degreesOfFreedom <= 15) then
+            x1 := t[6,0];
+            x2 := t[7,0];
+            x3 := t[8,0];
+            x4 := t[9,0];
+            x5 := t[10,0];
+            case percentagePoint of
+            |  Certainty.ninety :
+               y1 := t[6,1];
+               y2 := t[7,1];
+               y3 := t[8,1];
+               y4 := t[9,1];
+               y5 := t[10,1]
+            |  Certainty.ninetyFive :
+               y1 := t[6,2];
+               y2 := t[7,2];
+               y3 := t[8,2];
+               y4 := t[9,2];
+               y5 := t[10,2]
+            |  Certainty.ninetySevenPointFive :
+               y1 := t[6,3];
+               y2 := t[7,3];
+               y3 := t[8,3];
+               y4 := t[9,3];
+               y5 := t[10,3]
+            |  Certainty.ninetyNine :
+               y1 := t[6,4];
+               y2 := t[7,4];
+               y3 := t[8,4];
+               y4 := t[9,4];
+               y5 := t[10,4]
+            else
+               y1 := t[6,5];
+               y2 := t[7,5];
+               y3 := t[8,5];
+               y4 := t[9,5];
+               y5 := t[10,5]
+            end
+         elsif (degreesOfFreedom > 15) & (degreesOfFreedom <= 60) then
+            x1 := t[8,0];
+            x2 := t[9,0];
+            x3 := t[10,0];
+            x4 := t[11,0];
+            x5 := t[12,0];
+            case percentagePoint of
+            |  Certainty.ninety :
+               y1 := t[8,1];
+               y2 := t[9,1];
+               y3 := t[10,1];
+               y4 := t[11,1];
+               y5 := t[12,1]
+            |  Certainty.ninetyFive :
+               y1 := t[8,2];
+               y2 := t[9,2];
+               y3 := t[10,2];
+               y4 := t[11,2];
+               y5 := t[12,2]
+            |  Certainty.ninetySevenPointFive :
+               y1 := t[8,3];
+               y2 := t[9,3];
+               y3 := t[10,3];
+               y4 := t[11,3];
+               y5 := t[12,3]
+            |  Certainty.ninetyNine :
+               y1 := t[8,4];
+               y2 := t[9,4];
+               y3 := t[10,4];
+               y4 := t[11,4];
+               y5 := t[12,4]
+            else
+               y1 := t[8,5];
+               y2 := t[9,5];
+               y3 := t[10,5];
+               y4 := t[11,5];
+               y5 := t[12,5]
+            end
+         elsif (degreesOfFreedom > 60) & (degreesOfFreedom <= 240) then
+            x1 := t[10,0];
+            x2 := t[11,0];
+            x3 := t[12,0];
+            x4 := t[13,0];
+            x5 := t[14,0];
+            case percentagePoint of
+            |  Certainty.ninety :
+               y1 := t[10,1];
+               y2 := t[11,1];
+               y3 := t[12,1];
+               y4 := t[13,1];
+               y5 := t[14,1]
+            |  Certainty.ninetyFive :
+               y1 := t[10,2];
+               y2 := t[11,2];
+               y3 := t[12,2];
+               y4 := t[13,2];
+               y5 := t[14,2]
+            |  Certainty.ninetySevenPointFive :
+               y1 := t[10,3];
+               y2 := t[11,3];
+               y3 := t[12,3];
+               y4 := t[13,3];
+               y5 := t[14,3]
+            |  Certainty.ninetyNine :
+               y1 := t[10,4];
+               y2 := t[11,4];
+               y3 := t[12,4];
+               y4 := t[13,4];
+               y5 := t[14,4]
+            else
+               y1 := t[10,5];
+               y2 := t[11,5];
+               y3 := t[12,5];
+               y4 := t[13,5];
+               y5 := t[14,5]
+            end
+         end;
+         xVec[0] := x1;
+         xVec[1] := x2;
+         xVec[2] := x3;
+         xVec[3] := x4;
+         xVec[4] := x5;
+         yVec[0] := y1;
+         yVec[1] := y2;
+         yVec[2] := y3;
+         yVec[3] := y4;
+         yVec[4] := y5;
+         y := I.Neville(xVec, yVec, xVal)
+      elsif degreesOfFreedom > 240 then
+         (* handle the case of an 'effective' infinite degree of freedom *)
+         case percentagePoint of
+         |  Certainty.ninety :
+            r := t[14, 1]
+         |  Certainty.ninetyFive :
+            r := t[14, 2]
+         |  Certainty.ninetySevenPointFive :
+            r := t[14, 3]
+         |  Certainty.ninetyNine :
+            r := t[14, 4]
+         else
+            r := t[14, 5]
+         end;
+         y := r
+      else
+         (* the degree of freedom was not positive valued *)
+         L.ErrorMessage(405,-1, "BelMath.Distributions.StudentT")
+      end;
+      return y
+   end StudentT;
+
+   procedure {public} F (percentagePoint : Certainty;
+                         degreesOfFreedom1, degreesOfFreedom2 : integer) : real;
+      var
+         col, dof1, dof2, row                              : integer;
+         f, xVal, xx1, xx2, xx1y1, xx1y2, xx2y1, xx2y2, y,
+            yVal, yy1, yy2, r, x1, x2, x3, x4, x1y1, x1y2,
+            x2y1, x2y2, y1, y2, y3, y4                     : real;
+         xVec, yVec                                        : I.RealVector;
+   begin
+      y := 0.0;
+      if ((degreesOfFreedom1 >= 1) & (degreesOfFreedom1 <= 120)) &
+         ((degreesOfFreedom2 >= 1) & (degreesOfFreedom2 <= 240)) then
+         col := 0;
+         repeat
+            inc(col);
+            dof1 := integer(f90[0,col])
+         until dof1 >= degreesOfFreedom1;
+         row := 0;
+         repeat
+            inc(row);
+            dof2 := integer(f90[row,0])
+         until dof2 >= degreesOfFreedom2;
+         if (dof1 = degreesOfFreedom1) & (dof2 = degreesOfFreedom2) then
+            (* exact value exists in a table *)
+            case percentagePoint of
+            |  Certainty.ninety :
+               r := f90[row, col]
+            |  Certainty.ninetyFive :
+               r := f95[row, col]
+            |  Certainty.ninetySevenPointFive :
+               r := f975[row, col]
+            |  Certainty.ninetyNine :
+               r := f99[row, col]
+            else
+               r := f995[row, col]
+            end;
+            y := r
+         elsif dof1 = degreesOfFreedom1 then
+            (* 1D interpolation over rows along column = dof1 *)
+            if row < 13 then
+               xVec := new I.RealVector(4);
+               yVec := new I.RealVector(4);
+               case percentagePoint of
+               |  Certainty.ninety :
+                  x1 := f90[row-2, 0];
+                  x2 := f90[row-1, 0];
+                  x3 := f90[row,   0];
+                  x4 := f90[row+1, 0];
+                  y1 := f90[row-2, col];
+                  y2 := f90[row-1, col];
+                  y3 := f90[row,   col];
+                  y4 := f90[row+1, col]
+               |  Certainty.ninetyFive :
+                  x1 := f95[row-2, 0];
+                  x2 := f95[row-1, 0];
+                  x3 := f95[row,   0];
+                  x4 := f95[row+1, 0];
+                  y1 := f95[row-2, col];
+                  y2 := f95[row-1, col];
+                  y3 := f95[row,   col];
+                  y4 := f95[row+1, col]
+               |  Certainty.ninetySevenPointFive :
+                  x1 := f975[row-2, 0];
+                  x2 := f975[row-1, 0];
+                  x3 := f975[row,   0];
+                  x4 := f975[row+1, 0];
+                  y1 := f975[row-2, col];
+                  y2 := f975[row-1, col];
+                  y3 := f975[row,   col];
+                  y4 := f975[row+1, col]
+               |  Certainty.ninetyNine :
+                  x1 := f99[row-2, 0];
+                  x2 := f99[row-1, 0];
+                  x3 := f99[row,   0];
+                  x4 := f99[row+1, 0];
+                  y1 := f99[row-2, col];
+                  y2 := f99[row-1, col];
+                  y3 := f99[row,   col];
+                  y4 := f99[row+1, col]
+               else
+                  x1 := f995[row-2, 0];
+                  x2 := f995[row-1, 0];
+                  x3 := f995[row,   0];
+                  x4 := f995[row+1, 0];
+                  y1 := f995[row-2, col];
+                  y2 := f995[row-1, col];
+                  y3 := f995[row,   col];
+                  y4 := f995[row+1, col]
+               end;
+               xVec[0] := x1;
+               xVec[1] := x2;
+               xVec[2] := x3;
+               xVec[3] := x4;
+               yVec[0] := y1;
+               yVec[1] := y2;
+               yVec[2] := y3;
+               yVec[3] := y4
+            else
+               xVec := new I.RealVector(3);
+               yVec := new I.RealVector(3);
+               case percentagePoint of
+               |  Certainty.ninety :
+                  x1 := f90[12, 0];
+                  x2 := f90[13, 0];
+                  x3 := f90[14, 0];
+                  y1 := f90[12, col];
+                  y2 := f90[13, col];
+                  y3 := f90[14, col]
+               |  Certainty.ninetyFive :
+                  x1 := f95[12, 0];
+                  x2 := f95[13, 0];
+                  x3 := f95[14, 0];
+                  y1 := f95[12, col];
+                  y2 := f95[13, col];
+                  y3 := f95[14, col]
+               |  Certainty.ninetySevenPointFive :
+                  x1 := f975[12, 0];
+                  x2 := f975[13, 0];
+                  x3 := f975[14, 0];
+                  y1 := f975[12, col];
+                  y2 := f975[13, col];
+                  y3 := f975[14, col]
+               |  Certainty.ninetyNine :
+                  x1 := f99[12, 0];
+                  x2 := f99[13, 0];
+                  x3 := f99[14, 0];
+                  y1 := f99[12, col];
+                  y2 := f99[13, col];
+                  y3 := f99[14, col]
+               else
+                  x1 := f995[12, 0];
+                  x2 := f995[13, 0];
+                  x3 := f995[14, 0];
+                  y1 := f995[12, col];
+                  y2 := f995[13, col];
+                  y3 := f995[14, col]
+               end;
+               xVec[0] := x1;
+               xVec[1] := x2;
+               xVec[2] := x3;
+               yVec[0] := y1;
+               yVec[1] := y2;
+               yVec[2] := y3
+            end;
+            xVal := real(degreesOfFreedom2);
+            y := I.Neville(xVec, yVec, xVal)
+         elsif dof2 = degreesOfFreedom2 then
+            (* 1D interpolation over columns along row = dof2 *)
+            if col < 12 then
+               xVec := new I.RealVector(4);
+               yVec := new I.RealVector(4);
+               case percentagePoint of
+               |  Certainty.ninety :
+                  x1 := f90[0, col-2];
+                  x2 := f90[0, col-1];
+                  x3 := f90[0, col];
+                  x4 := f90[0, col+1];
+                  y1 := f90[row, col-2];
+                  y2 := f90[row, col-1];
+                  y3 := f90[row, col];
+                  y4 := f90[row, col+1]
+               |  Certainty.ninetyFive :
+                  x1 := f95[0, col-2];
+                  x2 := f95[0, col-1];
+                  x3 := f95[0, col];
+                  x4 := f95[0, col+1];
+                  y1 := f95[row, col-2];
+                  y2 := f95[row, col-1];
+                  y3 := f95[row, col];
+                  y4 := f95[row, col+1]
+               |  Certainty.ninetySevenPointFive :
+                  x1 := f975[0, col-2];
+                  x2 := f975[0, col-1];
+                  x3 := f975[0, col];
+                  x4 := f975[0, col+1];
+                  y1 := f975[row, col-2];
+                  y2 := f975[row, col-1];
+                  y3 := f975[row, col];
+                  y4 := f975[row, col+1]
+               |  Certainty.ninetyNine :
+                  x1 := f99[0, col-2];
+                  x2 := f99[0, col-1];
+                  x3 := f99[0, col];
+                  x4 := f99[0, col+1];
+                  y1 := f99[row, col-2];
+                  y2 := f99[row, col-1];
+                  y3 := f99[row, col];
+                  y4 := f99[row, col+1]
+               else
+                  x1 := f995[0, col-2];
+                  x2 := f995[0, col-1];
+                  x3 := f995[0, col];
+                  x4 := f995[0, col+1];
+                  y1 := f995[row, col-2];
+                  y2 := f995[row, col-1];
+                  y3 := f995[row, col];
+                  y4 := f995[row, col+1]
+               end;
+               xVec[0] := x1;
+               xVec[1] := x2;
+               xVec[2] := x3;
+               xVec[3] := x4;
+               yVec[0] := y1;
+               yVec[1] := y2;
+               yVec[2] := y3;
+               yVec[3] := y4
+            else
+               xVec := new I.RealVector(3);
+               yVec := new I.RealVector(3);
+               case percentagePoint of
+               |  Certainty.ninety :
+                  x1 := f90[0, 11];
+                  x2 := f90[0, 12];
+                  x3 := f90[0, 13];
+                  y1 := f90[row, 11];
+                  y2 := f90[row, 12];
+                  y3 := f90[row, 13]
+               |  Certainty.ninetyFive :
+                  x1 := f95[0, 11];
+                  x2 := f95[0, 12];
+                  x3 := f95[0, 13];
+                  y1 := f95[row, 11];
+                  y2 := f95[row, 12];
+                  y3 := f95[row, 13]
+               |  Certainty.ninetySevenPointFive :
+                  x1 := f975[0, 11];
+                  x2 := f975[0, 12];
+                  x3 := f975[0, 13];
+                  y1 := f975[row, 11];
+                  y2 := f975[row, 12];
+                  y3 := f975[row, 13]
+               |  Certainty.ninetyNine :
+                  x1 := f99[0, 11];
+                  x2 := f99[0, 12];
+                  x3 := f99[0, 13];
+                  y1 := f99[row, 11];
+                  y2 := f99[row, 12];
+                  y3 := f99[row, 13]
+               else
+                  x1 := f995[0, 11];
+                  x2 := f995[0, 12];
+                  x3 := f995[0, 13];
+                  y1 := f995[row, 11];
+                  y2 := f995[row, 12];
+                  y3 := f995[row, 13]
+               end;
+               xVec[0] := x1;
+               xVec[1] := x2;
+               xVec[2] := x3;
+               yVec[0] := y1;
+               yVec[1] := y2;
+               yVec[2] := y3
+            end;
+            xVal := real(degreesOfFreedom1);
+            y := I.Neville(xVec, yVec, xVal)
+         else
+            (* 2D interpolation over a rectangle *)
+            case percentagePoint of
+            |  Certainty.ninety :
+               x1y1 := f90[row-1, col-1];
+               x1y2 := f90[row-1, col];
+               x2y1 := f90[row, col-1];
+               x2y2 := f90[row, col]
+            |  Certainty.ninetyFive :
+               x1y1 := f95[row-1, col-1];
+               x1y2 := f95[row-1, col];
+               x2y1 := f95[row, col-1];
+               x2y2 := f95[row, col]
+            |  Certainty.ninetySevenPointFive :
+               x1y1 := f975[row-1, col-1];
+               x1y2 := f975[row-1, col];
+               x2y1 := f975[row, col-1];
+               x2y2 := f975[row, col]
+            |  Certainty.ninetyNine :
+               x1y1 := f99[row-1, col-1];
+               x1y2 := f99[row-1, col];
+               x2y1 := f99[row, col-1];
+               x2y2 := f99[row, col]
+            else
+               x1y1 := f995[row-1, col-1];
+               x1y2 := f995[row-1, col];
+               x2y1 := f995[row, col-1];
+               x2y2 := f995[row, col]
+            end;
+            x1 := f90[0,col-1];
+            x2 := f90[0,col];
+            y1 := f90[row-1,0];
+            y2 := f90[row,0];
+            xx1 := x1;
+            xx2 := x2;
+            yy1 := y1;
+            yy2 := y2;
+            xx1y1 := x1y1;
+            xx1y2 := x1y2;
+            xx2y1 := x2y1;
+            xx2y2 := x2y2;
+            xVal := real(degreesOfFreedom2);
+            yVal := real(degreesOfFreedom1);
+            y  := I.Bilinear(xx1, xx2, yy1, yy2,
+                             xx1y1, xx1y2, xx2y1, xx2y2,
+                             xVal, yVal)
+         end
+      else
+         (* handle cases of 'effective' infinite degrees of freedom *)
+         if (degreesOfFreedom1 > 120) & (degreesOfFreedom2 > 240) then
+            y := 1.0
+         elsif degreesOfFreedom1 > 120 then
+            y := 1.0 / F(percentagePoint, 120, degreesOfFreedom2)
+         elsif degreesOfFreedom2 > 240 then
+            y := 1.0 / F(percentagePoint, degreesOfFreedom1, 240)
+         else
+            (* one of the degrees of freedom was not positive valued *)
+            L.ErrorMessage(405,-1, "BelMath.Distributions.F")
+         end
+      end;
+      (* what is in the tables are values for      *)
+      (* F_{1-percentagePoint}[dof2, dof1]         *)
+      (*    dof1 =  numerator  degrees of freedom  *)
+      (*    dof2 = denominator degrees of freedom  *)
+      (* To get F_{percentagePoint}(dof1, dof2)    *)
+      (* return 1/F_{1-percentagePoint}[dof2,dof1] *)
+      f := 1.0 / y;
+      return f
+   end F;
+
+begin
+   f90  := new I.RealMatrix(15,14);
+   f95  := new I.RealMatrix(15,14);
+   f975 := new I.RealMatrix(15,14);
+   f99  := new I.RealMatrix(15,14);
+   f995 := new I.RealMatrix(15,14);
+   t    := new I.RealMatrix(15,6);
+   xl   := new I.RealMatrix(14,6);
+   xh   := new I.RealMatrix(14,6);
+   (* Student's t-distribution percentage-point certainty *)
+   (* Column 0 : degrees of freedom *)
+   (* Column 1 : 90%   certainty    *)
+   (* Column 2 : 95%   certainty    *)
+   (* Column 3 : 97.5% certainty    *)
+   (* Column 4 : 99%   certainty    *)
+   (* Column 5 : 99.5% certainty    *)
+   t := [[  0.0, 0.90,   0.95,   0.975,  0.99,    0.995],
+         [  1.0, 6.314, 12.706, 31.821, 63.657, 127.321],
+         [  2.0, 2.92,   4.303,  6.965,  9.925,  14.089],
+         [  3.0, 2.353,  3.182,  4.541,  5.841,   7.453],
+         [  4.0, 2.132,  2.776,  3.747,  4.604,   5.598],
+         [  5.0, 2.015,  2.571,  3.365,  4.032,   4.773],
+         [  6.0, 1.943,  2.447,  3.143,  3.707,   4.317],
+         [  8.0, 1.86,   2.306,  2.896,  3.355,   3.833],
+         [ 12.0, 1.782,  2.179,  2.681,  3.055,   3.428],
+         [ 15.0, 1.753,  2.131,  2.602,  2.947,   3.286],
+         [ 20.0, 1.725,  2.086,  2.528,  2.845,   3.153],
+         [ 30.0, 1.697,  2.042,  2.457,  2.75,    3.03 ],
+         [ 60.0, 1.671,  2.0,    2.39,   2.66,    2.915],
+         [120.0, 1.658,  1.98,   2.358,  2.617,   2.86 ],
+         [240.0, 1.645,  1.96,   2.326,  2.576,   2.807]];
+   (* Chi-squared distribution percentage-point certainty *)
+   (* Matrix 'xl' contains X^2_a     *)
+   (* Matrix 'xh' contains X^2_{1-a} *)
+   (* Column 0 : degrees of freedom  *)
+   (* Column 1 : (1-a)100% => 90%    *)
+   (* Column 2 : (1-a)100% => 95%    *)
+   (* Column 3 : (1-a)100% => 97.5%  *)
+   (* Column 4 : (1-a)100% => 99%    *)
+   (* Column 5 : (1-a)100% => 99.5%  *)
+   xl := [[  0.0,   0.1,       0.05,      0.025,     0.01,      0.005  ],
+          [  1.0,   2.70554,   3.84146,   5.02389,   6.6349,    7.87944],
+          [  2.0,   4.60517,   5.99147,   7.37776,   9.21034,  10.5966 ],
+          [  3.0,   6.25139,   7.81473,   9.3484,   11.3449,   12.8381 ],
+          [  4.0,   7.77944,   9.48773,  11.1433,   13.2767,   14.8602 ],
+          [  5.0,   9.23635,  11.0705,   12.8325,   15.0863,   16.7496 ],
+          [  6.0,  10.6446,   12.5916,   14.4494,   16.8119,   18.5476 ],
+          [  8.0,  13.3616,   15.5073,   17.5346,   20.0902,   21.955  ],
+          [ 12.0,  18.5494,   21.0261,   23.3367,   26.217,    28.2995 ],
+          [ 15.0,  22.3072,   24.9958,   27.4884,   30.5779,   32.8013 ],
+          [ 20.0,  28.412,    31.4104,   34.1696,   37.5662,   39.9968 ],
+          [ 30.0,  40.256,    43.7729,   46.9792,   50.8922,   53.672  ],
+          [ 60.0,  74.397,    79.0819,   83.2976,   88.3794,   91.9517 ],
+          [100.0, 118.498,   124.342,   129.561,   135.807,   140.169  ]];
+   xh := [[  0.0,  0.9,        0.95,       0.975,      0.99,       0.995    ],
+          [  1.0,  0.0157908,  0.0039321,  0.0009821,  0.0001571,  0.0000393],
+          [  2.0,  0.21072,    0.102587,   0.0506356,  0.0201007,  0.0100251],
+          [  3.0,  0.584375,   0.351846,   0.215795,   0.114832,   0.0717212],
+          [  4.0,  1.063623,   0.710721,   0.484419,   0.29711,    0.20699  ],
+          [  5.0,  1.61031,    1.145476,   0.831211,   0.5543,     0.41174  ],
+          [  6.0,  2.20413,    1.63539,    1.237347,   0.872085,   0.675727 ],
+          [  8.0,  3.48954,    2.73264,    2.17973,    1.646482,   1.344419 ],
+          [ 12.0,  6.3038,     5.22603,    4.40379,    3.57056,    3.07382  ],
+          [ 15.0,  8.54675,    7.26094,    6.26214,    5.22935,    4.60094  ],
+          [ 20.0, 12.4426,    10.8508,     9.59083,    8.2604,     7.43386  ],
+          [ 30.0, 20.5992,    18.4926,    16.7908,    14.9535,    13.7867   ],
+          [ 60.0, 46.4589,    43.1879,    40.4817,    37.4848,    35.5346   ],
+          [100.0, 82.3581,    77.9295,    74.2219,    70.0648,    67.3276   ]];
+   (* F distribution percentage-point for 90% certainty    *)
+   (*   in table:  F_{0.1}(N_2, N_1)                       *)
+   (*   returned:  F_{0.9}(N_1, N_2) = 1/F_{0.1}(N_2, N_1) *)
+   (* N1 x N2 : degrees of freedom *)
+   (*   N1 aligns with the columns *)
+   (*   N2 aligns with the rows    *)
+   f90[0,0] := 0.0;
+      f90[0,1] := 1.0;
+         f90[0,2] := 2.0;
+            f90[0,3] := 3.0;
+               f90[0,4] := 4.0;
+                  f90[0,5] := 5.0;
+                     f90[0,6] := 6.0;
+                        f90[0,7] := 8.0;
+                           f90[0,8] := 12.0;
+                              f90[0,9] := 15.0;
+                                f90[0,10] := 20.0;
+                                   f90[0,11] := 30.0;
+                                      f90[0,12] := 60.0;
+                                         f90[0,13] := 120.0;
+   f90[1,0] := 1.0;
+      f90[1,1] := 39.86;
+         f90[1,2] := 49.5;
+            f90[1,3] := 53.59;
+               f90[1,4] := 55.83;
+                  f90[1,5] := 57.24;
+                     f90[1,6] := 58.2;
+                        f90[1,7] := 59.44;
+                           f90[1,8] := 60.71;
+                              f90[1,9] := 61.22;
+                                f90[1,10] := 61.74;
+                                   f90[1,11] := 62.26;
+                                      f90[1,12] := 62.79;
+                                         f90[1,13] := 63.33;
+   f90[2,0] := 2.0;
+      f90[2,1] := 8.53;
+         f90[2,2] := 9.0;
+            f90[2,3] := 9.16;
+               f90[2,4] := 9.24;
+                  f90[2,5] := 9.29;
+                     f90[2,6] := 9.33;
+                        f90[2,7] := 9.37;
+                           f90[2,8] := 9.41;
+                              f90[2,9] := 9.42;
+                                f90[2,10] := 9.44;
+                                  f90[2,11] := 9.46;
+                                     f90[2,12] := 9.47;
+                                        f90[2,13] := 9.49;
+   f90[3,0] := 3.0;
+      f90[3,1] := 5.54;
+         f90[3,2] := 5.46;
+            f90[3,3] := 5.39;
+               f90[3,4] := 5.34;
+                  f90[3,5] := 5.31;
+                     f90[3,6] := 5.28;
+                        f90[3,7] := 5.25;
+                           f90[3,8] := 5.22;
+                              f90[3,9] := 5.2;
+                                f90[3,10] := 5.18;
+                                   f90[3,11] := 5.17;
+                                      f90[3,12] := 5.15;
+                                         f90[3,13] := 5.13;
+   f90[4,0] := 4.0;
+      f90[4,1] := 4.54;
+         f90[4,2] := 4.32;
+            f90[4,3] := 4.19;
+               f90[4,4] := 4.11;
+                  f90[4,5] := 4.05;
+                     f90[4,6] := 4.01;
+                        f90[4,7] := 3.95;
+                           f90[4,8] := 3.9;
+                              f90[4,9] := 3.87;
+                                f90[4,10] := 3.84;
+                                   f90[4,11] := 3.82;
+                                      f90[4,12] := 3.79;
+                                         f90[4,13] := 3.76;
+   f90[5,0] := 5.0;
+      f90[5,1] := 4.06;
+         f90[5,2] := 3.78;
+            f90[5,3] := 3.62;
+               f90[5,4] := 3.52;
+                  f90[5,5] := 3.45;
+                     f90[5,6] := 3.4;
+                        f90[5,7] := 3.34;
+                           f90[5,8] := 3.27;
+                              f90[5,9] := 3.24;
+                                f90[5,10] := 3.21;
+                                   f90[5,11] := 3.17;
+                                      f90[5,12] := 3.14;
+                                         f90[5,13] := 3.1;
+   f90[6,0] := 6.0;
+      f90[6,1] := 3.78;
+         f90[6,2] := 3.46;
+            f90[6,3] := 3.29;
+               f90[6,4] := 3.18;
+                  f90[6,5] := 3.11;
+                     f90[6,6] := 3.05;
+                        f90[6,7] := 2.98;
+                           f90[6,8] := 2.9;
+                              f90[6,9] := 2.87;
+                                f90[6,10] := 2.84;
+                                   f90[6,11] := 2.8;
+                                      f90[6,12] := 2.76;
+                                         f90[6,13] := 2.72;
+   f90[7,0] := 8.0;
+      f90[7,1] := 3.46;
+         f90[7,2] := 3.11;
+            f90[7,3] := 2.92;
+               f90[7,4] := 2.81;
+                  f90[7,5] := 2.73;
+                     f90[7,6] := 2.67;
+                        f90[7,7] := 2.59;
+                           f90[7,8] := 2.5;
+                              f90[7,9] := 2.46;
+                                f90[7,10] := 2.42;
+                                   f90[7,11] := 2.38;
+                                      f90[7,12] := 2.34;
+                                         f90[7,13] := 2.29;
+   f90[8,0] := 12.0;
+      f90[8,1] := 3.18;
+         f90[8,2] := 2.81;
+            f90[8,3] := 2.61;
+               f90[8,4] := 2.48;
+                  f90[8,5] := 2.39;
+                     f90[8,6] := 2.33;
+                        f90[8,7] := 2.24;
+                           f90[8,8] := 2.15;
+                              f90[8,9] := 2.1;
+                                f90[8,10] := 2.06;
+                                   f90[8,11] := 2.01;
+                                      f90[8,12] := 1.96;
+                                         f90[8,13] := 1.9;
+   f90[9,0] := 15.0;
+      f90[9,1] := 3.07;
+         f90[9,2] := 2.7;
+            f90[9,3] := 2.49;
+               f90[9,4] := 2.36;
+                  f90[9,5] := 2.27;
+                     f90[9,6] := 2.21;
+                        f90[9,7] := 2.12;
+                           f90[9,8] := 2.02;
+                              f90[9,9] := 1.97;
+                                f90[9,10] := 1.92;
+                                   f90[9,11] := 1.87;
+                                      f90[9,12] := 1.82;
+                                         f90[9,13] := 1.76;
+   f90[10,0] := 20.0;
+      f90[10,1] := 2.97;
+         f90[10,2] := 2.59;
+            f90[10,3] := 2.38;
+               f90[10,4] := 2.25;
+                  f90[10,5] := 2.16;
+                     f90[10,6] := 2.09;
+                        f90[10,7] := 2.0;
+                           f90[10,8] := 1.89;
+                              f90[10,9] := 1.84;
+                                f90[10,10] := 1.79;
+                                   f90[10,11] := 1.74;
+                                      f90[10,12] := 1.68;
+                                         f90[10,13] := 1.61;
+   f90[11,0] := 30.0;
+      f90[11,1] := 2.88;
+         f90[11,2] := 2.49;
+            f90[11,3] := 2.28;
+               f90[11,4] := 2.14;
+                  f90[11,5] := 2.05;
+                     f90[11,6] := 1.98;
+                        f90[11,7] := 1.88;
+                           f90[11,8] := 1.77;
+                              f90[11,9] := 1.72;
+                                f90[11,10] := 1.67;
+                                   f90[11,11] := 1.61;
+                                      f90[11,12] := 1.54;
+                                         f90[11,13] := 1.46;
+   f90[12,0] := 60.0;
+      f90[12,1] := 2.79;
+         f90[12,2] := 2.39;
+            f90[12,3] := 2.18;
+               f90[12,4] := 2.04;
+                  f90[12,5] := 1.95;
+                     f90[12,6] := 1.87;
+                        f90[12,7] := 1.77;
+                           f90[12,8] := 1.66;
+                              f90[12,9] := 1.6;
+                                f90[12,10] := 1.54;
+                                   f90[12,11] := 1.48;
+                                      f90[12,12] := 1.4;
+                                         f90[12,13] := 1.29;
+   f90[13,0] := 120.0;
+      f90[13,1] := 2.75;
+         f90[13,2] := 2.35;
+            f90[13,3] := 2.13;
+               f90[13,4] := 1.99;
+                  f90[13,5] := 1.9;
+                     f90[13,6] := 1.82;
+                        f90[13,7] := 1.72;
+                           f90[13,8] := 1.6;
+                              f90[13,9] := 1.55;
+                                f90[13,10] := 1.48;
+                                   f90[13,11] := 1.41;
+                                      f90[13,12] := 1.32;
+                                         f90[13,13] := 1.19;
+   f90[14,0] := 240.0;
+      f90[14,1] := 2.71;
+         f90[14,2] := 2.3;
+            f90[14,3] := 2.08;
+               f90[14,4] := 1.94;
+                  f90[14,5] := 1.85;
+                     f90[14,6] := 1.77;
+                        f90[14,7] := 1.67;
+                           f90[14,8] := 1.55;
+                              f90[14,9] := 1.49;
+                                f90[14,10] := 1.42;
+                                   f90[14,11] := 1.34;
+                                      f90[14,12] := 1.24;
+                                         f90[14,13] := 1.0;
+   (* F distribution percentage-point for 95% certainty      *)
+   (*   in table:  F_{0.05}(N_2, N_1)                        *)
+   (*   returned:  F_{0.95}(N_1, N_2) = 1/F_{0.05}(N_2, N_1) *)
+   (* N1 x N2 : degrees of freedom *)
+   (*   N1 aligns with the columns *)
+   (*   N2 aligns with the rows    *)
+   f95[0,0] := 0.0;
+      f95[0,1] := 1.0;
+         f95[0,2] := 2.0;
+            f95[0,3] := 3.0;
+               f95[0,4] := 4.0;
+                  f95[0,5] := 5.0;
+                     f95[0,6] := 6.0;
+                        f95[0,7] := 8.0;
+                           f95[0,8] := 12.0;
+                              f95[0,9] := 15.0;
+                                f95[0,10] := 20.0;
+                                   f95[0,11] := 30.0;
+                                      f95[0,12] := 60.0;
+                                         f95[0,13] := 120.0;
+   f95[1,0] := 1.0;
+      f95[1,1] := 161.4;
+         f95[1,2] := 199.5;
+            f95[1,3] := 215.7;
+               f95[1,4] := 224.6;
+                  f95[1,5] := 230.2;
+                     f95[1,6] := 234.0;
+                        f95[1,7] := 238.9;
+                           f95[1,8] := 243.9;
+                              f95[1,9] := 245.9;
+                                f95[1,10] := 248.0;
+                                   f95[1,11] := 250.1;
+                                      f95[1,12] := 252.2;
+                                         f95[1,13] := 254.3;
+   f95[2,0] := 2.0;
+      f95[2,1] := 18.51;
+         f95[2,2] := 19.0;
+            f95[2,3] := 19.16;
+               f95[2,4] := 19.25;
+                  f95[2,5] := 19.3;
+                     f95[2,6] := 19.33;
+                        f95[2,7] := 19.37;
+                           f95[2,8] := 19.41;
+                              f95[2,9] := 19.43;
+                                f95[2,10] := 19.45;
+                                   f95[2,11] := 19.46;
+                                      f95[2,12] := 19.48;
+                                         f95[2,13] := 19.5;
+   f95[3,0] := 3.0;
+      f95[3,1] := 10.13;
+         f95[3,2] := 9.55;
+            f95[3,3] := 9.28;
+               f95[3,4] := 9.12;
+                  f95[3,5] := 9.01;
+                     f95[3,6] := 8.94;
+                        f95[3,7] := 8.85;
+                           f95[3,8] := 8.74;
+                              f95[3,9] := 8.7;
+                                f95[3,10] := 8.66;
+                                   f95[3,11] := 8.62;
+                                      f95[3,12] := 8.57;
+                                         f95[3,13] := 8.53;
+   f95[4,0] := 4.0;
+      f95[4,1] := 7.71;
+         f95[4,2] := 6.94;
+            f95[4,3] := 6.59;
+               f95[4,4] := 6.39;
+                  f95[4,5] := 6.26;
+                     f95[4,6] := 6.16;
+                        f95[4,7] := 6.04;
+                           f95[4,8] := 5.91;
+                              f95[4,9] := 5.86;
+                                f95[4,10] := 5.8;
+                                   f95[4,11] := 5.75;
+                                      f95[4,12] := 5.69;
+                                         f95[4,13] := 5.63;
+   f95[5,0] := 5.0;
+      f95[5,1] := 6.61;
+         f95[5,2] := 5.79;
+            f95[5,3] := 5.41;
+               f95[5,4] := 5.19;
+                  f95[5,5] := 5.05;
+                     f95[5,6] := 4.95;
+                        f95[5,7] := 4.82;
+                           f95[5,8] := 4.68;
+                              f95[5,9] := 4.62;
+                                f95[5,10] := 4.56;
+                                   f95[5,11] := 4.5;
+                                      f95[5,12] := 4.43;
+                                         f95[5,13] := 4.36;
+   f95[6,0] := 6.0;
+      f95[6,1] := 5.99;
+         f95[6,2] := 5.14;
+            f95[6,3] := 4.76;
+               f95[6,4] := 4.53;
+                  f95[6,5] := 4.39;
+                     f95[6,6] := 4.28;
+                        f95[6,7] := 4.15;
+                           f95[6,8] := 4.0;
+                              f95[6,9] := 3.94;
+                                f95[6,10] := 3.87;
+                                   f95[6,11] := 3.81;
+                                      f95[6,12] := 3.74;
+                                         f95[6,13] := 3.67;
+   f95[7,0] := 8.0;
+      f95[7,1] := 5.32;
+         f95[7,2] := 4.46;
+            f95[7,3] := 4.07;
+               f95[7,4] := 3.84;
+                  f95[7,5] := 3.69;
+                     f95[7,6] := 3.58;
+                        f95[7,7] := 3.44;
+                           f95[7,8] := 3.28;
+                              f95[7,9] := 3.22;
+                                f95[7,10] := 3.15;
+                                   f95[7,11] := 3.08;
+                                      f95[7,12] := 3.01;
+                                         f95[7,13] := 2.93;
+   f95[8,0] := 12.0;
+      f95[8,1] := 4.75;
+         f95[8,2] := 3.89;
+            f95[8,3] := 3.49;
+               f95[8,4] := 3.26;
+                  f95[8,5] := 3.11;
+                     f95[8,6] := 3.0;
+                        f95[8,7] := 2.85;
+                           f95[8,8] := 2.69;
+                              f95[8,9] := 2.62;
+                                f95[8,10] := 2.54;
+                                   f95[8,11] := 2.47;
+                                      f95[8,12] := 2.38;
+                                         f95[8,13] := 2.3;
+   f95[9,0] := 15.0;
+      f95[9,1] := 4.54;
+         f95[9,2] := 3.68;
+            f95[9,3] := 3.29;
+               f95[9,4] := 3.06;
+                  f95[9,5] := 2.9;
+                     f95[9,6] := 2.79;
+                        f95[9,7] := 2.64;
+                           f95[9,8] := 2.48;
+                              f95[9,9] := 2.4;
+                                f95[9,10] := 2.33;
+                                   f95[9,11] := 2.25;
+                                      f95[9,12] := 2.16;
+                                         f95[9,13] := 2.07;
+   f95[10,0] := 20.0;
+      f95[10,1] := 4.35;
+         f95[10,2] := 3.49;
+            f95[10,3] := 3.1;
+               f95[10,4] := 2.87;
+                  f95[10,5] := 2.71;
+                     f95[10,6] := 2.6;
+                        f95[10,7] := 2.45;
+                           f95[10,8] := 2.28;
+                              f95[10,9] := 2.2;
+                                f95[10,10] := 2.12;
+                                   f95[10,11] := 2.04;
+                                      f95[10,12] := 1.95;
+                                         f95[10,13] := 1.84;
+   f95[11,0] := 30.0;
+      f95[11,1] := 4.17;
+         f95[11,2] := 3.32;
+            f95[11,3] := 2.92;
+               f95[11,4] := 2.69;
+                  f95[11,5] := 2.53;
+                     f95[11,6] := 2.42;
+                        f95[11,7] := 2.27;
+                           f95[11,8] := 2.09;
+                              f95[11,9] := 2.01;
+                                f95[11,10] := 1.93;
+                                   f95[11,11] := 1.84;
+                                      f95[11,12] := 1.74;
+                                         f95[11,13] := 1.62;
+   f95[12,0] := 60.0;
+      f95[12,1] := 4.0;
+         f95[12,2] := 3.15;
+            f95[12,3] := 2.76;
+               f95[12,4] := 2.53;
+                  f95[12,5] := 2.37;
+                     f95[12,6] := 2.25;
+                        f95[12,7] := 2.1;
+                           f95[12,8] := 1.92;
+                              f95[12,9] := 1.84;
+                                f95[12,10] := 1.75;
+                                   f95[12,11] := 1.65;
+                                      f95[12,12] := 1.53;
+                                         f95[12,13] := 1.39;
+   f95[13,0] := 120.0;
+      f95[13,1] := 3.92;
+         f95[13,2] := 3.07;
+            f95[13,3] := 2.68;
+               f95[13,4] := 2.45;
+                  f95[13,5] := 2.29;
+                     f95[13,6] := 2.17;
+                        f95[13,7] := 2.02;
+                           f95[13,8] := 1.83;
+                              f95[13,9] := 1.75;
+                                f95[13,10] := 1.66;
+                                   f95[13,11] := 1.55;
+                                      f95[13,12] := 1.43;
+                                         f95[13,13] := 1.25;
+   f95[14,0] := 240.0;
+      f95[14,1] := 3.83;
+         f95[14,2] := 3.0;
+            f95[14,3] := 2.6;
+               f95[14,4] := 2.37;
+                  f95[14,5] := 2.21;
+                     f95[14,6] := 2.1;
+                        f95[14,7] := 1.94;
+                           f95[14,8] := 1.75;
+                              f95[14,9] := 1.67;
+                                f95[14,10] := 1.57;
+                                   f95[14,11] := 1.46;
+                                      f95[14,12] := 1.32;
+                                         f95[14,13] := 1.0;
+   (* F distribution percentage-point for 97.5% certainty      *)
+   (*   in table:  F_{0.025}(N_2, N_1)                         *)
+   (*   returned:  F_{0.975}(N_1, N_2) = 1/F_{0.025}(N_2, N_1) *)
+   (* N1 x N2 : degrees of freedom *)
+   (*   N1 aligns with the columns *)
+   (*   N2 aligns with the rows    *)
+   f975[0,0] := 0.0;
+      f975[0,1] := 1.0;
+         f975[0,2] := 2.0;
+            f975[0,3] := 3.0;
+               f975[0,4] := 4.0;
+                  f975[0,5] := 5.0;
+                     f975[0,6] := 6.0;
+                        f975[0,7] := 8.0;
+                           f975[0,8] := 12.0;
+                              f975[0,9] := 15.0;
+                                f975[0,10] := 20.0;
+                                   f975[0,11] := 30.0;
+                                      f975[0,12] := 60.0;
+                                         f975[0,13] := 120.0;
+   f975[1,0] := 1.0;
+      f975[1,1] := 647.8;
+         f975[1,2] := 799.5;
+            f975[1,3] := 864.2;
+               f975[1,4] := 899.6;
+                  f975[1,5] := 921.8;
+                     f975[1,6] := 937.1;
+                        f975[1,7] := 956.7;
+                           f975[1,8] := 976.7;
+                              f975[1,9] := 984.9;
+                                f975[1,10] := 993.1;
+                                   f975[1,11] := 1001.0;
+                                      f975[1,12] := 1010.0;
+                                         f975[1,13] := 1018.0;
+   f975[2,0] := 2.0;
+      f975[2,1] := 38.51;
+         f975[2,2] := 39.0;
+            f975[2,3] := 39.17;
+               f975[2,4] := 39.25;
+                  f975[2,5] := 39.3;
+                     f975[2,6] := 39.33;
+                        f975[2,7] := 39.37;
+                           f975[2,8] := 39.41;
+                              f975[2,9] := 39.43;
+                                f975[2,10] := 39.45;
+                                   f975[2,11] := 39.46;
+                                      f975[2,12] := 39.48;
+                                         f975[2,13] := 39.5;
+   f975[3,0] := 3.0;
+      f975[3,1] := 17.44;
+         f975[3,2] := 16.04;
+            f975[3,3] := 15.44;
+               f975[3,4] := 15.1;
+                  f975[3,5] := 14.88;
+                     f975[3,6] := 14.73;
+                        f975[3,7] := 14.54;
+                           f975[3,8] := 14.34;
+                              f975[3,9] := 14.25;
+                                f975[3,10] := 14.17;
+                                   f975[3,11] := 14.08;
+                                     f975[3,12] := 13.99;
+                                        f975[3,13] := 13.9;
+   f975[4,0] := 4.0;
+      f975[4,1] := 12.22;
+         f975[4,2] := 10.65;
+            f975[4,3] := 9.98;
+               f975[4,4] := 9.6;
+                  f975[4,5] := 9.36;
+                     f975[4,6] := 9.2;
+                        f975[4,7] := 8.98;
+                           f975[4,8] := 8.75;
+                              f975[4,9] := 8.66;
+                                f975[4,10] := 8.56;
+                                   f975[4,11] := 8.46;
+                                      f975[4,12] := 8.36;
+                                         f975[4,13] := 8.26;
+   f975[5,0] := 5.0;
+      f975[5,1] := 10.01;
+         f975[5,2] := 8.43;
+            f975[5,3] := 7.76;
+               f975[5,4] := 7.39;
+                  f975[5,5] := 7.15;
+                     f975[5,6] := 6.98;
+                        f975[5,7] := 6.76;
+                           f975[5,8] := 6.52;
+                              f975[5,9] := 6.43;
+                                f975[5,10] := 6.33;
+                                   f975[5,11] := 6.23;
+                                      f975[5,12] := 6.12;
+                                         f975[5,13] := 6.02;
+   f975[6,0] := 6.0;
+      f975[6,1] := 8.81;
+         f975[6,2] := 7.26;
+            f975[6,3] := 6.6;
+               f975[6,4] := 6.23;
+                  f975[6,5] := 5.99;
+                     f975[6,6] := 5.82;
+                        f975[6,7] := 5.6;
+                           f975[6,8] := 5.37;
+                              f975[6,9] := 5.27;
+                                f975[6,10] := 5.17;
+                                   f975[6,11] := 5.07;
+                                       f975[6,12] := 4.96;
+                                          f975[6,13] := 4.85;
+   f975[7,0] := 8.0;
+      f975[7,1] := 7.57;
+         f975[7,2] := 6.06;
+            f975[7,3] := 5.42;
+               f975[7,4] := 5.05;
+                  f975[7,5] := 4.82;
+                     f975[7,6] := 4.65;
+                        f975[7,7] := 4.43;
+                           f975[7,8] := 4.2;
+                              f975[7,9] := 4.1;
+                                f975[7,10] := 4.0;
+                                   f975[7,11] := 3.89;
+                                      f975[7,12] := 3.78;
+                                         f975[7,13] := 3.67;
+   f975[8,0] := 12.0;
+      f975[8,1] := 6.55;
+         f975[8,2] := 5.1;
+            f975[8,3] := 4.47;
+               f975[8,4] := 4.12;
+                  f975[8,5] := 3.89;
+                     f975[8,6] := 3.73;
+                        f975[8,7] := 3.51;
+                           f975[8,8] := 3.28;
+                              f975[8,9] := 3.18;
+                                f975[8,10] := 3.07;
+                                   f975[8,11] := 2.96;
+                                      f975[8,12] := 2.85;
+                                         f975[8,13] := 2.72;
+   f975[9,0] := 15.0;
+      f975[9,1] := 6.2;
+         f975[9,2] := 4.77;
+            f975[9,3] := 4.15;
+               f975[9,4] := 3.8;
+                  f975[9,5] := 3.58;
+                     f975[9,6] := 3.41;
+                        f975[9,7] := 3.2;
+                           f975[9,8] := 2.96;
+                              f975[9,9] := 2.86;
+                                f975[9,10] := 2.76;
+                                   f975[9,11] := 2.64;
+                                      f975[9,12] := 2.52;
+                                         f975[9,13] := 2.4;
+   f975[10,0] := 20.0;
+      f975[10,1] := 5.87;
+         f975[10,2] := 4.46;
+            f975[10,3] := 3.86;
+               f975[10,4] := 3.51;
+                  f975[10,5] := 3.29;
+                     f975[10,6] := 3.13;
+                        f975[10,7] := 2.91;
+                           f975[10,8] := 2.68;
+                              f975[10,9] := 2.57;
+                                f975[10,10] := 2.46;
+                                   f975[10,11] := 2.35;
+                                      f975[10,12] := 2.22;
+                                         f975[10,13] := 2.09;
+   f975[11,0] := 30.0;
+      f975[11,1] := 5.57;
+         f975[11,2] := 4.18;
+            f975[11,3] := 3.59;
+               f975[11,4] := 3.25;
+                  f975[11,5] := 3.03;
+                     f975[11,6] := 2.87;
+                        f975[11,7] := 2.65;
+                           f975[11,8] := 2.41;
+                              f975[11,9] := 2.31;
+                                f975[11,10] := 2.2;
+                                   f975[11,11] := 2.07;
+                                      f975[11,12] := 1.94;
+                                         f975[11,13] := 1.79;
+   f975[12,0] := 60.0;
+      f975[12,1] := 5.29;
+         f975[12,2] := 3.93;
+            f975[12,3] := 3.34;
+               f975[12,4] := 3.01;
+                  f975[12,5] := 2.79;
+                     f975[12,6] := 2.63;
+                        f975[12,7] := 2.41;
+                           f975[12,8] := 2.17;
+                              f975[12,9] := 2.06;
+                                f975[12,10] := 1.94;
+                                   f975[12,11] := 1.82;
+                                      f975[12,12] := 1.67;
+                                         f975[12,13] := 1.48;
+   f975[13,0] := 120.0;
+      f975[13,1] := 5.15;
+         f975[13,2] := 3.8;
+            f975[13,3] := 3.23;
+               f975[13,4] := 2.89;
+                  f975[13,5] := 2.67;
+                     f975[13,6] := 2.52;
+                        f975[13,7] := 2.3;
+                           f975[13,8] := 2.05;
+                              f975[13,9] := 1.94;
+                                f975[13,10] := 1.82;
+                                   f975[13,11] := 1.69;
+                                      f975[13,12] := 1.53;
+                                         f975[13,13] := 1.31;
+   f975[14,0] := 240.0;
+      f975[14,1] := 5.02;
+         f975[14,2] := 3.69;
+            f975[14,3] := 3.12;
+               f975[14,4] := 2.79;
+                  f975[14,5] := 2.57;
+                     f975[14,6] := 2.41;
+                        f975[14,7] := 2.19;
+                           f975[14,8] := 1.94;
+                              f975[14,9] := 1.83;
+                                f975[14,10] := 1.71;
+                                   f975[14,11] := 1.57;
+                                      f975[14,12] := 1.39;
+                                         f975[14,13] := 1.0;
+   (* F distribution percentage-point for 99% certainty      *)
+   (*   in table:  F_{0.01}(N_2, N_1)                        *)
+   (*   returned:  F_{0.99}(N_1, N_2) = 1/F_{0.01}(N_2, N_1) *)
+   (* N1 x N2 : degrees of freedom *)
+   (*   N1 aligns with the columns *)
+   (*   N2 aligns with the rows    *)
+   f99[0,0] := 0.0;
+      f99[0,1] := 1.0;
+         f99[0,2] := 2.0;
+            f99[0,3] := 3.0;
+               f99[0,4] := 4.0;
+                  f99[0,5] := 5.0;
+                     f99[0,6] := 6.0;
+                        f99[0,7] := 8.0;
+                           f99[0,8] := 12.0;
+                              f99[0,9] := 15.0;
+                                f99[0,10] := 20.0;
+                                   f99[0,11] := 30.0;
+                                      f99[0,12] := 60.0;
+                                         f99[0,13] := 120.0;
+   f99[1,0] := 1.0;
+      f99[1,1] := 4052.0;
+         f99[1,2] := 4999.5;
+            f99[1,3] := 5403.0;
+               f99[1,4] := 5625.0;
+                  f99[1,5] := 5764.0;
+                     f99[1,6] := 5859.0;
+                        f99[1,7] := 5982.0;
+                           f99[1,8] := 6106.0;
+                              f99[1,9] := 6157.0;
+                                f99[1,10] := 6209.0;
+                                   f99[1,11] := 6261.0;
+                                      f99[1,12] := 6313.0;
+                                         f99[1,13] := 6366.0;
+   f99[2,0] := 2.0;
+      f99[2,1] := 98.5;
+         f99[2,2] := 99.0;
+            f99[2,3] := 99.17;
+               f99[2,4] := 99.25;
+                  f99[2,5] := 99.3;
+                     f99[2,6] := 99.33;
+                        f99[2,7] := 99.37;
+                           f99[2,8] := 99.42;
+                              f99[2,9] := 99.43;
+                                f99[2,10] := 99.45;
+                                   f99[2,11] := 99.47;
+                                      f99[2,12] := 99.48;
+                                         f99[2,13] := 99.5;
+   f99[3,0] := 3.0;
+      f99[3,1] := 34.12;
+         f99[3,2] := 30.82;
+            f99[3,3] := 29.46;
+               f99[3,4] := 28.71;
+                  f99[3,5] := 28.24;
+                     f99[3,6] := 27.91;
+                        f99[3,7] := 27.49;
+                           f99[3,8] := 27.05;
+                              f99[3,9] := 26.87;
+                                f99[3,10] := 26.69;
+                                   f99[3,11] := 26.5;
+                                      f99[3,12] := 26.32;
+                                         f99[3,13] := 26.13;
+   f99[4,0] := 4.0;
+      f99[4,1] := 21.2;
+         f99[4,2] := 18.0;
+            f99[4,3] := 16.69;
+               f99[4,4] := 15.98;
+                  f99[4,5] := 15.52;
+                     f99[4,6] := 15.21;
+                        f99[4,7] := 14.8;
+                           f99[4,8] := 14.37;
+                              f99[4,9] := 14.2;
+                                f99[4,10] := 14.02;
+                                   f99[4,11] := 13.84;
+                                      f99[4,12] := 13.65;
+                                         f99[4,13] := 13.46;
+   f99[5,0] := 5.0;
+      f99[5,1] := 16.26;
+         f99[5,2] := 13.27;
+            f99[5,3] := 12.06;
+               f99[5,4] := 11.39;
+                  f99[5,5] := 10.97;
+                     f99[5,6] := 10.67;
+                        f99[5,7] := 10.29;
+                           f99[5,8] := 9.89;
+                              f99[5,9] := 9.72;
+                                f99[5,10] := 9.55;
+                                   f99[5,11] := 9.38;
+                                      f99[5,12] := 9.2;
+                                         f99[5,13] := 9.02;
+   f99[6,0] := 6.0;
+      f99[6,1] := 13.75;
+         f99[6,2] := 10.92;
+            f99[6,3] := 9.78;
+               f99[6,4] := 9.15;
+                  f99[6,5] := 8.75;
+                     f99[6,6] := 8.47;
+                        f99[6,7] := 8.1;
+                           f99[6,8] := 7.72;
+                              f99[6,9] := 7.56;
+                                f99[6,10] := 7.4;
+                                   f99[6,11] := 7.23;
+                                      f99[6,12] := 7.06;
+                                         f99[6,13] := 6.88;
+   f99[7,0] := 8.0;
+      f99[7,1] := 11.26;
+         f99[7,2] := 8.65;
+            f99[7,3] := 7.59;
+               f99[7,4] := 7.01;
+                  f99[7,5] := 6.63;
+                     f99[7,6] := 6.37;
+                        f99[7,7] := 6.03;
+                           f99[7,8] := 5.67;
+                              f99[7,9] := 5.52;
+                                f99[7,10] := 5.36;
+                                   f99[7,11] := 5.2;
+                                      f99[7,12] := 5.03;
+                                         f99[7,13] := 4.86;
+   f99[8,0] := 12.0;
+      f99[8,1] := 9.33;
+         f99[8,2] := 6.93;
+            f99[8,3] := 5.95;
+               f99[8,4] := 5.41;
+                  f99[8,5] := 5.06;
+                     f99[8,6] := 4.82;
+                        f99[8,7] := 4.5;
+                           f99[8,8] := 4.16;
+                              f99[8,9] := 4.01;
+                                f99[8,10] := 3.86;
+                                   f99[8,11] := 3.7;
+                                     f99[8,12] := 3.54;
+                                        f99[8,13] := 3.36;
+   f99[9,0] := 15.0;
+      f99[9,1] := 8.68;
+         f99[9,2] := 6.36;
+            f99[9,3] := 5.42;
+               f99[9,4] := 4.89;
+                  f99[9,5] := 4.56;
+                     f99[9,6] := 4.32;
+                        f99[9,7] := 4.0;
+                           f99[9,8] := 3.67;
+                              f99[9,9] := 3.52;
+                                f99[9,10] := 3.37;
+                                   f99[9,11] := 3.21;
+                                      f99[9,12] := 3.05;
+                                         f99[9,13] := 2.87;
+   f99[10,0] := 20.0;
+      f99[10,1] := 8.1;
+         f99[10,2] := 5.85;
+            f99[10,3] := 4.94;
+               f99[10,4] := 4.43;
+                  f99[10,5] := 4.1;
+                     f99[10,6] := 3.87;
+                        f99[10,7] := 3.56;
+                           f99[10,8] := 3.23;
+                              f99[10,9] := 3.09;
+                                f99[10,10] := 2.94;
+                                   f99[10,11] := 2.78;
+                                      f99[10,12] := 2.61;
+                                         f99[10,13] := 2.42;
+   f99[11,0] := 30.0;
+      f99[11,1] := 7.56;
+         f99[11,2] := 5.39;
+            f99[11,3] := 4.51;
+               f99[11,4] := 4.02;
+                  f99[11,5] := 3.7;
+                     f99[11,6] := 3.47;
+                        f99[11,7] := 3.17;
+                           f99[11,8] := 2.84;
+                              f99[11,9] := 2.7;
+                                f99[11,10] := 2.55;
+                                   f99[11,11] := 2.39;
+                                      f99[11,12] := 2.21;
+                                         f99[11,13] := 2.01;
+   f99[12,0] := 60.0;
+      f99[12,1] := 7.08;
+         f99[12,2] := 4.98;
+            f99[12,3] := 4.13;
+               f99[12,4] := 3.65;
+                  f99[12,5] := 3.34;
+                     f99[12,6] := 3.12;
+                        f99[12,7] := 2.82;
+                           f99[12,8] := 2.5;
+                              f99[12,9] := 2.35;
+                                f99[12,10] := 2.2;
+                                   f99[12,11] := 2.03;
+                                      f99[12,12] := 1.84;
+                                         f99[12,13] := 1.6;
+   f99[13,0] := 120.0;
+      f99[13,1] := 6.85;
+         f99[13,2] := 4.79;
+            f99[13,3] := 3.95;
+               f99[13,4] := 3.48;
+                  f99[13,5] := 3.17;
+                     f99[13,6] := 2.96;
+                        f99[13,7] := 2.66;
+                           f99[13,8] := 2.34;
+                              f99[13,9] := 2.19;
+                                f99[13,10] := 2.03;
+                                   f99[13,11] := 1.86;
+                                      f99[13,12] := 1.66;
+                                         f99[13,13] := 1.38;
+   f99[14,0] := 240.0;
+      f99[14,1] := 6.63;
+         f99[14,2] := 4.61;
+            f99[14,3] := 3.78;
+               f99[14,4] := 3.32;
+                  f99[14,5] := 3.02;
+                     f99[14,6] := 2.8;
+                        f99[14,7] := 2.51;
+                           f99[14,8] := 2.18;
+                              f99[14,9] := 2.04;
+                                f99[14,10] := 1.88;
+                                   f99[14,11] := 1.7;
+                                      f99[14,12] := 1.47;
+                                         f99[14,13] := 1.0;
+   (* F distribution percentage-point for 99.5% certainty      *)
+   (*   supplied:  F_{0.005}(N_2, N_1)                         *)
+   (*   returned:  F_{0.995}(N_1, N_2) = 1/F_{0.005}(N_2, N_1) *)
+   (* N1 x N2 : degrees of freedom *)
+   (*   N1 aligns with the columns *)
+   (*   N2 aligns with the rows    *)
+   f995[0,0] := 0.0;
+      f995[0,1] := 1.0;
+         f995[0,2] := 2.0;
+            f995[0,3] := 3.0;
+               f995[0,4] := 4.0;
+                  f995[0,5] := 5.0;
+                     f995[0,6] := 6.0;
+                        f995[0,7] := 8.0;
+                           f995[0,8] := 12.0;
+                              f995[0,9] := 15.0;
+                                f995[0,10] := 20.0;
+                                   f995[0,11] := 30.0;
+                                      f995[0,12] := 60.0;
+                                         f995[0,13] := 120.0;
+   f995[1,0] := 1.0;
+      f995[1,1] := 16211.0;
+         f995[1,2] := 20000.0;
+            f995[1,3] := 21615.0;
+               f995[1,4] := 22500.0;
+                  f995[1,5] := 23056.0;
+                     f995[1,6] := 23437.0;
+                        f995[1,7] := 23925.0;
+                           f995[1,8] := 24426.0;
+                              f995[1,9] := 24630.0;
+                                f995[1,10] := 24836.0;
+                                   f995[1,11] := 25044.0;
+                                      f995[1,12] := 25253.0;
+                                         f995[1,13] := 25465.0;
+   f995[2,0] := 2.0;
+      f995[2,1] := 198.5;
+         f995[2,2] := 199.0;
+            f995[2,3] := 199.2;
+               f995[2,4] := 199.2;
+                  f995[2,5] := 199.3;
+                     f995[2,6] := 199.3;
+                        f995[2,7] := 199.4;
+                           f995[2,8] := 199.4;
+                              f995[2,9] := 199.4;
+                                f995[2,10] := 199.4;
+                                   f995[2,11] := 199.5;
+                                      f995[2,12] := 199.5;
+                                         f995[2,13] := 199.5;
+   f995[3,0] := 3.0;
+      f995[3,1] := 55.55;
+         f995[3,2] := 49.8;
+            f995[3,3] := 47.47;
+               f995[3,4] := 46.19;
+                  f995[3,5] := 45.39;
+                     f995[3,6] := 44.84;
+                        f995[3,7] := 44.13;
+                           f995[3,8] := 43.39;
+                              f995[3,9] := 43.08;
+                                f995[3,10] := 42.78;
+                                   f995[3,11] := 42.47;
+                                      f995[3,12] := 42.15;
+                                         f995[3,13] := 41.83;
+   f995[4,0] := 4.0;
+      f995[4,1] := 31.33;
+         f995[4,2] := 26.28;
+            f995[4,3] := 24.26;
+               f995[4,4] := 23.15;
+                  f995[4,5] := 22.46;
+                     f995[4,6] := 21.97;
+                        f995[4,7] := 21.35;
+                           f995[4,8] := 20.70;
+                              f995[4,9] := 20.44;
+                                f995[4,10] := 20.17;
+                                   f995[4,11] := 19.89;
+                                      f995[4,12] := 19.61;
+                                         f995[4,13] := 19.32;
+   f995[5,0] := 5.0;
+      f995[5,1] := 22.78;
+         f995[5,2] := 18.31;
+            f995[5,3] := 16.53;
+               f995[5,4] := 15.56;
+                  f995[5,5] := 14.94;
+                     f995[5,6] := 14.51;
+                        f995[5,7] := 13.96;
+                           f995[5,8] := 13.38;
+                              f995[5,9] := 13.15;
+                                f995[5,10] := 12.9;
+                                   f995[5,11] := 12.66;
+                                      f995[5,12] := 12.4;
+                                         f995[5,13] := 12.14;
+   f995[6,0] := 6.0;
+      f995[6,1] := 18.63;
+         f995[6,2] := 14.54;
+            f995[6,3] := 12.92;
+               f995[6,4] := 12.03;
+                  f995[6,5] := 11.46;
+                     f995[6,6] := 11.07;
+                        f995[6,7] := 10.57;
+                           f995[6,8] := 10.03;
+                              f995[6,9] := 9.81;
+                                f995[6,10] := 9.59;
+                                   f995[6,11] := 9.36;
+                                      f995[6,12] := 9.12;
+                                         f995[6,13] := 8.88;
+   f995[7,0] := 8.0;
+      f995[7,1] := 14.69;
+         f995[7,2] := 11.04;
+            f995[7,3] := 9.6;
+               f995[7,4] := 8.81;
+                  f995[7,5] := 8.3;
+                     f995[7,6] := 7.95;
+                        f995[7,7] := 7.5;
+                           f995[7,8] := 7.01;
+                              f995[7,9] := 6.81;
+                                f995[7,10] := 6.61;
+                                   f995[7,11] := 6.4;
+                                      f995[7,12] := 6.18;
+                                         f995[7,13] := 5.95;
+   f995[8,0] := 12.0;
+      f995[8,1] := 11.75;
+         f995[8,2] := 8.51;
+            f995[8,3] := 7.23;
+               f995[8,4] := 6.52;
+                  f995[8,5] := 6.07;
+                     f995[8,6] := 5.76;
+                        f995[8,7] := 5.35;
+                           f995[8,8] := 4.91;
+                              f995[8,9] := 4.72;
+                                f995[8,10] := 4.53;
+                                   f995[8,11] := 4.33;
+                                      f995[8,12] := 4.12;
+                                         f995[8,13] := 3.9;
+   f995[9,0] := 15.0;
+      f995[9,1] := 10.8;
+         f995[9,2] := 7.7;
+            f995[9,3] := 6.48;
+               f995[9,4] := 5.8;
+                  f995[9,5] := 5.37;
+                     f995[9,6] := 5.07;
+                        f995[9,7] := 4.67;
+                           f995[9,8] := 4.25;
+                              f995[9,9] := 4.07;
+                                f995[9,10] := 3.88;
+                                   f995[9,11] := 3.69;
+                                      f995[9,12] := 3.48;
+                                         f995[9,13] := 3.26;
+   f995[10,0] := 20.0;
+      f995[10,1] := 9.94;
+         f995[10,2] := 6.99;
+            f995[10,3] := 5.82;
+               f995[10,4] := 5.17;
+                  f995[10,5] := 4.76;
+                     f995[10,6] := 4.47;
+                        f995[10,7] := 4.09;
+                           f995[10,8] := 3.68;
+                              f995[10,9] := 3.5;
+                                f995[10,10] := 3.32;
+                                   f995[10,11] := 3.12;
+                                      f995[10,12] := 2.92;
+                                         f995[10,13] := 2.69;
+   f995[11,0] := 30.0;
+      f995[11,1] := 9.18;
+         f995[11,2] := 6.35;
+            f995[11,3] := 5.24;
+               f995[11,4] := 4.62;
+                  f995[11,5] := 4.23;
+                     f995[11,6] := 3.95;
+                        f995[11,7] := 3.58;
+                           f995[11,8] := 3.18;
+                              f995[11,9] := 3.01;
+                                f995[11,10] := 2.82;
+                                   f995[11,11] := 2.63;
+                                      f995[11,12] := 2.42;
+                                         f995[11,13] := 2.18;
+   f995[12,0] := 60.0;
+      f995[12,1] := 8.49;
+         f995[12,2] := 5.79;
+            f995[12,3] := 4.73;
+               f995[12,4] := 4.14;
+                  f995[12,5] := 3.76;
+                     f995[12,6] := 3.49;
+                        f995[12,7] := 3.13;
+                           f995[12,8] := 2.74;
+                              f995[12,9] := 2.57;
+                                f995[12,10] := 2.39;
+                                   f995[12,11] := 2.19;
+                                      f995[12,12] := 1.96;
+                                         f995[12,13] := 1.69;
+   f995[13,0] := 120.0;
+      f995[13,1] := 8.18;
+         f995[13,2] := 5.54;
+            f995[13,3] := 4.5;
+               f995[13,4] := 3.92;
+                  f995[13,5] := 3.55;
+                     f995[13,6] := 3.28;
+                        f995[13,7] := 2.93;
+                           f995[13,8] := 2.54;
+                              f995[13,9] := 2.37;
+                                f995[13,10] := 2.19;
+                                   f995[13,11] := 1.98;
+                                      f995[13,12] := 1.75;
+                                         f995[13,13] := 1.43;
+   f995[14,0] := 240.0;
+      f995[14,1] := 7.08;
+         f995[14,2] := 5.3;
+            f995[14,3] := 4.28;
+               f995[14,4] := 3.72;
+                  f995[14,5] := 3.35;
+                     f995[14,6] := 3.09;
+                        f995[14,7] := 2.74;
+                           f995[14,8] := 2.36;
+                              f995[14,9] := 2.19;
+                                f995[14,10] := 2.0;
+                                   f995[14,11] := 1.79;
+                                      f995[14,12] := 1.55;
+                                         f995[14,13] := 1.0
+end Distributions.

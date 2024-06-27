@@ -1,0 +1,186 @@
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(*       BBBB      EEEEE     L         The                                    *)
+(*       B   B     E         L           BIOLOGICAL                           *)
+(*       BBBB      EEE       L           ENGINEERING                          *)
+(*       B    B    E         L           LABORATORY                           *)
+(*       BBBBB     EEEEEE    LLLLLL        @ Saginaw Valley State University  *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Copyright 2008-2013, Alan D. Freed                                         *)
+(*                                                                            *)
+(* This file is part of the BEL-Math suite of .NET/Mono libraries.            *)
+(*                                                                            *)
+(* BEL is a free software: you can redistribute it and/or modify it under the *)
+(* terms of the GNU Lesser General Public License as published by the Free    *)
+(* Software Foundation, either version 3 of the License, or (at your option)  *)
+(* any later version.                                                         *)
+(*                                                                            *)
+(* BEL is distributed in the hope that it will be useful, but WITHOUT ANY     *)
+(* WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS  *)
+(* FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for   *)
+(* more details.                                                              *)
+(*                                                                            *)
+(* You should have received a copy of the GNU Lesser General Public License   *)
+(* along with BEL.  If not, see <http://www.gnu.org/licenses/>.               *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* This module solves for the roots belonging to vector equation  F(x) = 0,   *)
+(* i.e., it finds a solution for x so that F(x) = 0 given some function F.    *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* type                                                                       *)
+(*    F            roots are to be found for an instance of this type         *)
+(*    J            used to supply the Jacobian, i.e.,  J = dF/dx              *)
+(* procedures                                                                 *)
+(*    Newton       Newton's method                                            *)
+(*       f         an instance of F                                           *)
+(*       j         an instance of J (NumericalJacobian is called if j = nil)  *)
+(*       x         argument of x                                              *)
+(*                    supply : initial guess                                  *)
+(*                    return : x such that f(x) = 0                           *)
+(*    NumericalJacobian                                                       *)
+(*       f         an instance of F                                           *)
+(*       x         argument of F where the Jacobian is to be gotten           *)
+(*       returns   approximation to the Jacobian df_i(x)/dx_j                 *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+
+module {public} BelMath.Roots;
+
+   import
+      Bel.Log                as L,
+      Bel.Types              as T,
+      Bel.Math               as Fn,
+      BelMath.Interpolations as I;
+
+   const
+      maxHalves = 4; maxSteps = 100;
+
+   var {private}
+      tol, tolX : real;
+
+   type {public}
+      F = procedure (I.RealVector) : I.RealVector;
+      J = procedure (I.RealVector) : I.RealMatrix;
+
+   procedure {public} Newton (f : F; j : J; var x : I.RealVector);
+      var
+         dx, fnx, oldX    : I.RealVector;
+         half, step       : integer;
+         jac              : I.RealMatrix;
+         newMagF, oldMagF : real;
+         stop             : boolean;
+   begin
+      dx   := nil;
+      fnx  := nil;
+      jac  := nil;
+      oldX := nil;
+      if f # nil then
+         fnx := f(x)
+      else
+         L.Message("The function 'f' of type 'F' must not be nil.");
+         L.ErrorMessage(403,-1, "BelMath.Roots.Newton")
+      end;
+      oldMagF := Fn.Sqrt(fnx +* fnx);
+      if j # nil then
+         jac := j(x)
+      else
+         jac := NumericalJacobian(f, x)
+      end;
+      do
+         dx := jac \ fnx
+      on exception do
+         L.Message("Poor initial guess for Newton's algorithm.");
+         L.ErrorMessage(323,-1, "BelMath.Roots.Newton")
+      end;
+      step := 0;
+      loop
+         inc(step);
+         half := 0;
+         oldX := x;
+         loop
+            fnx     := f(x-dx);
+            newMagF := Fn.Sqrt(fnx +* fnx);
+            if newMagF < oldMagF then
+               exit
+            end;
+            if half = maxHalves then
+               L.Message("Scaling back correction term exceeded maxHalves");
+               L.WarningMessage(80,90, "BelMath.Roots.Newton");
+               exit
+            end;
+            dx := dx / 2.0;
+            inc(half)
+         end;
+         x := oldX - dx;
+         if newMagF < tol then
+            exit
+         end;
+         if Fn.Sqrt(dx +* dx) < tolX * Fn.Max(Fn.Sqrt(x +* x), 1.0) then
+            exit
+         end;
+         if step = maxSteps then
+            L.Message("Interations to convergence exceeded maxSteps");
+            L.WarningMessage(80,90, "BelMath.Roots.Newton");
+            exit
+         end;
+         repeat
+            stop := true;
+            if j # nil then
+               jac := j(x)
+            else
+               jac := NumericalJacobian(f, x)
+            end;
+            do
+               dx := jac \ fnx
+            on exception do
+               stop := false;
+               inc(half);
+               if half < maxHalves then
+                  dx      := (oldX - x)/2;
+                  x       := oldX - dx;
+                  fnx     := f(x);
+                  newMagF := Fn.Sqrt(fnx +* fnx)
+               else
+                  L.Message("A solution could not be found.");
+                  L.WarningMessage(80,90, "BelMath.Roots.Newton"); 
+                  stop := true
+               end;
+            end
+         until stop;
+         oldMagF := newMagF
+      end
+   end Newton;
+
+   procedure {public} NumericalJacobian
+                                       (f : F; x : I.RealVector) : I.RealMatrix;
+      var
+         dim, i, j  : integer;
+         fm, fp, xh : I.RealVector;
+         h, temp    : real;
+         jac        : I.RealMatrix;
+   begin
+      fp := nil;
+      fm := nil;
+      if f = nil then
+         L.ErrorMessage(403,-1, "BelMath.Roots.NumericalJacobian")
+      end;
+      dim := len(x);
+      jac := new I.RealMatrix(dim, dim);
+      xh  := new I.RealVector(dim);
+      xh  := x;
+      for j := 0 to dim-1 do
+         temp := xh[j];
+         h := tol * Fn.Max(abs(temp), 1.0);
+         xh[j] := temp + h;
+         fp := f(xh);
+         xh[j] := temp - h;
+         fm := f(xh);
+         for i := 0 to dim-1 do
+            jac[i,j] := (fp[i] - fm[i]) / (2.0 * h)  (* midpoint difference *)
+         end;
+         xh[j] := temp
+      end;
+      return jac
+   end NumericalJacobian;
+
+begin
+   tol  := Fn.Sqrt(T.Epsilon);
+   tolX := 100.0 * T.Epsilon
+end Roots.

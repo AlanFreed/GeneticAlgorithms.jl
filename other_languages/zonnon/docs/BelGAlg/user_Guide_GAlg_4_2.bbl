@@ -1,0 +1,69 @@
+\begin{thebibliography}{10}
+\newcommand{\enquote}[1]{``#1''}
+\providecommand{\selectlanguage}[1]{\relax}
+\providecommand{\bibAnnoteFile}[1]{%
+  \IfFileExists{#1}{\begin{quotation}\noindent\textsc{Key:} #1\\
+  \textsc{Annotation:}\ \input{#1}\end{quotation}}{}}
+\providecommand{\bibAnnote}[2]{%
+  \begin{quotation}\noindent\textsc{Key:} #1\\
+  \textsc{Annotation:}\ #2\end{quotation}}
+
+\bibitem{Zonnon09}
+Gutknecht, J., 2009, \emph{Zonnon Language Report}, ETH Z{\"u}rich,
+  Switzerland, 4th ed., available online at www.zonnon.ethz.ch.
+\bibAnnoteFile{Zonnon09}
+
+\bibitem{Goldberg89}
+Goldberg, D.~E., 1989, \emph{Genetic Algorithms in Search, Optimization, and
+  Machine Learning}, Addison-Wesley, Boston.
+\bibAnnoteFile{Goldberg89}
+
+\bibitem{Goldberg02}
+Goldberg, D.~E., 2002, \emph{The Design of Innovation: Lessons learned from and
+  for Competent Genetic Algorithms}, vol.~7 of \emph{Genetic Algorithms and
+  Evolutionary Computation}, Kluwer, Boston.
+\bibAnnoteFile{Goldberg02}
+
+\bibitem{SivanandamDeepa08}
+Sivanandam, S.~N. and Deepa, S.~N., 2008, \emph{Introduction to Genetic
+  Algorithms}, Springer, Berlin.
+\bibAnnoteFile{SivanandamDeepa08}
+
+\bibitem{Schmitt01}
+Schmitt, L.~M., 2001, \enquote{Theory of genetic algorithms,} Theoretical
+  Computer Science, \textbf{259}, pp. 1--61.
+\bibAnnoteFile{Schmitt01}
+
+\bibitem{Doehringetal04}
+Doehring, T.~C., Carew, E.~O., and Vesely, I., 2004, \enquote{The effect of
+  strain rate on the viscoelastic response of aortic valve tissues: A
+  direct-fit approach,} Annals of Biomedical Engineering, \textbf{32}, pp.
+  223--232.
+\bibAnnoteFile{Doehringetal04}
+
+\bibitem{Schmitt04}
+Schmitt, L.~M., 2004, \enquote{Theory of genetic algorithms {II}: models for
+  genetic operators over the string-tensor representation of populations and
+  convergence to global optima for arbitrary fitness function under scaling,}
+  Theoretical Computer Science, \textbf{310}, pp. 181--231.
+\bibAnnoteFile{Schmitt04}
+
+\bibitem{Michalewicz96}
+Michalewicz, Z., 1996, \emph{Genetic Algorithms + Data Structures = Evolution
+  Programs}, 3rd ed., Springer, Berlin.
+\bibAnnoteFile{Michalewicz96}
+
+\bibitem{YaoSethares94}
+Yao, L. and Sethares, W.~A., 1994, \enquote{Nonlinear parameter estimation via
+  the genetic algorithm,} IEEE Transactions on Signal Processing, \textbf{42},
+  pp. 927--935.
+\bibAnnoteFile{YaoSethares94}
+
+\bibitem{FreedEinstein11}
+Freed, A.~D. and Einstein, D.~R., 2011, \enquote{Viscoelastic model for lung
+  parenchyma for multi-scale modeling of respiratory system, {P}hase {I}:
+  {H}ypo-elastic model for {CFD} implementation,} Technical Report PNNL-20340,
+  Pacific Northwest National Laboratory, Richland, WA.
+\bibAnnoteFile{FreedEinstein11}
+
+\end{thebibliography}

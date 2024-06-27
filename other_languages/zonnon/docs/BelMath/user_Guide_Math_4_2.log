@@ -1,0 +1,500 @@
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2013.4.9)  9 NOV 2013 07:36
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**user_Guide_Math_4_2.tex
+(./user_Guide_Math_4_2.tex
+LaTeX2e <2011/06/27>
+Babel <v3.8m> and hyphenation patterns for english, dumylang, nohyphenation, ge
+rman-x-2012-05-30, ngerman-x-2012-05-30, afrikaans, ancientgreek, ibycus, arabi
+c, armenian, basque, bulgarian, catalan, pinyin, coptic, croatian, czech, danis
+h, dutch, ukenglish, usenglishmax, esperanto, estonian, ethiopic, farsi, finnis
+h, french, friulan, galician, german, ngerman, swissgerman, monogreek, greek, h
+ungarian, icelandic, assamese, bengali, gujarati, hindi, kannada, malayalam, ma
+rathi, oriya, panjabi, tamil, telugu, indonesian, interlingua, irish, italian, 
+kurmanji, latin, latvian, lithuanian, mongolian, mongolianlmc, bokmal, nynorsk,
+ piedmontese, polish, portuguese, romanian, romansh, russian, sanskrit, serbian
+, serbianc, slovak, slovenian, spanish, swedish, turkish, turkmen, ukrainian, u
+ppersorbian, welsh, loaded.
+(/usr/local/texlive/2012/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2007/10/19 v1.4h Standard LaTeX document class
+(/usr/local/texlive/2012/texmf-dist/tex/latex/base/fleqn.clo
+File: fleqn.clo 1998/08/17 v1.1c Standard LaTeX option (flush left equations)
+\mathindent=\dimen102
+)
+(/usr/local/texlive/2012/texmf-dist/tex/latex/base/size12.clo
+File: size12.clo 2007/10/19 v1.4h Standard LaTeX file (size option)
+)
+\c@part=\count79
+\c@section=\count80
+\c@subsection=\count81
+\c@subsubsection=\count82
+\c@paragraph=\count83
+\c@subparagraph=\count84
+\c@figure=\count85
+\c@table=\count86
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen103
+)
+(/usr/local/texlive/2012/texmf-dist/tex/latex/draftcopy/draftcopy.sty
+Package: draftcopy 2002/02/25 v2.16
+\draftcopy@hour=\count87
+\draftcopy@minute=\count88
+
+(/usr/local/texlive/2012/texmf-dist/tex/latex/draftcopy/draftcopy.cfg)
+Prints DRAFT on pages; does not show in your DVI viewer
+) (/usr/local/texlive/2012/texmf-dist/tex/latex/tools/ftnright.sty
+Package: ftnright 2010/02/25 v1.1f footnote layout package (FMi)
+\rcol@footinsskip=\skip43
+\ftn@amount=\dimen104
+)
+(/usr/local/texlive/2012/texmf-dist/tex/latex/graphics/graphicx.sty
+Package: graphicx 1999/02/16 v1.0f Enhanced LaTeX Graphics (DPC,SPQR)
+
+(/usr/local/texlive/2012/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 1999/03/16 v1.13 key=value parser (DPC)
+\KV@toks@=\toks14
+)
+(/usr/local/texlive/2012/texmf-dist/tex/latex/graphics/graphics.sty
+Package: graphics 2009/02/05 v1.0o Standard LaTeX Graphics (DPC,SPQR)
+
+(/usr/local/texlive/2012/texmf-dist/tex/latex/graphics/trig.sty
+Package: trig 1999/03/16 v1.09 sin cos tan (DPC)
+)
+(/usr/local/texlive/2012/texmf-dist/tex/latex/latexconfig/graphics.cfg
+File: graphics.cfg 2010/04/23 v1.9 graphics configuration of TeX Live
+)
+Package graphics Info: Driver file: pdftex.def on input line 91.
+
+(/usr/local/texlive/2012/texmf-dist/tex/latex/pdftex-def/pdftex.def
+File: pdftex.def 2011/05/27 v0.06d Graphics/color for pdfTeX
+
+(/usr/local/texlive/2012/texmf-dist/tex/generic/oberdiek/infwarerr.sty
+Package: infwarerr 2010/04/08 v1.3 Providing info/warning/error messages (HO)
+)
+(/usr/local/texlive/2012/texmf-dist/tex/generic/oberdiek/ltxcmds.sty
+Package: ltxcmds 2011/11/09 v1.22 LaTeX kernel commands for general use (HO)
+)
+\Gread@gobject=\count89
+))
+\Gin@req@height=\dimen105
+\Gin@req@width=\dimen106
+)
+(/usr/local/texlive/2012/texmf-dist/tex/generic/babel/babel.sty
+Package: babel 2008/07/08 v3.8m The Babel package
+
+(/usr/local/texlive/2012/texmf-dist/tex/generic/babel/english.ldf
+Language: english 2005/03/30 v3.3o English support from the babel system
+
+(/usr/local/texlive/2012/texmf-dist/tex/generic/babel/babel.def
+File: babel.def 2008/07/08 v3.8m Babel common definitions
+\babel@savecnt=\count90
+\U@D=\dimen107
+)
+\l@canadian = a dialect from \language\l@american 
+\l@australian = a dialect from \language\l@british 
+\l@newzealand = a dialect from \language\l@british 
+))
+(/usr/local/texlive/2012/texmf-dist/tex/latex/amsmath/amsmath.sty
+Package: amsmath 2013/01/14 v2.14 AMS math features
+\@mathmargin=\skip44
+
+For additional information on amsmath, use the `?' option.
+(/usr/local/texlive/2012/texmf-dist/tex/latex/amsmath/amstext.sty
+Package: amstext 2000/06/29 v2.01
+
+(/usr/local/texlive/2012/texmf-dist/tex/latex/amsmath/amsgen.sty
+File: amsgen.sty 1999/11/30 v2.0
+\@emptytoks=\toks15
+\ex@=\dimen108
+))
+(/usr/local/texlive/2012/texmf-dist/tex/latex/amsmath/amsbsy.sty
+Package: amsbsy 1999/11/29 v1.2d
+\pmbraise@=\dimen109
+)
+(/usr/local/texlive/2012/texmf-dist/tex/latex/amsmath/amsopn.sty
+Package: amsopn 1999/12/14 v2.01 operator names
+)
+\inf@bad=\count91
+LaTeX Info: Redefining \frac on input line 210.
+\uproot@=\count92
+\leftroot@=\count93
+LaTeX Info: Redefining \overline on input line 306.
+\classnum@=\count94
+\DOTSCASE@=\count95
+LaTeX Info: Redefining \ldots on input line 378.
+LaTeX Info: Redefining \dots on input line 381.
+LaTeX Info: Redefining \cdots on input line 466.
+\Mathstrutbox@=\box26
+\strutbox@=\box27
+\big@size=\dimen110
+LaTeX Font Info:    Redeclaring font encoding OML on input line 566.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 567.
+\macc@depth=\count96
+\c@MaxMatrixCols=\count97
+\dotsspace@=\muskip10
+\c@parentequation=\count98
+\dspbrk@lvl=\count99
+\tag@help=\toks16
+\row@=\count100
+\column@=\count101
+\maxfields@=\count102
+\andhelp@=\toks17
+\eqnshift@=\dimen111
+\alignsep@=\dimen112
+\tagshift@=\dimen113
+\tagwidth@=\dimen114
+\totwidth@=\dimen115
+\lineht@=\dimen116
+\@envbody=\toks18
+\multlinegap=\skip45
+\multlinetaggap=\skip46
+\mathdisplay@stack=\toks19
+LaTeX Info: Redefining \[ on input line 2665.
+LaTeX Info: Redefining \] on input line 2666.
+)
+(/usr/local/texlive/2012/texmf-dist/tex/latex/amscls/amsthm.sty
+Package: amsthm 2004/08/06 v2.20
+\thm@style=\toks20
+\thm@bodyfont=\toks21
+\thm@headfont=\toks22
+\thm@notefont=\toks23
+\thm@headpunct=\toks24
+\thm@preskip=\skip47
+\thm@postskip=\skip48
+\thm@headsep=\skip49
+\dth@everypar=\toks25
+)
+(/usr/local/texlive/2012/../texmf-local/tex/latex/local/pctex/mtpro2/mtpro2.sty
+Package: mtpro2 2006/05/03 v1.1 MathTimePro II font support (PCTeX/WaS)
+\c@mv@heavy=\count103
+\pointcount@=\count104
+LaTeX Info: Redefining \mathfrak on input line 208.
+\prePbox@=\box28
+\Pbox@=\box29
+\LRbox@=\box30
+\HATbox@=\box31
+\TDbox@=\box32
+\CHbox@=\box33
+\preSbox@=\box34
+\Sbox@=\box35
+\SQcount@=\count105
+\SQRTbox@=\box36
+\UPROOT@=\count106
+\LEFTROOT@=\count107
+\limtype@=\count108
+\xlfont@=\count109
+\xlposition@=\count110
+\xlposition@ii=\count111
+\optype@=\count112
+\x@count=\count113
+\maxXLscripts@=\dimen117
+\symAMSa=\mathgroup4
+) (/usr/local/texlive/2012/texmf-dist/tex/latex/tools/xspace.sty
+Package: xspace 2009/10/20 v1.13 Space after command names (DPC,MH)
+)
+(./user_Guide_Math_4_2.aux)
+\openout1 = `user_Guide_Math_4_2.aux'.
+
+
+(/usr/local/texlive/2012/texmf-dist/tex/latex/base/ts1cmr.fd
+File: ts1cmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
+)
+(/usr/local/texlive/2012/texmf-dist/tex/context/base/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count114
+\scratchdimen=\dimen118
+\scratchbox=\box37
+\nofMPsegments=\count115
+\nofMParguments=\count116
+\everyMPshowfont=\toks26
+\MPscratchCnt=\count117
+\MPscratchDim=\dimen119
+\MPnumerator=\count118
+\makeMPintoPDFobject=\count119
+\everyMPtoPDFconversion=\toks27
+) (/usr/local/texlive/2012/texmf-dist/tex/generic/oberdiek/pdftexcmds.sty
+Package: pdftexcmds 2011/11/29 v0.20 Utility functions of pdfTeX for LuaTeX (HO
+)
+
+(/usr/local/texlive/2012/texmf-dist/tex/generic/oberdiek/ifluatex.sty
+Package: ifluatex 2010/03/01 v1.3 Provides the ifluatex switch (HO)
+Package ifluatex Info: LuaTeX not detected.
+)
+(/usr/local/texlive/2012/texmf-dist/tex/generic/oberdiek/ifpdf.sty
+Package: ifpdf 2011/01/30 v2.3 Provides the ifpdf switch (HO)
+Package ifpdf Info: pdfTeX in PDF mode is detected.
+)
+Package pdftexcmds Info: LuaTeX not detected.
+Package pdftexcmds Info: \pdf@primitive is available.
+Package pdftexcmds Info: \pdf@ifprimitive is available.
+Package pdftexcmds Info: \pdfdraftmode found.
+)
+(/usr/local/texlive/2012/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
+Package: epstopdf-base 2010/02/09 v2.5 Base part for package epstopdf
+
+(/usr/local/texlive/2012/texmf-dist/tex/latex/oberdiek/grfext.sty
+Package: grfext 2010/08/19 v1.1 Manage graphics extensions (HO)
+
+(/usr/local/texlive/2012/texmf-dist/tex/generic/oberdiek/kvdefinekeys.sty
+Package: kvdefinekeys 2011/04/07 v1.3 Define keys (HO)
+))
+(/usr/local/texlive/2012/texmf-dist/tex/latex/oberdiek/kvoptions.sty
+Package: kvoptions 2011/06/30 v3.11 Key value format for package options (HO)
+
+(/usr/local/texlive/2012/texmf-dist/tex/generic/oberdiek/kvsetkeys.sty
+Package: kvsetkeys 2012/04/25 v1.16 Key value parser (HO)
+
+(/usr/local/texlive/2012/texmf-dist/tex/generic/oberdiek/etexcmds.sty
+Package: etexcmds 2011/02/16 v1.5 Avoid name clashes with e-TeX commands (HO)
+Package etexcmds Info: Could not find \expanded.
+(etexcmds)             That can mean that you are not using pdfTeX 1.50 or
+(etexcmds)             that some package has redefined \expanded.
+(etexcmds)             In the latter case, load this package earlier.
+)))
+Package grfext Info: Graphics extension search list:
+(grfext)             [.png,.pdf,.jpg,.mps,.jpeg,.jbig2,.jb2,.PNG,.PDF,.JPG,.JPE
+G,.JBIG2,.JB2,.eps]
+(grfext)             \AppendGraphicsExtensions on input line 452.
+
+(/usr/local/texlive/2012/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
+File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
+e
+))
+<BelLogo.pdf, id=1, 1287.81125pt x 656.4525pt>
+File: BelLogo.pdf Graphic file (type pdf)
+ <use BelLogo.pdf>
+Package pdftex.def Info: BelLogo.pdf used on input line 338.
+(pdftex.def)             Requested size: 227.62204pt x 116.0228pt.
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [1{/usr/local/texlive/2012/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
+
+
+Non-PDF special ignored!
+
+ <./BelLogo.pdf>]
+<erfFn.png, id=15, 508.14844pt x 376.40625pt>
+File: erfFn.png Graphic file (type png)
+ <use erfFn.png>
+Package pdftex.def Info: erfFn.png used on input line 453.
+(pdftex.def)             Requested size: 227.62204pt x 168.60587pt.
+
+<erfcFn.png, id=16, 508.14844pt x 376.40625pt>
+File: erfcFn.png Graphic file (type png)
+ <use erfcFn.png>
+Package pdftex.def Info: erfcFn.png used on input line 454.
+(pdftex.def)             Requested size: 227.62204pt x 168.60587pt.
+
+(/usr/local/texlive/2012/../texmf-local/tex/latex/local/pctex/mtpro2/umt2hrb.fd
+File: umt2hrb.fd 2006/05/03 v1.1 MathTimePro II Holey Roman Bold (PCTeX/WaS)
+) <gammaFn.png, id=17, 508.14844pt x 376.40625pt>
+File: gammaFn.png Graphic file (type png)
+ <use gammaFn.png>
+Package pdftex.def Info: gammaFn.png used on input line 480.
+(pdftex.def)             Requested size: 227.62204pt x 168.60587pt.
+ [2]
+Underfull \vbox (badness 5189) has occurred while \output is active []
+
+
+<mlRelaxFn.png, id=29, 508.14844pt x 376.40625pt>
+File: mlRelaxFn.png Graphic file (type png)
+ <use mlRelaxFn.png>
+Package pdftex.def Info: mlRelaxFn.png used on input line 505.
+(pdftex.def)             Requested size: 227.62204pt x 168.60587pt.
+
+<mlMemoryFn.png, id=30, 508.14844pt x 376.40625pt>
+File: mlMemoryFn.png Graphic file (type png)
+ <use mlMemoryFn.png>
+Package pdftex.def Info: mlMemoryFn.png used on input line 506.
+(pdftex.def)             Requested size: 227.62204pt x 168.60587pt.
+
+[3 <./erfFn.png (PNG copy)> <./erfcFn.png (PNG copy)> <./gammaFn.png (PNG copy)
+> <./mlRelaxFn.png (PNG copy)> <./mlMemoryFn.png (PNG copy)>]
+Underfull \hbox (badness 2990) in paragraph at lines 555--562
+\T1/txtt/m/n/12 tainty\T1/txr/m/n/12 , that has val^^?ues: \T1/txtt/m/n/12 nine
+ty\T1/txr/m/n/12 , \T1/txtt/m/n/12 nine^^?ty^^?
+ []
+
+[4] [5]
+Underfull \hbox (badness 3029) in paragraph at lines 735--738
+\T1/txr/m/n/12 Specific \T1/txr/m/sc/12 Runge\T1/txr/m/n/12 -\T1/txr/m/sc/12 Ku
+tta \T1/txr/m/n/12 in^^?te^^?gra^^?tors are typ^^?i^^?cally
+ []
+
+
+Underfull \hbox (badness 2269) in paragraph at lines 747--753
+[]\T1/txr/m/n/12 At the sug^^?ges^^?tion of Prof. \T1/txr/m/sc/12 John Butcher\
+T1/txr/m/n/12 ,
+ []
+
+(/usr/local/texlive/2012/texmf-dist/tex/latex/txfonts/ts1txr.fd
+File: ts1txr.fd 2000/12/15 v3.1
+)
+(/usr/local/texlive/2012/../texmf-local/tex/latex/local/monotype/baskervi/ts1mb
+vj.fd
+File: ts1mbvj.fd 2005/02/04 Fontinst v1.928 font definitions for TS1/mbvj.
+)
+(/usr/local/texlive/2012/../texmf-local/tex/latex/local/monotype/baskervi/t1mbv
+j.fd
+File: t1mbvj.fd 2005/02/04 Fontinst v1.928 font definitions for T1/mbvj.
+)
+Underfull \hbox (badness 6708) in paragraph at lines 912--929
+[]\T1/txr/m/n/12 Module \T1/txtt/m/n/12 Bel^^?Math.RungeKutta \T1/txr/m/n/12 im
+^^?ple^^?ments
+ []
+
+[6]
+Underfull \hbox (badness 2608) in paragraph at lines 956--964
+\T1/txr/m/n/12 quired to ob^^?tain a so^^?lu^^?tion, while \T1/txtt/m/n/12 in^^
+?te^^?gra^^?
+ []
+
+[7]
+Underfull \hbox (badness 1546) in paragraph at lines 1134--1140
+\T1/txr/m/n/12 co^^?ef^^?fi^^?cients, akin to \T1/txr/m/sc/12 Adams-Bash^^?fort
+h\T1/txr/m/n/12 /\T1/txr/m/sc/12 Moulton
+ []
+
+[8]
+Underfull \vbox (badness 3199) has occurred while \output is active []
+
+
+Overfull \hbox (2.56584pt too wide) detected at line 1205
+ $[] \LMP2/mtt/m/n/12 D []$ 
+ []
+
+[9] [10]
+Underfull \hbox (badness 1681) in paragraph at lines 1348--1365
+\T1/txr/bx/n/12 pro^^?vides an im^^?plicit method. They both ex^^?
+ []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
+Underfull \hbox (badness 1412) in paragraph at lines 1421--1432
+\T1/txr/bx/n/12 The first al^^?go^^?rithm man^^?ages as^^?sign^^?ment of an
+ []
+
+(/usr/local/texlive/2012/../texmf-local/tex/latex/local/pctex/mtpro2/umt2ms.fd
+File: umt2ms.fd 2006/05/03 v1.1 MathTimePro II Script (PCTeX/WaS)
+) [11]
+Underfull \hbox (badness 2521) in paragraph at lines 1506--1514
+\T1/txr/bx/n/12 Module \T1/txtt/m/n/12 Bel^^?Math.ConvolutionIntegrals \T1/txr/
+bx/n/12 ex^^?
+ []
+
+[12]
+Underfull \hbox (badness 1371) in paragraph at lines 1558--1563
+\T1/txr/m/n/10 Exception han^^?dler added to \T1/txtt/m/n/10 Bel^^?Math.Roots.N
+ewton \T1/txr/m/n/10 in
+ []
+
+
+Underfull \hbox (badness 1648) in paragraph at lines 1558--1563
+\T1/txr/m/n/10 an ef^^?fort to make it more ro^^?bust. The mod^^?ule \T1/txtt/m
+/n/10 Bel^^?
+ []
+
+
+Underfull \hbox (badness 1946) in paragraph at lines 1575--1583
+[]\T1/txr/m/n/10 All of the mod^^?ules in this li^^?brary, in^^?clud^^?ing thei
+r
+ []
+
+
+Underfull \hbox (badness 2503) in paragraph at lines 1575--1583
+\T1/txr/m/n/10 in^^?ter^^?faces, were al^^?tered such that nu^^?meric types \T1
+/txtt/m/n/10 Bel^^?
+ []
+
+
+Underfull \hbox (badness 1460) in paragraph at lines 1575--1583
+\T1/txtt/m/n/10 Types.Numbers.Number\T1/txr/m/n/10 , \T1/txtt/m/n/10 Bel^^?Type
+s.Arrays.Array \T1/txr/m/n/10 and
+ []
+
+
+Underfull \hbox (badness 7595) in paragraph at lines 1575--1583
+\T1/txtt/m/n/10 Bel^^?Types.Matrices.Matrix \T1/txr/m/n/10 were changed to \T1/
+txttb/bx/sl/10 real\T1/txr/m/n/10 ,
+ []
+
+
+Underfull \hbox (badness 5756) in paragraph at lines 1600--1601
+[]\T1/txr/m/n/10 Procedure \T1/txtt/m/n/10 LnDe^^?ter^^?mi^^?nant \T1/txr/m/n/1
+0 was added to mod^^?ule
+ []
+
+(./user_Guide_Math_4_2.bbl
+Underfull \hbox (badness 3579) in paragraph at lines 12--15
+\T1/txr/m/n/10 Zürich, Switzer^^?land, 4th ed., avail^^?able on^^?line at
+ []
+
+
+Underfull \hbox (badness 1117) in paragraph at lines 34--37
+\T1/txr/m/n/10 tive time-step^^?ping,'' Nu^^?mer^^?i^^?cal Al^^?go^^?rithms, \T
+1/txb/bx/n/10 31\T1/txr/m/n/10 , pp.
+ []
+
+[13]) [14
+
+] [15
+
+] [16] [17] [18] (./user_Guide_Math_4_2.aux) ) 
+Here is how much of TeX's memory you used:
+ 3741 strings out of 493481
+ 48660 string characters out of 3140966
+ 126643 words of memory out of 3000000
+ 6894 multiletter control sequences out of 15000+200000
+ 236481 words of font info for 159 fonts, out of 3000000 for 9000
+ 957 hyphenation exceptions out of 8191
+ 38i,30n,24p,2152b,349s stack positions out of 5000i,500n,10000p,200000b,50000s
+{/usr/local/texlive/2012/texmf-di
+st/fonts/enc/dvips/base/8r.enc}</usr/local/texlive/2012/texmf-dist/fonts/type1/
+public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/pu
+blic/amsfonts/cm/cmr12.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/publ
+ic/amsfonts/cm/cmr6.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/
+amsfonts/cm/cmr7.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/ams
+fonts/cm/cmr8.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfon
+ts/cm/cmtt12.pfb></usr/local/texlive/2012/../texmf-local/fonts/type1/local/mono
+type/baskervi/mbvr8a.pfb></usr/local/texlive/2012/../texmf-local/fonts/type1/lo
+cal/monotype/baskervi/mbvr8x.pfb></usr/local/texlive/2012/../texmf-local/fonts/
+type1/local/pctex/mtpro2/mt2bmit.pfb></usr/local/texlive/2012/../texmf-local/fo
+nts/type1/local/pctex/mtpro2/mt2bmst.pfb></usr/local/texlive/2012/../texmf-loca
+l/fonts/type1/local/pctex/mtpro2/mt2exa.pfb></usr/local/texlive/2012/../texmf-l
+ocal/fonts/type1/local/pctex/mtpro2/mt2exf.pfb></usr/local/texlive/2012/../texm
+f-local/fonts/type1/local/pctex/mtpro2/mt2hbit.pfb></usr/local/texlive/2012/../
+texmf-local/fonts/type1/local/pctex/mtpro2/mt2hrbt.pfb></usr/local/texlive/2012
+/../texmf-local/fonts/type1/local/pctex/mtpro2/mt2mbt.pfb></usr/local/texlive/2
+012/../texmf-local/fonts/type1/local/pctex/mtpro2/mt2mif.pfb></usr/local/texliv
+e/2012/../texmf-local/fonts/type1/local/pctex/mtpro2/mt2mis.pfb></usr/local/tex
+live/2012/../texmf-local/fonts/type1/local/pctex/mtpro2/mt2mit.pfb></usr/local/
+texlive/2012/../texmf-local/fonts/type1/local/pctex/mtpro2/mt2syf.pfb></usr/loc
+al/texlive/2012/../texmf-local/fonts/type1/local/pctex/mtpro2/mt2sys.pfb></usr/
+local/texlive/2012/../texmf-local/fonts/type1/local/pctex/mtpro2/mt2syt.pfb></u
+sr/local/texlive/2012/texmf-dist/fonts/type1/public/txfonts/rtcxr.pfb></usr/loc
+al/texlive/2012/texmf-dist/fonts/type1/public/txfonts/rtxi.pfb></usr/local/texl
+ive/2012/texmf-dist/fonts/type1/public/txfonts/rtxr.pfb></usr/local/texlive/201
+2/texmf-dist/fonts/type1/public/txfonts/rtxsc.pfb></usr/local/texlive/2012/texm
+f-dist/fonts/type1/public/txfonts/t1xbtt.pfb></usr/local/texlive/2012/texmf-dis
+t/fonts/type1/public/txfonts/t1xbtt.pfb></usr/local/texlive/2012/texmf-dist/fon
+ts/type1/public/txfonts/t1xtt.pfb></usr/local/texlive/2012/texmf-dist/fonts/typ
+e1/public/txfonts/t1xtt.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/urw
+/helvetic/uhvr8a.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/urw/times/
+utmb8a.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/urw/times/utmr8a.pfb
+></usr/local/texlive/2012/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/loc
+al/texlive/2012/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
+Output written on user_Guide_Math_4_2.pdf (18 pages, 509442 bytes).
+PDF statistics:
+ 208 PDF objects out of 1000 (max. 8388607)
+ 146 compressed objects within 2 object streams
+ 0 named destinations out of 1000 (max. 500000)
+ 31 words of extra memory for PDF output out of 10000 (max. 10000000)
+

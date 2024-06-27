@@ -1,0 +1,267 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE MODE SYSTEM "xmode.dtd">
+
+<!-- Zonnon mode, written by                                    -->
+<!--   Alan Freed adfreed@svsu.edu and Paul Reed March 15, 2013 -->
+<!-- See http://www.zonnon.ethz.ch/language/report.html         -->          
+
+<MODE>
+   <PROPS>
+      <PROPERTY NAME="commentStart" VALUE="(*" />
+      <PROPERTY NAME="commentEnd"   VALUE="*)" />
+   </PROPS>
+
+   <!-- allows for nested comments -->
+   <RULES SET="COMMENT" DEFAULT="COMMENT1" IGNORE_CASE="FALSE">
+      <SPAN TYPE="COMMENT1" DELEGATE="COMMENT" NO_LINE_BREAK="FALSE">
+         <BEGIN>(*</BEGIN>
+         <END>*)</END>
+      </SPAN>
+   </RULES>
+   
+   <RULES IGNORE_CASE="FALSE">      
+		<!-- char literal -->
+		<SEQ_REGEXP HASH_CHARS="0123456789ABCDEF" TYPE="LITERAL2">\d+([0-9A-F]*)X</SEQ_REGEXP>
+
+		<!-- mark numbers as DIGIT -->
+		<SEQ_REGEXP HASH_CHARS="-0123456789." TYPE="DIGIT">\d+(([0-9A-F]*)H|([.]\d*)?([E][+-]?\d+)?)</SEQ_REGEXP>
+
+      <!-- empty comment -->
+      <SEQ TYPE="COMMENT1">(**)</SEQ>
+
+      <!-- coments -->
+      <SPAN TYPE="COMMENT1" DELEGATE="COMMENT" NO_LINE_BREAK="FALSE">
+         <BEGIN>(*</BEGIN>
+         <END>*)</END>
+      </SPAN>
+      
+       <!-- overloaded operator definitions -->
+       <!-- offset with apostophies  ' '    -->
+      <SEQ TYPE="MARKUP">&apos;:=&apos;</SEQ>
+      <SEQ TYPE="MARKUP">&apos;~&apos;</SEQ>
+      <SEQ TYPE="MARKUP">&apos;&amp;&apos;</SEQ>
+      <SEQ TYPE="MARKUP">&apos;or&apos;</SEQ>
+      <SEQ TYPE="MARKUP">&apos;=&apos;</SEQ>
+      <SEQ TYPE="MARKUP">&apos;#&apos;</SEQ>
+      <SEQ TYPE="MARKUP">&apos;&lt;&apos;</SEQ>
+      <SEQ TYPE="MARKUP">&apos;&lt;=&apos;</SEQ>
+      <SEQ TYPE="MARKUP">&apos;&gt;&apos;</SEQ>
+      <SEQ TYPE="MARKUP">&apos;&gt;=&apos;</SEQ>
+      <SEQ TYPE="MARKUP">&apos;+&apos;</SEQ>
+      <SEQ TYPE="MARKUP">&apos;-&apos;</SEQ>
+      <SEQ TYPE="MARKUP">&apos;/&apos;</SEQ>
+      <SEQ TYPE="MARKUP">&apos;div&apos;</SEQ>
+      <SEQ TYPE="MARKUP">&apos;mod&apos;</SEQ>
+      <SEQ TYPE="MARKUP">&apos;*&apos;</SEQ>
+      <SEQ TYPE="MARKUP">&apos;**&apos;</SEQ>
+      <SEQ TYPE="MARKUP">&apos;in&apos;</SEQ>
+      <SEQ TYPE="MARKUP">&apos;^&apos;</SEQ>
+       
+       <!-- offset with quotations  " "  -->
+      <SEQ TYPE="MARKUP">&quot;:=&quot;</SEQ>
+      <SEQ TYPE="MARKUP">&quot;~&quot;</SEQ>
+      <SEQ TYPE="MARKUP">&quot;&amp;&quot;</SEQ>
+      <SEQ TYPE="MARKUP">&quot;or&quot;</SEQ>
+      <SEQ TYPE="MARKUP">&quot;=&quot;</SEQ>
+      <SEQ TYPE="MARKUP">&quot;#&quot;</SEQ>
+      <SEQ TYPE="MARKUP">&quot;&lt;&quot;</SEQ>
+      <SEQ TYPE="MARKUP">&quot;&lt;=&quot;</SEQ>
+      <SEQ TYPE="MARKUP">&quot;&gt;&quot;</SEQ>
+      <SEQ TYPE="MARKUP">&quot;&gt;=&quot;</SEQ>
+      <SEQ TYPE="MARKUP">&quot;+&quot;</SEQ>
+      <SEQ TYPE="MARKUP">&quot;-&quot;</SEQ>
+      <SEQ TYPE="MARKUP">&quot;/&quot;</SEQ>
+      <SEQ TYPE="MARKUP">&quot;div&quot;</SEQ>
+      <SEQ TYPE="MARKUP">&quot;mod&quot;</SEQ>
+      <SEQ TYPE="MARKUP">&quot;*&quot;</SEQ>
+      <SEQ TYPE="MARKUP">&quot;**&quot;</SEQ>
+      <SEQ TYPE="MARKUP">&quot;in&quot;</SEQ>
+      <SEQ TYPE="MARKUP">&quot;^&quot;</SEQ>
+
+       <!-- string literals -->
+      <SPAN TYPE="LITERAL1" NO_LINE_BREAK="TRUE">
+         <BEGIN>"</BEGIN>
+         <END>"</END>
+      </SPAN>
+
+      <SPAN TYPE="LITERAL1" NO_LINE_BREAK="TRUE">
+         <BEGIN>'</BEGIN>
+         <END>'</END>
+      </SPAN>
+
+      <!-- operators -->
+      <SEQ TYPE="OPERATOR">(</SEQ>
+      <SEQ TYPE="OPERATOR">)</SEQ>
+      <SEQ TYPE="OPERATOR">[</SEQ>
+      <SEQ TYPE="OPERATOR">]</SEQ>
+      <SEQ TYPE="OPERATOR">{</SEQ>
+      <SEQ TYPE="OPERATOR">}</SEQ>
+      <SEQ TYPE="OPERATOR">|</SEQ>
+      <SEQ TYPE="OPERATOR">.</SEQ>
+      <SEQ TYPE="OPERATOR">..</SEQ>
+      <SEQ TYPE="OPERATOR">,</SEQ>
+      <SEQ TYPE="OPERATOR">;</SEQ>
+      <SEQ TYPE="OPERATOR">:</SEQ>
+      <SEQ TYPE="OPERATOR">:=</SEQ>
+      <SEQ TYPE="OPERATOR">~</SEQ>
+      <SEQ TYPE="OPERATOR">&amp;</SEQ>
+      <SEQ TYPE="OPERATOR">=</SEQ>
+      <SEQ TYPE="OPERATOR">#</SEQ>
+      <SEQ TYPE="OPERATOR">&lt;</SEQ>
+      <SEQ TYPE="OPERATOR">&lt;=</SEQ>
+      <SEQ TYPE="OPERATOR">&gt;</SEQ>
+      <SEQ TYPE="OPERATOR">&gt;=</SEQ>
+      <SEQ TYPE="OPERATOR">+</SEQ>
+      <SEQ TYPE="OPERATOR">-</SEQ>
+      <SEQ TYPE="OPERATOR">/</SEQ>
+      <SEQ TYPE="OPERATOR">*</SEQ>
+      <SEQ TYPE="OPERATOR">**</SEQ>
+      <SEQ TYPE="OPERATOR">+*</SEQ>
+      <SEQ TYPE="OPERATOR">.*</SEQ>
+      <SEQ TYPE="OPERATOR">./</SEQ>
+      <SEQ TYPE="OPERATOR">.=</SEQ>
+      <SEQ TYPE="OPERATOR">.#</SEQ>
+      <SEQ TYPE="OPERATOR">.&lt;</SEQ>
+      <SEQ TYPE="OPERATOR">.&lt;=</SEQ>
+      <SEQ TYPE="OPERATOR">.&gt;</SEQ>
+      <SEQ TYPE="OPERATOR">.&gt;=</SEQ>
+      <SEQ TYPE="OPERATOR">!</SEQ>
+      <SEQ TYPE="OPERATOR">\</SEQ>
+
+      <KEYWORDS>
+
+         <!-- functions & procedures -->
+         <FUNCTION>abs</FUNCTION>
+         <FUNCTION>all</FUNCTION>
+         <FUNCTION>any</FUNCTION>
+         <FUNCTION>assert</FUNCTION>
+         <FUNCTION>box</FUNCTION>
+         <FUNCTION>cap</FUNCTION>
+         <FUNCTION>copy</FUNCTION>
+         <FUNCTION>copyvalue</FUNCTION>
+         <FUNCTION>dec</FUNCTION>
+         <FUNCTION>excl</FUNCTION>
+         <FUNCTION>find</FUNCTION>
+         <FUNCTION>getAttribute</FUNCTION>
+         <FUNCTION>halt</FUNCTION>
+         <FUNCTION>inc</FUNCTION>
+         <FUNCTION>incl</FUNCTION>
+         <FUNCTION>len</FUNCTION>
+         <FUNCTION>low</FUNCTION>
+         <FUNCTION>max</FUNCTION>
+         <FUNCTION>min</FUNCTION>
+         <FUNCTION>new</FUNCTION>
+         <FUNCTION>odd</FUNCTION>
+         <FUNCTION>pred</FUNCTION>
+         <FUNCTION>read</FUNCTION>
+         <FUNCTION>readln</FUNCTION>
+         <FUNCTION>reason</FUNCTION>
+         <FUNCTION>size</FUNCTION>
+         <FUNCTION>succ</FUNCTION>
+         <FUNCTION>sum</FUNCTION>
+         <FUNCTION>unbox</FUNCTION>
+         <FUNCTION>write</FUNCTION>
+         <FUNCTION>writeln</FUNCTION>
+
+         <!-- reserved words -->
+         <!-- some appear elsewhere for a different highlighting -->
+         <KEYWORD1>accept</KEYWORD1>
+         <KEYWORD1>activity</KEYWORD1>
+         <KEYWORD1>array</KEYWORD1>
+         <KEYWORD1>as</KEYWORD1>
+         <KEYWORD1>await</KEYWORD1>
+         <KEYWORD1>begin</KEYWORD1>
+         <KEYWORD1>by</KEYWORD1>
+         <KEYWORD1>case</KEYWORD1>
+         <KEYWORD1>const</KEYWORD1>
+         <KEYWORD1>definition</KEYWORD1>
+         <KEYWORD1>div</KEYWORD1>
+         <KEYWORD1>do</KEYWORD1>
+         <KEYWORD1>else</KEYWORD1>
+         <KEYWORD1>elsif</KEYWORD1>
+         <KEYWORD1>end</KEYWORD1>
+         <KEYWORD1>exception</KEYWORD1>
+         <KEYWORD1>exit</KEYWORD1>
+         <KEYWORD1>for</KEYWORD1>
+         <KEYWORD1>if</KEYWORD1>
+         <KEYWORD1>implementation</KEYWORD1>
+         <KEYWORD1>implements</KEYWORD1>
+         <KEYWORD1>import</KEYWORD1>
+         <KEYWORD1>in</KEYWORD1>  
+         <KEYWORD1>is</KEYWORD1>
+         <KEYWORD1>loop</KEYWORD1>
+         <KEYWORD1>mod</KEYWORD1>        
+         <KEYWORD1>module</KEYWORD1>
+         <KEYWORD1>object</KEYWORD1>
+         <KEYWORD1>of</KEYWORD1>
+         <KEYWORD1>on</KEYWORD1>
+         <KEYWORD1>or</KEYWORD1>
+         <KEYWORD1>operator</KEYWORD1>
+         <KEYWORD1>procedure</KEYWORD1>
+         <KEYWORD1>protocol</KEYWORD1>
+         <KEYWORD1>record</KEYWORD1>
+         <KEYWORD1>refines</KEYWORD1>
+         <KEYWORD1>repeat</KEYWORD1>
+         <KEYWORD1>return</KEYWORD1>
+         <KEYWORD1>self</KEYWORD1>
+         <KEYWORD1>termination</KEYWORD1>
+         <KEYWORD1>then</KEYWORD1>
+         <KEYWORD1>to</KEYWORD1>
+         <KEYWORD1>type</KEYWORD1>
+         <KEYWORD1>until</KEYWORD1>
+         <KEYWORD1>var</KEYWORD1>
+         <KEYWORD1>while</KEYWORD1>
+
+         <!-- type names -->
+         <KEYWORD2>boolean</KEYWORD2>
+         <KEYWORD2>cardinal</KEYWORD2>
+         <KEYWORD2>char</KEYWORD2>
+         <KEYWORD2>fixed</KEYWORD2>
+         <KEYWORD2>integer</KEYWORD2>
+         <KEYWORD2>range</KEYWORD2>
+         <KEYWORD2>real</KEYWORD2>
+         <KEYWORD2>set</KEYWORD2>
+         <KEYWORD2>string</KEYWORD2>
+
+         <!-- values -->
+         <KEYWORD3>false</KEYWORD3>
+         <KEYWORD3>nil</KEYWORD3>
+         <KEYWORD3>true</KEYWORD3>
+
+         <!-- modifiers, arguments of {} -->
+         <KEYWORD4>barrier</KEYWORD4>
+         <KEYWORD4>concurrent</KEYWORD4>
+         <KEYWORD4>immutable</KEYWORD4>
+         <KEYWORD4>locked</KEYWORD4>
+         <KEYWORD4>math</KEYWORD4>
+         <KEYWORD4>open</KEYWORD4>
+         <KEYWORD4>passive</KEYWORD4>
+         <KEYWORD4>private</KEYWORD4>
+         <KEYWORD4>protected</KEYWORD4>
+         <KEYWORD4>public</KEYWORD4>
+         <KEYWORD4>ref</KEYWORD4>
+         <KEYWORD4>sealed</KEYWORD4>
+         <KEYWORD4>shared</KEYWORD4>
+         <KEYWORD4>sparse</KEYWORD4>
+         <KEYWORD4>value</KEYWORD4>
+
+         <!-- retrieve exception -->
+         <LABEL>reason</LABEL>
+         <!-- exception names -->
+         <LABEL>ZeroDivision</LABEL>
+         <LABEL>Overflow</LABEL>
+         <LABEL>OutOfRange</LABEL>
+         <LABEL>NilReference</LABEL>
+         <LABEL>UnmatchedCase</LABEL>
+         <LABEL>Conversion</LABEL>
+         <LABEL>Read</LABEL>
+         <LABEL>ProtocolMismatch</LABEL>
+         <LABEL>IncompatibleSizes</LABEL>
+         <LABEL>NoSLUSolution</LABEL>
+
+         </KEYWORDS>
+
+   </RULES>
+
+</MODE>

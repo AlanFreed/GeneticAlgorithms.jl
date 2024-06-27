@@ -1,0 +1,67 @@
+\begin{thebibliography}{10}
+\newcommand{\enquote}[1]{``#1''}
+\providecommand{\selectlanguage}[1]{\relax}
+\providecommand{\bibAnnoteFile}[1]{%
+  \IfFileExists{#1}{\begin{quotation}\noindent\textsc{Key:} #1\\
+  \textsc{Annotation:}\ \input{#1}\end{quotation}}{}}
+\providecommand{\bibAnnote}[2]{%
+  \begin{quotation}\noindent\textsc{Key:} #1\\
+  \textsc{Annotation:}\ #2\end{quotation}}
+
+\bibitem{Zonnon09}
+Gutknecht, J., 2009, \emph{Zonnon Language Report}, ETH Z{\"u}rich,
+  Switzerland, 4th ed., available online at www.zonnon.ethz.ch.
+\bibAnnoteFile{Zonnon09}
+
+\bibitem{Zonnon10}
+Gutknecht, J., Mitin, R., and Gonova, N., 2010, \emph{Zonnon Tutorial}, ETH
+  Zurich, Switzerland, available online at www.zonnon.ethz.ch.
+\bibAnnoteFile{Zonnon10}
+
+\bibitem{MarsagliaTsang84}
+Marsaglia, G. and Tsang, W.~W., 1984, \enquote{A fast, easily implemented
+  method for sampling from decreasing or symmetric unimodal density functions,}
+  SIAM Journal on Scientific and Statistical Computing, \textbf{5}(2), pp.
+  349--359.
+\bibAnnoteFile{MarsagliaTsang84}
+
+\bibitem{Butcher08}
+Butcher, J.~C., 2008, \emph{Numerical Methods for Ordinary Differential
+  Equations}, 2nd ed., Wiley, Chichester.
+\bibAnnoteFile{Butcher08}
+
+\bibitem{Soderlind02}
+S{\"o}derlind, G., 2002, \enquote{Automatic control and adaptive
+  time-stepping,} Numerical Algorithms, \textbf{31}, pp. 281--310.
+\bibAnnoteFile{Soderlind02}
+
+\bibitem{Kutta01}
+Kutta, W., 1901, \enquote{Beitrag zur n{\"a}herungsweisen {I}ntegration totaler
+  {D}ifferentialgleichungen,} Zeitschrift f{\"u}r angewandte Mathematik und
+  Physik, \textbf{46}, pp. 435--453.
+\bibAnnoteFile{Kutta01}
+
+\bibitem{Gustafssonetal88}
+Gustafsson, K., Lundh, M., and S{\"o}derlind, G., 1988, \enquote{A {PI}
+  stepsize control for the numerical solution of ordinary differential
+  equations,} BIT, \textbf{28}(2), pp. 270--287.
+\bibAnnoteFile{Gustafssonetal88}
+
+\bibitem{Freed13}
+Freed, A.~D., 2013, \emph{Soft Solids: A primer to the theoretical mechanics of
+  materials}, Birkh\"auser (in press), Boston.
+\bibAnnoteFile{Freed13}
+
+\bibitem{DiFreed:conv-quad}
+Diethelm, K. and Freed, A.~D., 2006, \enquote{An efficient algorithm for the
+  evaluation of convolution integrals,} Computers and Mathematics with
+  Applications, \textbf{51}, pp. 51--72.
+\bibAnnoteFile{DiFreed:conv-quad}
+
+\bibitem{FordSi:speed-acc}
+Ford, N.~J. and Simpson, A.~C., 2001, \enquote{The numerical solution of
+  fractional differential equations: Speed versus accuracy,} Numerical
+  Algorithms, \textbf{26}, pp. 333--346.
+\bibAnnoteFile{FordSi:speed-acc}
+
+\end{thebibliography}

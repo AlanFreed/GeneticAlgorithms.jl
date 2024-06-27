@@ -1,0 +1,413 @@
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(*       BBBB      EEEEE     L         The                                    *)
+(*       B   B     E         L           BIOLOGICAL                           *)
+(*       BBBB      EEE       L           ENGINEERING                          *)
+(*       B    B    E         L           LABORATORY                           *)
+(*       BBBBB     EEEEEE    LLLLLL        @ Saginaw Valley State University  *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Copyright 2008-2013, Alan D. Freed                                         *)
+(*                                                                            *)
+(* This file is part of the BEL-GAlg suite of .NET/Mono libraries.            *)
+(*                                                                            *)
+(* BEL is a free software: you can redistribute it and/or modify it under the *)
+(* terms of the GNU Lesser General Public License as published by the Free    *)
+(* Software Foundation, either version 3 of the License, or (at your option)  *)
+(* any later version.                                                         *)
+(*                                                                            *)
+(* BEL is distributed in the hope that it will be useful, but WITHOUT ANY     *)
+(* WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS  *)
+(* FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for   *)
+(* more details.                                                              *)
+(*                                                                            *)
+(* You should have received a copy of the GNU Lesser General Public License   *)
+(* along with BEL.  If not, see <http://www.gnu.org/licenses/>.               *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* BEL-GAlg is an application for the BEL framework.  They are .NET libraries *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* This file is 1 of 7 creating a genetic algorithm for parameter estimation. *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Types                                                                      *)
+(*   Model        : procedure interface to user-definable model of interest   *)
+(*      input  array  : the model parameters: fixed and vary                  *)
+(*             length : the number of all model parameters   P                *)
+(*      input  matrix : the control/independent variables                     *)
+(*             rows   : the number of controlled variables   C, R if decimate *)
+(*             cols   : the number of experimental data      N                *)
+(*      return matrix : the response/dependent variables                      *)
+(*             rows   : the number of response variables     R                *)
+(*             cols   : the number of experimental data      N                *)
+(* Procedures                                                                 *)
+(*   FlipHeads            : biased coin toss                                  *)
+(*   RandomIntegerBetween : a randomly selected integer over an interval      *)
+(*   Configure            : prepare statistical procedures for optimization   *)
+(*   DataFitAgainst       : the experimental data fields used in optimization *)
+(*   Theory               : the model's response to the experimental data     *)
+(*   Fitness              : assigns a fitness value given a set of parameters *)
+(*   RSquared             : the R^2 coefficient of determination statistic    *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* References:                                                                *)
+(*   Goldberg, D. E., "Genetic Algorithms in search, optimization & machine   *)
+(*             learning," Addison-Wesley, Boston, 1989.                       *)
+(*   Goldberg, D.E., "The Design of Innovation: Lessons learned from the      *)
+(*             competent genetic algorithms", Vol. 7 of: "Genetic Algorithms  *)
+(*             and Evoluationary Computations", Klewer, Boston, 2002.         *)
+(*   Schmitt, L.M., "Theory of genetic algorithms", Theoretical Computer      *)
+(*             Science, Vol. 259, 2001, 1-61.                                 *)
+(*   Schmitt, L.M., "Theory of Genetic Algorithms II: models for genetic      *)
+(*             operators over the string-tensor representation of populations *)
+(*             and convergence to global optima for arbitrary fitness         *)
+(*             function und scaling", Theoretical Computer Science, Vol. 310, *)
+(*             2004, 181-231.                                                 *)
+(*   Sivanandam, S. N. & Deepa, S. N., "Introduction to Genetic Algorithms,"  *)
+(*             Springer, Berlin, 2008.                                        *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+
+module {public} BelGAlg.Statistics;
+
+   import
+      System.Random as RG,
+      Bel.Log       as L,
+      Bel.Math      as Fn;
+
+
+   type {public}
+      Model = procedure (RealVector; RealMatrix) : RealMatrix;
+               (* input  array  : the model parameters: fixed and vary *)
+               (*        length : the number of all model parameters P *)
+               (* input  matrix : the control/independent variables    *)
+               (*        rows   : the number of controlled variables R *)
+               (*        cols   : the number of experimental data    N *)
+               (* return matrix : the response/dependent variables     *)
+               (*        rows   : the number of response variables   R *)
+               (*        cols   : the number of experimental data    N *)
+
+
+   (* work-around for existing compiler bug  - Bel.Types not seen here *)
+   type {public}
+      BooleanVector = array {math} * of boolean;
+      IntegerVector = array {math} * of integer;
+      RealVector    = array {math} * of real;
+
+   (* various matrix types *)
+   type {public}
+      BooleanMatrix = array {math} *,* of boolean;
+      IntegerMatrix = array {math} *,* of integer;
+      RealMatrix    = array {math} *,* of real;
+
+
+   var {private}
+      expIn, expOut            : RealMatrix;
+      maxExpOutSquared,
+      secondMomentInExpOutput,
+      varianceInExpOutput      : RealVector;
+      model                    : Model;
+      randomGenerator          : RG;
+
+   var {public, immutable}
+      dimC,                   (* number of control  variables         *)
+      dimR,                   (* number of response variables         *)
+      dimN,                   (* number of datum points/observations  *)
+      dimP : integer;         (* number of model parameters to be fit *)
+
+
+   procedure {private} FirstMoment (a : RealVector) : real;
+      var
+         moment : real;
+   begin
+      moment := sum(a) / real(len(a));
+      return moment
+   end FirstMoment;
+
+   procedure {private} SecondMoment (a : RealVector) : real;
+      var
+         moment : real;
+   begin
+      moment := a*a / real(len(a));
+      return moment
+   end SecondMoment;
+
+   procedure {private} MixedMoment (a, b : RealVector) : real;
+      var
+         moment : real;
+   begin
+      moment := a*b / real(len(a));
+      return moment
+   end MixedMoment;
+
+   procedure {private} SampleVariance (a : RealVector) : real;
+      var
+         firstMoment, secondMoment, variance : real;
+   begin
+      firstMoment  := FirstMoment(a);
+      secondMoment := SecondMoment(a);
+      variance     := secondMoment - firstMoment*firstMoment;
+      return variance
+   end SampleVariance;
+
+   procedure {private} SampleCovariance (a, b : RealVector) : real;
+      var
+         covariance, firstMomentA, firstMomentB, mixedMoment : real;
+   begin
+      firstMomentA := FirstMoment(a);
+      firstMomentB := FirstMoment(b);
+      mixedMoment  := MixedMoment(a, b);
+      covariance   := mixedMoment - firstMomentA*firstMomentB;
+      return covariance
+   end SampleCovariance;
+
+   (* a biased (by 'probabilityOfHeads' odds) random flip of a coin *)
+   procedure {public} FlipHeads (probabilityOfHeads : real) : boolean;
+      var
+         flip   : boolean;
+         random : real;
+   begin
+      random := randomGenerator.NextDouble();
+      flip   := (probabilityOfHeads >= random);
+      return flip
+   end FlipHeads;
+
+   (* select a random integer from the interval [lowValue, highValue] *)
+   procedure {public} RandomIntegerBetween
+                                      (lowValue, highValue : integer) : integer;
+      var
+         random : integer;
+   begin
+      random := randomGenerator.Next(lowValue, highValue);
+      return random
+   end RandomIntegerBetween;
+
+   procedure {public} Configure (expInput, expOutput : RealMatrix;
+                                 decimateTo          : integer;
+                                 numericalModel      : Model;
+                                 varyParameters      : BooleanVector);
+      var
+         c, curve, dimO, i, j, n, o, r        : integer;
+         curveLength, maxIn, maxOut, rowArray : RealVector;
+         length, maxSquared, segment, x, y    : real;
+         use                                  : BooleanVector;
+   begin
+      dimO := 0;
+      dimC := len(expInput,  0);
+      dimR := len(expOutput, 0);
+      if len(expInput, 1) = len(expOutput, 1) then
+         (* the number of experimental observations *)
+         dimO := len(expOutput, 1)
+      else
+         L.Message("# expInput columns must equal # expOutput columns");
+         L.ErrorMessage(315,20, "BelGAlg.Statistics.Configure")
+      end;
+      dimP := 0;
+      for i := 0 to len(varyParameters)-1 do
+         if varyParameters[i] then
+            inc(dimP)
+         end
+      end;
+      if dimP = 0 then
+         L.Message("At least 1 model parameter must be allowed to vary");
+         L.ErrorMessage(515,20, "BelGAlg.Statistics.Configure");
+      end;
+      model := numericalModel;
+      if model = nil then
+         L.Message("A model was not assigned.");
+         L.ErrorMessage(440,20, "BelGAlg.Statistics.Configure")
+      end;
+      if decimateTo >= dimO then
+         (* use the entire data set supplied *)
+         dimN := dimO;
+         expIn  := new RealMatrix(dimC, dimN);
+         expIn  := expInput;
+         expOut := new RealMatrix(dimR, dimN);
+         expOut := expOutput
+      elsif dimC = dimR then
+         (* decimate the data to reduce the work required by the optimizer *)
+         maxIn  := new RealVector(dimR);
+         maxOut := new RealVector(dimR);
+         (* find the maximums for both axes of every input/output curve *)
+         for r := 0 to dimR-1 do
+            maxIn[r]  := 0.0;
+            maxOut[r] := 0.0;
+            for o := 0 to dimO-1 do
+               maxIn[r]  := Fn.Max(maxIn[r],  Fn.Abs(expInput[r,o]));
+               maxOut[r] := Fn.Max(maxOut[r], Fn.Abs(expOutput[r,o]))
+            end
+         end;
+         (* find dimensionless arc length for each input/output curve *)
+         curveLength := new RealVector(dimR);
+         for r := 0 to dimR-1 do
+            length := 0.0;
+            for o := 1 to dimO-1 do
+               x      := (expInput[r,o]  - expInput[r,o-1]) /maxIn[r];
+               y      := (expOutput[r,o] - expOutput[r,o-1])/maxOut[r];
+               length := length + Fn.Pythag(x,y)
+            end;
+            curveLength[r] := length
+         end;
+         (* determine which data are to be used and which are to be decimated *)
+         curve  := 0;
+         length := 0.0;
+         (* find curve with greatest length *)
+         for r := 0 to dimR-1 do
+            if curveLength[r] > length then
+               length := curveLength[r];
+               curve  := r
+            end
+         end;
+         segment := length / real(decimateTo - 1);
+         (* select the data to decimate *)
+         use    := new BooleanVector(dimO);
+         n      := 0;
+         length := 0.0;
+         for o := 0 to dimO-1 do
+            if o = 0 then
+               (* use the first data point from the experiment *)
+               inc(n);
+               use[o] := true
+            elsif o = dimO-1 then
+               (* use the last data point from the experiment *)
+               inc(n);
+               use[o] := true
+            else
+               x := (expInput[curve,o]  - expInput[curve,o-1])
+                  / maxIn[curve];
+               y := (expOutput[curve,o] - expOutput[curve,o-1])
+                  / maxOut[curve];
+               length := length + Fn.Pythag(x,y);
+               if length < segment then
+                  use[o] := false
+               else
+                  inc(n);
+                  (* balance out the roundoff effect *)
+                  if odd(n) then
+                     use[o] := true;
+                     length := 0.0
+                  else
+                     if ~use[o-1] then
+                        use[o-1] := true;
+                        use[o]   := false;
+                        length   := Fn.Pythag(x,y);
+                     else
+                        use[o] := true;
+                        length := 0.0
+                     end
+                  end
+               end
+            end
+         end;
+         dimN := n;
+         (* create the decimated experimental matrices *)
+         expIn  := new RealMatrix(dimC, dimN);
+         expOut := new RealMatrix(dimR, dimN);
+         n := -1;
+         for o := 0 to dimO-1 do
+            if use[o] then
+               inc(n);
+               for c := 0 to dimC-1 do
+                  expIn[c,n]  := expInput[c,o]
+               end;
+               for r := 0 to dimR-1 do
+                  expOut[r,n] := expOutput[r,o]
+               end
+            end
+         end
+      else
+         L.Message("Decimation requires the # controls = the # responses");
+         L.ErrorMessage(212,20, "BelAlg.Statistics.Configure")
+      end;
+      (* compute the expected moments of the experimental data *)
+      rowArray                := new RealVector(dimN);
+      varianceInExpOutput     := new RealVector(dimR);
+      maxExpOutSquared        := new RealVector(dimR);
+      secondMomentInExpOutput := new RealVector(dimR);
+      for r := 0 to dimR-1 do
+          maxSquared := 0.0;
+          for n := 0 to dimN-1 do
+             maxSquared := Fn.Max(maxSquared, expOut[r,n]*expOut[r,n])
+          end;
+          maxExpOutSquared[r] := maxSquared
+      end;
+      for r := 0 to dimR-1 do
+         for n := 0 to dimN-1 do
+            rowArray[n] := expOut[r,n]
+         end;
+         (* without scaling *)
+         varianceInExpOutput[r]     := SampleVariance(rowArray);
+         secondMomentInExpOutput[r] := SecondMoment(rowArray)
+      end
+   end Configure;
+
+   procedure {public} DataFitAgainst (var input, output : RealMatrix);
+   begin
+      input  := new RealMatrix(dimC, dimN);
+      input  := expIn;
+      output := new RealMatrix(dimR, dimN);
+      output := expOut
+   end DataFitAgainst;
+
+   procedure {public} Theory (parameters : RealVector) : RealMatrix;
+      var
+         theory : RealMatrix;
+   begin
+      theory := model(parameters, expIn);
+      return theory
+   end Theory;
+
+   procedure {public} Fitness (parameters : RealVector) : real;
+      var
+         adder, fitness, varFit : real;
+         expVec, thyVec         : RealVector;
+         n, r                   : integer;
+         thyOut                 : RealMatrix;
+   begin
+      expVec := new RealVector(dimN);
+      thyVec := new RealVector(dimN);
+      thyOut := new RealMatrix(dimR,dimN);
+      thyOut := Theory(parameters);
+      varFit := 0.0;
+      for r := 0 to dimR-1 do
+         for n := 0 to dimN-1 do
+            expVec[n] := expOut[r,n];
+            thyVec[n] := thyOut[r,n]
+         end;
+         adder  := varianceInExpOutput[r];
+         adder  := adder + SampleVariance(thyVec);
+         adder  := adder - 2.0 * SampleCovariance(expVec, thyVec);
+         adder  := adder / maxExpOutSquared[r];
+         varFit := varFit + adder
+      end;
+      fitness := real(dimR * dimR) / varFit;
+      return fitness
+   end Fitness;
+
+   procedure {public} RSquared (parameters : RealVector) : real;
+   var
+      adder, r2, squaredError, variance : real;
+      expVec, thyVec                    : RealVector;
+      n, r                              : integer;
+      thyOut                            : RealMatrix;
+   begin
+      expVec       := new RealVector(dimN);
+      thyVec       := new RealVector(dimN);
+      thyOut       := new RealMatrix(dimR, dimN);
+      thyOut       := Theory(parameters);
+      variance     := 0.0;
+      squaredError := 0.0;
+      for r := 0 to dimR-1 do
+         for n := 0 to dimN-1 do
+            expVec[n] := expOut[r,n];
+            thyVec[n] := thyOut[r,n]
+         end;
+         adder        := secondMomentInExpOutput[r];
+         adder        := adder + SecondMoment(thyVec);
+         adder        := adder - 2.0 * MixedMoment(expVec, thyVec);
+         adder        := adder / maxExpOutSquared[r];
+         squaredError := squaredError + adder;
+         variance     := variance + varianceInExpOutput[r] / maxExpOutSquared[r]
+      end;
+      r2 := 1.0 - (real(dimN - 1) * squaredError)
+                                               / (real(dimN - dimP) * variance);
+      return abs(r2)
+   end RSquared;
+
+begin
+   randomGenerator := new RG()
+end Statistics.

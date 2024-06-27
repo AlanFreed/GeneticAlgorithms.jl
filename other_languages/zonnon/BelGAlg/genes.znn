@@ -1,0 +1,173 @@
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(*       BBBB      EEEEE     L         The                                    *)
+(*       B   B     E         L           BIOLOGICAL                           *)
+(*       BBBB      EEE       L           ENGINEERING                          *)
+(*       B    B    E         L           LABORATORY                           *)
+(*       BBBBB     EEEEEE    LLLLLL        @ Saginaw Valley State University  *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Copyright 2008-2013, Alan D. Freed                                         *)
+(*                                                                            *)
+(* This file is part of the BEL-GAlg suite of .NET/Mono libraries.            *)
+(*                                                                            *)
+(* BEL is a free software: you can redistribute it and/or modify it under the *)
+(* terms of the GNU Lesser General Public License as published by the Free    *)
+(* Software Foundation, either version 3 of the License, or (at your option)  *)
+(* any later version.                                                         *)
+(*                                                                            *)
+(* BEL is distributed in the hope that it will be useful, but WITHOUT ANY     *)
+(* WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS  *)
+(* FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for   *)
+(* more details.                                                              *)
+(*                                                                            *)
+(* You should have received a copy of the GNU Lesser General Public License   *)
+(* along with BEL.  If not, see <http://www.gnu.org/licenses/>.               *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* BEL-GAlg is an application for the BEL framework.  They are .NET libraries *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* This file is 2 of 7 creating a genetic algorithm for parameter estimation. *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* A gene is a singleton in genetic memory - a bit of biological memory.      *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Type                                                                       *)
+(*    Allele        : base type for the allele of a gene                      *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Type                                                                       *)
+(*    Gene          : a biallelic {recessive, dominant} gene                  *)
+(*                    with respective allele belonging to the set {0,1}       *)
+(*       Initialize : implements Bel.Entity.Initialize                        *)
+(*                  : generates a random allele (e.g., dominant or recessive) *)
+(*       Nullify    : implements Bel.Entity.Nullify                           *)
+(*       Parse      : implements Bel.Typeset.Parse                            *)
+(*                  : character representation of the gene ==> allele         *)
+(*       Print      : implements Bel.Typeset.Print                            *)
+(*                  : allele ==> character representation of the gene         *)
+(*       Clone      : returns an exact copy of itself                         *)
+(*       Pop        : gets the instance of Allele that is held by the gene    *)
+(*       Put        : sets an  instance of Allele into the gene               *)
+(*       Equals     : determines if two genes are equivalent                  *)
+(*       Mutate     : random chance exchange of the allele value held by gene *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+
+module {public} BelGAlg.Genes;
+
+   import
+      Bel.Log            as Log,
+      Bel.Entity         as Entity,
+      Bel.Typeset        as Typeset,
+      BelGAlg.Statistics as S;
+
+   var {private}
+      evenOdds : real;
+
+   type {public}
+      Allele = integer{8};
+
+   (* dominant and recessive genes *)
+
+   type {public, value} Gene = object implements Entity, Typeset
+
+      var {private}
+         allele : Allele;
+
+      procedure {public} Initialize
+         implements Entity.Initialize;
+      begin
+          (* 50% dominant, 50% recessive *)
+          if S.FlipHeads(evenOdds) then
+             allele := 1  (* dominant *)
+          else
+             allele := 0  (* recessive *)
+          end
+      end Initialize;
+
+      procedure {public} Nullify
+         implements Entity.Nullify;
+      begin
+         allele := 0
+      end Nullify;
+
+      (* uses alphabet {0,1} for {recessive, dominant} *)
+      procedure {public} Parse (s : string)
+         implements Typeset.Parse;
+      begin
+         if s = "0" then
+            allele := 0
+         elsif s = "1" then
+            allele := 1
+         else
+            Log.ErrorMessage(5,20, "BelGAlg.Genes.Gene.Parse")
+         end
+      end Parse;
+
+      procedure {public} Print () : string
+         implements Typeset.Print;
+         var
+            s : string;
+      begin
+         if allele = 0 then
+            s := "0"
+         else
+            s := "1"
+         end;
+         return s
+      end Print;
+
+      (* Here Clone means to duplicate, not just to provide an empty copy *)
+      procedure {public} Clone () : Gene;
+         var
+            g : Gene;
+      begin
+         g.allele := allele;
+         return g
+      end Clone;
+
+      procedure {public} Pop () : Allele;
+      begin
+         return allele
+      end Pop;
+
+      procedure {public} Put (a : Allele);
+      begin
+         allele := a
+      end Put;
+
+      procedure {public} Mutate (probabilityOfMutation : real;
+                                 var numberOfMutations : integer);
+      begin
+         if S.FlipHeads(probabilityOfMutation) then
+            if allele = 0 then
+               allele := 1
+            else
+               allele := 0
+            end;
+            inc(numberOfMutations)
+         end
+      end Mutate;
+
+      procedure {public} Equals (g : Gene) : boolean;
+      begin
+         return (allele = g.allele)
+      end Equals;
+
+   begin
+      Initialize
+   end Gene;
+
+   operator {public} ":=" (var l : Gene; r : Gene);
+   begin
+      l.Put(r.Pop())
+   end ":=";
+
+   operator {public} "=" (l, r : Gene) : boolean;
+   begin
+      return l.Equals(r)
+   end "=";
+
+   operator {public} "#" (l, r : Gene) : boolean;
+   begin
+      return ~l.Equals(r)
+   end "#";
+
+begin
+   evenOdds := 0.5
+end Genes.

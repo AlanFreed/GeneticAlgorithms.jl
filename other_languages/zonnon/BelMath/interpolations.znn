@@ -1,0 +1,177 @@
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(*       BBBB      EEEEE     L         The                                    *)
+(*       B   B     E         L           BIOLOGICAL                           *)
+(*       BBBB      EEE       L           ENGINEERING                          *)
+(*       B    B    E         L           LABORATORY                           *)
+(*       BBBBB     EEEEEE    LLLLLL        @ Saginaw Valley State University  *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Copyright 2008-2013, Alan D. Freed                                         *)
+(*                                                                            *)
+(* This file is part of the BEL-Math suite of .NET/Mono libraries.            *)
+(*                                                                            *)
+(* BEL is a free software: you can redistribute it and/or modify it under the *)
+(* terms of the GNU Lesser General Public License as published by the Free    *)
+(* Software Foundation, either version 3 of the License, or (at your option)  *)
+(* any later version.                                                         *)
+(*                                                                            *)
+(* BEL is distributed in the hope that it will be useful, but WITHOUT ANY     *)
+(* WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS  *)
+(* FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for   *)
+(* more details.                                                              *)
+(*                                                                            *)
+(* You should have received a copy of the GNU Lesser General Public License   *)
+(* along with BEL.  If not, see <http://www.gnu.org/licenses/>.               *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Provides algorithms for interpolation.                                     *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+(* Procedure                                                                  *)
+(*    Neville          - Lagrange interpolation of   y = f(x)                 *)
+(*       input:   xVec - an array of the controls or input variables          *)
+(*                yVec - an array of known responses  yVec[i] = f(xVec[i])    *)
+(*                x    - a location in  xMin <= x <= xMax  where y is sought  *)
+(*       return:  y    - an interpolation for the unknown  y = f(x)           *)
+(*    Hermite          - cubic interpolation over an interval  [xLo, xHi]     *)
+(*       input:   xLo  - lowest  value for the independent variable interval  *)
+(*                xHi  - highest value for the independent variable interval  *)
+(*                yLo  - dependent variable array associated with   xLo       *)
+(*                yHi  - dependent variable array associated with   xHi       *)
+(*                dyLo - response gradient  dy/dx  associated with  xLo       *)
+(*                dyHi - response gradient  dy/dx  associated with  xHi       *)
+(*       return:  y    - an interpolation for the unknown array  y = f(x)     *)
+(*    Bilinear         - linear interpolation over a rectangular grid         *)
+(*       input:   x1      - smaller (more negative) x-valued grid point       *)
+(*                x2      - larger  (more positive) x-valued grid point       *)
+(*                y1      - smaller (more negative) y-valued grid point       *)
+(*                y2      - larger  (more positive) y-valued grid point       *)
+(*                valX1Y1 - value at lower-left  grid point                   *)
+(*                valX1Y2 - value at upper-left  grid point                   *)
+(*                valX2Y1 - value at lower-right grid point                   *)
+(*                valX2Y2 - value at upper-right grid point                   *)
+(*                atX     - interpolate at:  x1 <= atX <= x2                  *)
+(*                atY     - interpolate at:  y1 <= atY <= y2                  *)
+(*       return:  valAtXY - interpolated value inside the rectangle           *)
+(* ------|---------|---------|---------|---------|---------|---------|------- *)
+
+module {public} BelMath.Interpolations;
+
+   import
+      Bel.Log   as L,
+      Bel.Types as T;
+
+   type {public}
+      RealVector = array {math} * of real;
+      RealMatrix = array {math} *,* of real;
+
+   procedure {public} Neville (xVec, yVec : RealVector; x : real) : real;
+      var
+         i, j, k, n    : integer;
+         p             : RealMatrix;
+         xMax, xMin, y : real;
+   begin
+      p := nil;
+      y := 0.0;
+      if len(xVec) = len(yVec) then
+         xMax := -T.MaximumReal;
+         xMin :=  T.MaximumReal;
+         n    := len(xVec);
+         p    := new RealMatrix(n,n);
+         for i := 0 to n-1 do
+            p[i,i] := yVec[i];
+            if xVec[i] > xMax then
+               xMax := xVec[i]
+            end;
+            if xVec[i] < xMin then
+               xMin := xVec[i]
+            end
+         end;
+         if (x < xMin) or (x > xMax) then
+            L.WarningMessage(81,90, "BelMath.Interpolations.Neville")
+         end;
+         for k := 2 to n do
+            for i := 0 to n-k do
+               j      := i + k - 1;
+               p[i,j] := ((x - xVec[j])*p[i,j-1]
+                       +  (xVec[i] - x)*p[i+1,j])/(xVec[i] - xVec[j])
+            end
+         end;
+         y := p[0,n-1]
+      else
+         L.ErrorMessage(212,-1, "BelMath.Interpolations.Neville")
+      end;
+      return y
+   end Neville;
+
+   procedure {public} Hermite (xLo, xHi             : real;
+                               yLo, yHi, dyLo, dyHi : RealVector;
+                               x : real)            : RealVector;
+      var
+         a, b, c, d, h, t : real;
+         i, n             : integer;
+         y                : RealVector;
+   begin {locked}
+      y := nil;
+      if (((len(yLo) = len(yHi)) & (len(dyLo) = len(dyHi))) &
+         (len(yLo) = len(dyLo))) then
+         n := len(yLo);
+         y := new RealVector(n);
+         if xLo < xHi then
+            if (x < xLo) or (x > xHi) then
+               L.WarningMessage(81,90, "BelMath.Interpolations.Hermite")
+            end;
+            (* cubic Hermite interpolation at  x  \in  [xLo, xHi] *)
+            h := xHi - xLo;
+            t := (x - xLo) / h;
+            a := (1.0 + 2.0*t) * ((1.0 - t) * (1.0 - t));
+            b := (3.0 - 2.0*t) * (t * t);
+            c := t * (1.0 - t) * (1.0 - t);
+            d := (t - 1.0) * t * t;
+            for i := 0 to n-1 do
+               y[i] := a*yLo[i] + b*yHi[i] + h*(c*dyLo[i] + d*dyHi[i])
+            end
+         else
+            if xLo > xHi then
+               y := Hermite(xHi, xLo, yHi, yLo, dyHi, dyLo, x)
+            else
+               for i := 0 to n-1 do
+                  y[i] := (yLo[i] + yHi[i]) / 2.0
+               end
+            end
+         end
+      else
+         L.ErrorMessage(212,-1, "BelMath.Interpolations.Hermite")
+      end;
+      return y
+   end Hermite;
+
+   procedure {public} Bilinear (x1, x2, y1, y2,
+                                valX1Y1, valX1Y2, valX2Y1, valX2Y2,
+                                atX, atY : real) : real;
+      var
+         valAtXY, xVal, x1y1, x1y2, x2y1, x2y2, yVal : real;
+   begin
+      if x1 >= x2 then
+         L.ErrorMessage(408,20, "BelMath.Interpolations.Bilinear")
+      end;
+      if y1 >= y2 then
+         L.ErrorMessage(408,20, "BelMath.Interpolations.Bilinear")
+      end;
+      if (atX < x1) or (atX > x2) then
+         L.WarningMessage(81,90, "BelMath.Interpolations.Bilinear")
+      end;
+      if (atY < y1) or (atY > y2) then
+         L.WarningMessage(81,90, "BelMath.Interpolations.Bilinear")
+      end;
+      (* linear interpolation along each axis *)
+      xVal := (atX - x1) / (x2 - x1);
+      yVal := (atY - y1) / (y2 - y1);
+      (* bi-linear interpolation over the rectangular grid *)
+      x1y1 := (1.0 - xVal) * (1.0 - yVal) * valX1Y1;
+      x1y2 := (1.0 - xVal) * yVal * valX1Y2;
+      x2y1 := xVal * (1.0 - yVal) * valX2Y1;
+      x2y2 := xVal * yVal * valX2Y2;
+      valAtXY := x1y1 + x1y2 + x2y1 + x2y2;
+      return valAtXY
+   end Bilinear;
+
+begin
+end Interpolations.
