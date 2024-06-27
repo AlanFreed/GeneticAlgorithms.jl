@@ -1,0 +1,2120 @@
+
+Statistics for generation 1 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.2836E+01
+   arithmatic mean 1.2951E+00
+   median          6.2734E-03
+   std deviation   2.1676E+00
+   skewness        1.6633E+00
+   excess kurtosis -2.6199E-01
+Optimal value and population statistics for parameter Q:
+   optimal value   3.5900E+05
+   arithmatic mean 1.3247E+03
+   median          0.0000E+00
+   std deviation   2.1767E+04
+   skewness        1.6371E+01
+   excess kurtosis 2.6600E+02
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   4.6900E-01
+   arithmatic mean 1.7306E-03
+   median          0.0000E+00
+   std deviation   2.8437E-02
+   skewness        1.6371E+01
+   excess kurtosis 2.6600E+02
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2800E+01
+   arithmatic mean 4.7233E-02
+   median          0.0000E+00
+   std deviation   7.7611E-01
+   skewness        1.6371E+01
+   excess kurtosis 2.6600E+02
+Optimal value and population statistics for parameter C:
+   optimal value   6.3700E+01
+   arithmatic mean 2.3506E-01
+   median          0.0000E+00
+   std deviation   3.8624E+00
+   skewness        1.6371E+01
+   excess kurtosis 2.6600E+02
+Optimal value and population statistics for parameter n:
+   optimal value   4.9700E+00
+   arithmatic mean 1.8339E-02
+   median          0.0000E+00
+   std deviation   3.0135E-01
+   skewness        1.6371E+01
+   excess kurtosis 2.6600E+02
+Genetic genome for the most fit creature:
+0: 111100111011100010010111
+1: 000010100011110010001101
+2: 111111111110001000001001
+3: 101110101100000110111011
+4: 111111000001011011101000
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 2 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.2836E+01
+   arithmatic mean 3.3259E+00
+   median          4.2536E+00
+   std deviation   2.2319E+00
+   skewness        -2.6093E-02
+   excess kurtosis -2.8402E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.5900E+05
+   arithmatic mean 3.8902E+05
+   median          3.9351E+05
+   std deviation   3.9949E+04
+   skewness        -8.2870E-01
+   excess kurtosis 9.8076E-01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   4.6900E-01
+   arithmatic mean 6.3574E-01
+   median          6.4075E-01
+   std deviation   1.1501E-01
+   skewness        1.1289E-01
+   excess kurtosis -1.0412E+00
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2800E+01
+   arithmatic mean 1.2342E+01
+   median          1.2425E+01
+   std deviation   7.5364E-01
+   skewness        -1.1459E-01
+   excess kurtosis -1.2605E+00
+Optimal value and population statistics for parameter C:
+   optimal value   6.3700E+01
+   arithmatic mean 4.8289E+01
+   median          4.9221E+01
+   std deviation   1.4840E+01
+   skewness        -1.9469E-01
+   excess kurtosis -8.3593E-01
+Optimal value and population statistics for parameter n:
+   optimal value   4.9700E+00
+   arithmatic mean 4.4988E+00
+   median          4.5834E+00
+   std deviation   8.0315E-01
+   skewness        -1.1229E-01
+   excess kurtosis -1.0085E+00
+Genetic genome for the most fit creature:
+0: 111100111011100010010111
+1: 000010100011110010001101
+2: 111111111110001000001001
+3: 101110101100000110111011
+4: 111111000001011011101000
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 3 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.2929E+01
+   arithmatic mean 3.9144E+00
+   median          4.3285E+00
+   std deviation   2.2151E+00
+   skewness        5.4304E-02
+   excess kurtosis -1.8474E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.6007E+05
+   arithmatic mean 3.9344E+05
+   median          3.9550E+05
+   std deviation   3.4756E+04
+   skewness        -1.1221E+00
+   excess kurtosis 3.9216E+00
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0338E-01
+   arithmatic mean 6.2813E-01
+   median          6.2953E-01
+   std deviation   1.1104E-01
+   skewness        1.4459E-01
+   excess kurtosis -1.0593E+00
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2797E+01
+   arithmatic mean 1.2381E+01
+   median          1.2501E+01
+   std deviation   7.1000E-01
+   skewness        -2.3942E-01
+   excess kurtosis -1.0702E+00
+Optimal value and population statistics for parameter C:
+   optimal value   6.3124E+01
+   arithmatic mean 4.9221E+01
+   median          5.0085E+01
+   std deviation   1.3529E+01
+   skewness        -1.7292E-01
+   excess kurtosis -8.2084E-01
+Optimal value and population statistics for parameter n:
+   optimal value   4.9714E+00
+   arithmatic mean 4.5582E+00
+   median          4.6063E+00
+   std deviation   7.1724E-01
+   skewness        -2.2319E-01
+   excess kurtosis -7.2057E-01
+Genetic genome for the most fit creature:
+0: 111100100001110010010100
+1: 001100110011110010001101
+2: 111111110100010000000011
+3: 101110011010010100111100
+4: 111111000010011101011111
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 4 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.2929E+01
+   arithmatic mean 4.3726E+00
+   median          4.4754E+00
+   std deviation   2.4434E+00
+   skewness        2.7333E-02
+   excess kurtosis -2.6936E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.6007E+05
+   arithmatic mean 3.9357E+05
+   median          3.9552E+05
+   std deviation   2.6275E+04
+   skewness        -3.4398E-02
+   excess kurtosis -6.7738E-01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0338E-01
+   arithmatic mean 6.5346E-01
+   median          6.7132E-01
+   std deviation   1.1621E-01
+   skewness        -1.2186E-01
+   excess kurtosis -1.2341E+00
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2797E+01
+   arithmatic mean 1.2486E+01
+   median          1.2797E+01
+   std deviation   6.9545E-01
+   skewness        -7.1738E-01
+   excess kurtosis -5.4291E-01
+Optimal value and population statistics for parameter C:
+   optimal value   6.3124E+01
+   arithmatic mean 4.8335E+01
+   median          4.8983E+01
+   std deviation   1.2524E+01
+   skewness        3.6145E-02
+   excess kurtosis -4.3698E-01
+Optimal value and population statistics for parameter n:
+   optimal value   4.9714E+00
+   arithmatic mean 4.5193E+00
+   median          4.4707E+00
+   std deviation   6.3351E-01
+   skewness        1.0360E-01
+   excess kurtosis -4.7526E-01
+Genetic genome for the most fit creature:
+0: 111100100001110010010100
+1: 001100110011110010001101
+2: 111111110100010000000011
+3: 101110011010010100111100
+4: 111111000010011101011111
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 5 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.2929E+01
+   arithmatic mean 4.3936E+00
+   median          4.6642E+00
+   std deviation   2.3010E+00
+   skewness        -1.4066E-01
+   excess kurtosis -2.8768E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.6007E+05
+   arithmatic mean 3.8982E+05
+   median          3.9357E+05
+   std deviation   2.3075E+04
+   skewness        -9.6453E-03
+   excess kurtosis -7.1527E-01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0338E-01
+   arithmatic mean 6.6762E-01
+   median          7.0229E-01
+   std deviation   1.0750E-01
+   skewness        -3.3508E-01
+   excess kurtosis -1.0957E+00
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2797E+01
+   arithmatic mean 1.2554E+01
+   median          1.2802E+01
+   std deviation   6.8370E-01
+   skewness        -1.0617E+00
+   excess kurtosis 1.6707E-02
+Optimal value and population statistics for parameter C:
+   optimal value   6.3124E+01
+   arithmatic mean 5.0089E+01
+   median          4.9517E+01
+   std deviation   1.1034E+01
+   skewness        2.2673E-01
+   excess kurtosis -6.9268E-01
+Optimal value and population statistics for parameter n:
+   optimal value   4.9714E+00
+   arithmatic mean 4.5382E+00
+   median          4.5566E+00
+   std deviation   5.4974E-01
+   skewness        -9.8379E-02
+   excess kurtosis -1.3170E-01
+Genetic genome for the most fit creature:
+0: 111100100001110010010100
+1: 001100110011110010001101
+2: 111111110100010000000011
+3: 101110011010010100111100
+4: 111111000010011101011111
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 6 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.2929E+01
+   arithmatic mean 4.6838E+00
+   median          4.8241E+00
+   std deviation   2.6460E+00
+   skewness        -1.3573E-01
+   excess kurtosis -3.3695E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.6007E+05
+   arithmatic mean 3.8760E+05
+   median          3.9160E+05
+   std deviation   2.0386E+04
+   skewness        -1.4229E-01
+   excess kurtosis -7.2159E-01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0338E-01
+   arithmatic mean 6.7527E-01
+   median          7.0538E-01
+   std deviation   1.0750E-01
+   skewness        -4.7263E-01
+   excess kurtosis -9.8183E-01
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2797E+01
+   arithmatic mean 1.2706E+01
+   median          1.2820E+01
+   std deviation   6.3575E-01
+   skewness        -1.4333E+00
+   excess kurtosis 1.3893E+00
+Optimal value and population statistics for parameter C:
+   optimal value   6.3124E+01
+   arithmatic mean 5.2660E+01
+   median          5.2831E+01
+   std deviation   1.0692E+01
+   skewness        -1.2166E-01
+   excess kurtosis 2.1948E-01
+Optimal value and population statistics for parameter n:
+   optimal value   4.9714E+00
+   arithmatic mean 4.5525E+00
+   median          4.5811E+00
+   std deviation   4.6331E-01
+   skewness        6.3992E-02
+   excess kurtosis 1.8897E-01
+Genetic genome for the most fit creature:
+0: 111100100001110010010100
+1: 001100110011110010001101
+2: 111111110100010000000011
+3: 101110011010010100111100
+4: 111111000010011101011111
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 7 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.2929E+01
+   arithmatic mean 4.8815E+00
+   median          5.1019E+00
+   std deviation   2.5709E+00
+   skewness        -2.1663E-01
+   excess kurtosis -3.1059E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.6007E+05
+   arithmatic mean 3.8740E+05
+   median          3.9345E+05
+   std deviation   2.3662E+04
+   skewness        -2.5777E+00
+   excess kurtosis 1.3759E+01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0338E-01
+   arithmatic mean 6.8582E-01
+   median          7.0615E-01
+   std deviation   1.0796E-01
+   skewness        -7.8782E-01
+   excess kurtosis -5.7372E-01
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2797E+01
+   arithmatic mean 1.2773E+01
+   median          1.2843E+01
+   std deviation   6.3295E-01
+   skewness        -1.5802E+00
+   excess kurtosis 2.0722E+00
+Optimal value and population statistics for parameter C:
+   optimal value   6.3124E+01
+   arithmatic mean 5.3842E+01
+   median          5.4628E+01
+   std deviation   9.8719E+00
+   skewness        8.7585E-02
+   excess kurtosis -6.2536E-01
+Optimal value and population statistics for parameter n:
+   optimal value   4.9714E+00
+   arithmatic mean 4.5427E+00
+   median          4.5811E+00
+   std deviation   3.8431E-01
+   skewness        -2.8788E-01
+   excess kurtosis 8.8820E-01
+Genetic genome for the most fit creature:
+0: 111100100001110010010100
+1: 001100110011110010001101
+2: 111111110100010000000011
+3: 101110011010010100111100
+4: 111111000010011101011111
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 8 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.2929E+01
+   arithmatic mean 5.3300E+00
+   median          5.4947E+00
+   std deviation   2.7703E+00
+   skewness        -1.0963E-01
+   excess kurtosis -3.3589E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.6007E+05
+   arithmatic mean 3.8713E+05
+   median          3.9117E+05
+   std deviation   1.9264E+04
+   skewness        -3.2199E+00
+   excess kurtosis 1.9583E+01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0338E-01
+   arithmatic mean 7.1021E-01
+   median          7.1596E-01
+   std deviation   9.3357E-02
+   skewness        -1.1003E+00
+   excess kurtosis 5.3716E-01
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2797E+01
+   arithmatic mean 1.2855E+01
+   median          1.2843E+01
+   std deviation   5.0750E-01
+   skewness        -2.0850E+00
+   excess kurtosis 5.4564E+00
+Optimal value and population statistics for parameter C:
+   optimal value   6.3124E+01
+   arithmatic mean 5.4552E+01
+   median          5.4628E+01
+   std deviation   9.6082E+00
+   skewness        -2.0027E-04
+   excess kurtosis -3.6827E-01
+Optimal value and population statistics for parameter n:
+   optimal value   4.9714E+00
+   arithmatic mean 4.5794E+00
+   median          4.6062E+00
+   std deviation   3.0312E-01
+   skewness        5.1886E-02
+   excess kurtosis 3.6892E-01
+Genetic genome for the most fit creature:
+0: 111100100001110010010100
+1: 001100110011110010001101
+2: 111111110100010000000011
+3: 101110011010010100111100
+4: 111111000010011101011111
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 9 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.2929E+01
+   arithmatic mean 6.0836E+00
+   median          6.0046E+00
+   std deviation   2.5978E+00
+   skewness        -1.9271E-01
+   excess kurtosis -3.3313E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.6007E+05
+   arithmatic mean 3.8991E+05
+   median          3.9352E+05
+   std deviation   1.1137E+04
+   skewness        -7.2038E-01
+   excess kurtosis 2.0878E+00
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0338E-01
+   arithmatic mean 7.3693E-01
+   median          7.4147E-01
+   std deviation   7.9963E-02
+   skewness        -1.7964E+00
+   excess kurtosis 3.1038E+00
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2797E+01
+   arithmatic mean 1.2884E+01
+   median          1.2834E+01
+   std deviation   3.4566E-01
+   skewness        -2.9364E+00
+   excess kurtosis 1.4411E+01
+Optimal value and population statistics for parameter C:
+   optimal value   6.3124E+01
+   arithmatic mean 5.5771E+01
+   median          5.4701E+01
+   std deviation   7.9594E+00
+   skewness        -1.0043E-01
+   excess kurtosis 1.8960E-01
+Optimal value and population statistics for parameter n:
+   optimal value   4.9714E+00
+   arithmatic mean 4.5458E+00
+   median          4.6026E+00
+   std deviation   2.7841E-01
+   skewness        2.7099E-01
+   excess kurtosis 1.7718E+00
+Genetic genome for the most fit creature:
+0: 111100100001110010010100
+1: 001100110011110010001101
+2: 111111110100010000000011
+3: 101110011010010100111100
+4: 111111000010011101011111
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 10 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.2929E+01
+   arithmatic mean 6.5715E+00
+   median          7.0070E+00
+   std deviation   2.8890E+00
+   skewness        -5.9423E-01
+   excess kurtosis -3.4237E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.6007E+05
+   arithmatic mean 3.8707E+05
+   median          3.9351E+05
+   std deviation   1.8701E+04
+   skewness        -4.4537E+00
+   excess kurtosis 2.8029E+01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0338E-01
+   arithmatic mean 7.5217E-01
+   median          7.8761E-01
+   std deviation   6.3892E-02
+   skewness        -2.0464E+00
+   excess kurtosis 5.2398E+00
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2797E+01
+   arithmatic mean 1.2929E+01
+   median          1.2848E+01
+   std deviation   2.7283E-01
+   skewness        -2.2291E+00
+   excess kurtosis 1.8228E+01
+Optimal value and population statistics for parameter C:
+   optimal value   6.3124E+01
+   arithmatic mean 5.6232E+01
+   median          5.4702E+01
+   std deviation   7.5621E+00
+   skewness        1.1083E-01
+   excess kurtosis -3.2437E-01
+Optimal value and population statistics for parameter n:
+   optimal value   4.9714E+00
+   arithmatic mean 4.4995E+00
+   median          4.4605E+00
+   std deviation   2.5198E-01
+   skewness        3.3596E-01
+   excess kurtosis 5.4069E+00
+Genetic genome for the most fit creature:
+0: 111100100001110010010100
+1: 001100110011110010001101
+2: 111111110100010000000011
+3: 101110011010010100111100
+4: 111111000010011101011111
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 11 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.2929E+01
+   arithmatic mean 6.9070E+00
+   median          7.3401E+00
+   std deviation   2.8593E+00
+   skewness        -6.3047E-01
+   excess kurtosis -3.3298E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.6007E+05
+   arithmatic mean 3.8868E+05
+   median          3.9324E+05
+   std deviation   1.0662E+04
+   skewness        4.3068E-01
+   excess kurtosis 7.9635E+00
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0338E-01
+   arithmatic mean 7.6182E-01
+   median          7.8764E-01
+   std deviation   5.6868E-02
+   skewness        -2.5723E+00
+   excess kurtosis 8.4418E+00
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2797E+01
+   arithmatic mean 1.2895E+01
+   median          1.2821E+01
+   std deviation   2.1397E-01
+   skewness        -1.9517E+00
+   excess kurtosis 2.0511E+01
+Optimal value and population statistics for parameter C:
+   optimal value   6.3124E+01
+   arithmatic mean 5.7581E+01
+   median          5.5072E+01
+   std deviation   8.1177E+00
+   skewness        -1.0396E+00
+   excess kurtosis 4.4941E+00
+Optimal value and population statistics for parameter n:
+   optimal value   4.9714E+00
+   arithmatic mean 4.4145E+00
+   median          4.3520E+00
+   std deviation   1.8886E-01
+   skewness        2.5532E-01
+   excess kurtosis 3.8446E+00
+Genetic genome for the most fit creature:
+0: 111100100001110010010100
+1: 001100110011110010001101
+2: 111111110100010000000011
+3: 101110011010010100111100
+4: 111111000010011101011111
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 12 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.2937E+01
+   arithmatic mean 7.2883E+00
+   median          7.9947E+00
+   std deviation   2.9435E+00
+   skewness        -7.7364E-01
+   excess kurtosis -3.2149E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.6006E+05
+   arithmatic mean 3.8614E+05
+   median          3.9120E+05
+   std deviation   1.7632E+04
+   skewness        -6.3513E+00
+   excess kurtosis 5.1864E+01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0335E-01
+   arithmatic mean 7.7414E-01
+   median          7.8779E-01
+   std deviation   5.1740E-02
+   skewness        -3.8618E+00
+   excess kurtosis 1.6720E+01
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2797E+01
+   arithmatic mean 1.2876E+01
+   median          1.2821E+01
+   std deviation   1.3248E-01
+   skewness        -5.5311E-01
+   excess kurtosis 9.4919E+00
+Optimal value and population statistics for parameter C:
+   optimal value   6.3305E+01
+   arithmatic mean 5.9604E+01
+   median          5.6015E+01
+   std deviation   6.2108E+00
+   skewness        -2.0564E-02
+   excess kurtosis -9.1396E-01
+Optimal value and population statistics for parameter n:
+   optimal value   4.9719E+00
+   arithmatic mean 4.3754E+00
+   median          4.3105E+00
+   std deviation   2.0804E-01
+   skewness        -1.3664E-01
+   excess kurtosis 7.2797E+00
+Genetic genome for the most fit creature:
+0: 111100100001010101010111
+1: 001100110011011110111101
+2: 111111110100010000000001
+3: 101110010000100011011001
+4: 111111000110011101011111
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 13 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.2937E+01
+   arithmatic mean 7.7744E+00
+   median          9.0353E+00
+   std deviation   3.1858E+00
+   skewness        -1.0017E+00
+   excess kurtosis -3.1550E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.6006E+05
+   arithmatic mean 3.8458E+05
+   median          3.8366E+05
+   std deviation   1.5751E+04
+   skewness        -5.3039E+00
+   excess kurtosis 3.6843E+01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0335E-01
+   arithmatic mean 7.7686E-01
+   median          7.8779E-01
+   std deviation   5.1421E-02
+   skewness        -4.5157E+00
+   excess kurtosis 2.0724E+01
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2797E+01
+   arithmatic mean 1.2865E+01
+   median          1.2820E+01
+   std deviation   1.2833E-01
+   skewness        -4.3021E-01
+   excess kurtosis 1.2813E+01
+Optimal value and population statistics for parameter C:
+   optimal value   6.3305E+01
+   arithmatic mean 6.0327E+01
+   median          6.1403E+01
+   std deviation   6.8003E+00
+   skewness        -1.0775E+00
+   excess kurtosis 4.7483E+00
+Optimal value and population statistics for parameter n:
+   optimal value   4.9719E+00
+   arithmatic mean 4.3301E+00
+   median          4.2942E+00
+   std deviation   1.6975E-01
+   skewness        -3.0000E-01
+   excess kurtosis 1.4996E+01
+Genetic genome for the most fit creature:
+0: 111100100001010101010111
+1: 001100110011011110111101
+2: 111111110100010000000001
+3: 101110010000100011011001
+4: 111111000110011101011111
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 14 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.2937E+01
+   arithmatic mean 8.3286E+00
+   median          1.0063E+01
+   std deviation   3.1390E+00
+   skewness        -1.1996E+00
+   excess kurtosis -2.7456E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.6006E+05
+   arithmatic mean 3.8223E+05
+   median          3.8125E+05
+   std deviation   1.5045E+04
+   skewness        -6.3335E+00
+   excess kurtosis 5.5775E+01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0335E-01
+   arithmatic mean 7.8069E-01
+   median          7.8781E-01
+   std deviation   4.5331E-02
+   skewness        -5.2462E+00
+   excess kurtosis 2.8711E+01
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2797E+01
+   arithmatic mean 1.2832E+01
+   median          1.2807E+01
+   std deviation   1.5884E-01
+   skewness        -5.0888E+00
+   excess kurtosis 5.3226E+01
+Optimal value and population statistics for parameter C:
+   optimal value   6.3305E+01
+   arithmatic mean 6.3812E+01
+   median          6.6806E+01
+   std deviation   5.8507E+00
+   skewness        -1.8438E+00
+   excess kurtosis 4.3830E+00
+Optimal value and population statistics for parameter n:
+   optimal value   4.9719E+00
+   arithmatic mean 4.3047E+00
+   median          4.2920E+00
+   std deviation   2.0673E-01
+   skewness        1.2701E-01
+   excess kurtosis 2.2104E+01
+Genetic genome for the most fit creature:
+0: 111100100001010101010111
+1: 001100110011011110111101
+2: 111111110100010000000001
+3: 101110010000100011011001
+4: 111111000110011101011111
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 15 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.2937E+01
+   arithmatic mean 9.5078E+00
+   median          1.0642E+01
+   std deviation   2.6475E+00
+   skewness        -2.1960E+00
+   excess kurtosis 8.8409E-01
+Optimal value and population statistics for parameter Q:
+   optimal value   3.6006E+05
+   arithmatic mean 3.7954E+05
+   median          3.8124E+05
+   std deviation   1.3178E+04
+   skewness        -7.3989E+00
+   excess kurtosis 6.1505E+01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0335E-01
+   arithmatic mean 7.7345E-01
+   median          7.8754E-01
+   std deviation   5.9446E-02
+   skewness        -4.0909E+00
+   excess kurtosis 1.5315E+01
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2797E+01
+   arithmatic mean 1.2814E+01
+   median          1.2807E+01
+   std deviation   1.0480E-01
+   skewness        -4.6335E+00
+   excess kurtosis 4.9217E+01
+Optimal value and population statistics for parameter C:
+   optimal value   6.3305E+01
+   arithmatic mean 6.5769E+01
+   median          6.6811E+01
+   std deviation   4.4529E+00
+   skewness        -7.1797E+00
+   excess kurtosis 6.2355E+01
+Optimal value and population statistics for parameter n:
+   optimal value   4.9719E+00
+   arithmatic mean 4.3068E+00
+   median          4.2917E+00
+   std deviation   1.4027E-01
+   skewness        4.4522E+00
+   excess kurtosis 2.1713E+01
+Genetic genome for the most fit creature:
+0: 111100100001010101010111
+1: 001100110011011110111101
+2: 111111110100010000000001
+3: 101110010000100011011001
+4: 111111000110011101011111
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 16 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.2937E+01
+   arithmatic mean 9.5580E+00
+   median          1.0781E+01
+   std deviation   2.8177E+00
+   skewness        -2.2747E+00
+   excess kurtosis 1.0927E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.6006E+05
+   arithmatic mean 3.7833E+05
+   median          3.8106E+05
+   std deviation   1.3147E+04
+   skewness        -6.7859E+00
+   excess kurtosis 5.1167E+01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0335E-01
+   arithmatic mean 7.6878E-01
+   median          7.7969E-01
+   std deviation   6.2365E-02
+   skewness        -3.8114E+00
+   excess kurtosis 1.2799E+01
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2797E+01
+   arithmatic mean 1.2809E+01
+   median          1.2816E+01
+   std deviation   9.9541E-02
+   skewness        -6.1463E+00
+   excess kurtosis 5.8238E+01
+Optimal value and population statistics for parameter C:
+   optimal value   6.3305E+01
+   arithmatic mean 6.6050E+01
+   median          6.6808E+01
+   std deviation   4.4590E+00
+   skewness        -9.4881E+00
+   excess kurtosis 9.6487E+01
+Optimal value and population statistics for parameter n:
+   optimal value   4.9719E+00
+   arithmatic mean 4.3050E+00
+   median          4.2913E+00
+   std deviation   1.6067E-01
+   skewness        1.8848E+00
+   excess kurtosis 1.8009E+01
+Genetic genome for the most fit creature:
+0: 111100100001010101010111
+1: 001100110011011110111101
+2: 111111110100010000000001
+3: 101110010000100011011001
+4: 111111000110011101011111
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 17 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.2937E+01
+   arithmatic mean 9.4882E+00
+   median          1.0841E+01
+   std deviation   3.0037E+00
+   skewness        -2.0780E+00
+   excess kurtosis -6.3373E-02
+Optimal value and population statistics for parameter Q:
+   optimal value   3.6006E+05
+   arithmatic mean 3.7851E+05
+   median          3.8106E+05
+   std deviation   1.1651E+04
+   skewness        -6.6667E+00
+   excess kurtosis 5.6603E+01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0335E-01
+   arithmatic mean 7.6022E-01
+   median          7.7936E-01
+   std deviation   7.3372E-02
+   skewness        -3.1050E+00
+   excess kurtosis 7.7855E+00
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2797E+01
+   arithmatic mean 1.2830E+01
+   median          1.2825E+01
+   std deviation   5.6109E-02
+   skewness        3.4297E+00
+   excess kurtosis 3.1412E+01
+Optimal value and population statistics for parameter C:
+   optimal value   6.3305E+01
+   arithmatic mean 6.6533E+01
+   median          6.6814E+01
+   std deviation   9.1269E-01
+   skewness        -3.2011E+00
+   excess kurtosis 9.4515E+00
+Optimal value and population statistics for parameter n:
+   optimal value   4.9719E+00
+   arithmatic mean 4.3137E+00
+   median          4.2912E+00
+   std deviation   1.9376E-01
+   skewness        1.0538E+00
+   excess kurtosis 1.3753E+01
+Genetic genome for the most fit creature:
+0: 111100100001010101010111
+1: 001100110011011110111101
+2: 111111110100010000000001
+3: 101110010000100011011001
+4: 111111000110011101011111
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 18 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.2937E+01
+   arithmatic mean 1.0127E+01
+   median          1.0998E+01
+   std deviation   2.3957E+00
+   skewness        -3.0952E+00
+   excess kurtosis 5.8183E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.6006E+05
+   arithmatic mean 3.7910E+05
+   median          3.8124E+05
+   std deviation   1.2402E+04
+   skewness        -8.0002E+00
+   excess kurtosis 6.6343E+01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0335E-01
+   arithmatic mean 7.7007E-01
+   median          7.7850E-01
+   std deviation   4.8812E-02
+   skewness        -4.9822E+00
+   excess kurtosis 2.3476E+01
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2797E+01
+   arithmatic mean 1.2844E+01
+   median          1.2851E+01
+   std deviation   3.3435E-02
+   skewness        4.4441E+00
+   excess kurtosis 4.6689E+01
+Optimal value and population statistics for parameter C:
+   optimal value   6.3305E+01
+   arithmatic mean 6.6436E+01
+   median          6.6814E+01
+   std deviation   3.0908E+00
+   skewness        -1.4216E+01
+   excess kurtosis 2.1644E+02
+Optimal value and population statistics for parameter n:
+   optimal value   4.9719E+00
+   arithmatic mean 4.3015E+00
+   median          4.2913E+00
+   std deviation   1.3092E-01
+   skewness        1.4846E+00
+   excess kurtosis 3.3593E+01
+Genetic genome for the most fit creature:
+0: 111100100001010101010111
+1: 001100110011011110111101
+2: 111111110100010000000001
+3: 101110010000100011011001
+4: 111111000110011101011111
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 19 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.2937E+01
+   arithmatic mean 9.9359E+00
+   median          1.1022E+01
+   std deviation   2.5985E+00
+   skewness        -2.5580E+00
+   excess kurtosis 2.7431E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.6006E+05
+   arithmatic mean 3.7992E+05
+   median          3.8124E+05
+   std deviation   9.3742E+03
+   skewness        -1.0012E+01
+   excess kurtosis 1.0977E+02
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0335E-01
+   arithmatic mean 7.6641E-01
+   median          7.7894E-01
+   std deviation   5.7597E-02
+   skewness        -4.1971E+00
+   excess kurtosis 1.5836E+01
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2797E+01
+   arithmatic mean 1.2844E+01
+   median          1.2852E+01
+   std deviation   9.9724E-02
+   skewness        -7.2344E+00
+   excess kurtosis 7.5283E+01
+Optimal value and population statistics for parameter C:
+   optimal value   6.3305E+01
+   arithmatic mean 6.6021E+01
+   median          6.6815E+01
+   std deviation   5.2380E+00
+   skewness        -8.5466E+00
+   excess kurtosis 7.4306E+01
+Optimal value and population statistics for parameter n:
+   optimal value   4.9719E+00
+   arithmatic mean 4.3068E+00
+   median          4.2913E+00
+   std deviation   1.6929E-01
+   skewness        1.0411E+00
+   excess kurtosis 2.6659E+01
+Genetic genome for the most fit creature:
+0: 111100100001010101010111
+1: 001100110011011110111101
+2: 111111110100010000000001
+3: 101110010000100011011001
+4: 111111000110011101011111
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 20 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.3149E+01
+   arithmatic mean 1.0024E+01
+   median          1.1037E+01
+   std deviation   2.6897E+00
+   skewness        -2.7096E+00
+   excess kurtosis 3.2933E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.6006E+05
+   arithmatic mean 3.7901E+05
+   median          3.8122E+05
+   std deviation   1.2873E+04
+   skewness        -7.3723E+00
+   excess kurtosis 5.7719E+01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0335E-01
+   arithmatic mean 7.6867E-01
+   median          7.7937E-01
+   std deviation   5.1767E-02
+   skewness        -4.8373E+00
+   excess kurtosis 2.1633E+01
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2818E+01
+   arithmatic mean 1.2851E+01
+   median          1.2860E+01
+   std deviation   7.5492E-02
+   skewness        -8.7635E+00
+   excess kurtosis 1.1876E+02
+Optimal value and population statistics for parameter C:
+   optimal value   6.3305E+01
+   arithmatic mean 6.6159E+01
+   median          6.6815E+01
+   std deviation   4.3692E+00
+   skewness        -9.9890E+00
+   excess kurtosis 1.0505E+02
+Optimal value and population statistics for parameter n:
+   optimal value   4.9866E+00
+   arithmatic mean 4.3083E+00
+   median          4.2919E+00
+   std deviation   1.5591E-01
+   skewness        1.4156E-02
+   excess kurtosis 2.6808E+01
+Genetic genome for the most fit creature:
+0: 111100100001010110100111
+1: 001100110011011110111100
+2: 111110100101011010110001
+3: 101110010000100011011001
+4: 111111010100010100001010
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 21 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.3149E+01
+   arithmatic mean 9.9848E+00
+   median          1.1040E+01
+   std deviation   2.7463E+00
+   skewness        -2.5677E+00
+   excess kurtosis 2.3887E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.6006E+05
+   arithmatic mean 3.7960E+05
+   median          3.8124E+05
+   std deviation   8.6612E+03
+   skewness        -8.8966E+00
+   excess kurtosis 1.0086E+02
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0335E-01
+   arithmatic mean 7.6819E-01
+   median          7.7938E-01
+   std deviation   5.3952E-02
+   skewness        -4.6323E+00
+   excess kurtosis 1.9582E+01
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2818E+01
+   arithmatic mean 1.2853E+01
+   median          1.2860E+01
+   std deviation   7.5538E-02
+   skewness        -8.7451E+00
+   excess kurtosis 1.1885E+02
+Optimal value and population statistics for parameter C:
+   optimal value   6.3305E+01
+   arithmatic mean 6.6094E+01
+   median          6.6826E+01
+   std deviation   4.5513E+00
+   skewness        -9.0225E+00
+   excess kurtosis 8.8915E+01
+Optimal value and population statistics for parameter n:
+   optimal value   4.9866E+00
+   arithmatic mean 4.3175E+00
+   median          4.2939E+00
+   std deviation   1.4766E-01
+   skewness        3.3033E+00
+   excess kurtosis 1.7566E+01
+Genetic genome for the most fit creature:
+0: 111100100001010110100111
+1: 001100110011011110111100
+2: 111110100101011010110001
+3: 101110010000100011011001
+4: 111111010100010100001010
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 22 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.3149E+01
+   arithmatic mean 9.6805E+00
+   median          1.1041E+01
+   std deviation   3.0836E+00
+   skewness        -2.0747E+00
+   excess kurtosis -1.0241E-01
+Optimal value and population statistics for parameter Q:
+   optimal value   3.6006E+05
+   arithmatic mean 3.7856E+05
+   median          3.8106E+05
+   std deviation   1.0078E+04
+   skewness        -6.3393E+00
+   excess kurtosis 5.4824E+01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0335E-01
+   arithmatic mean 7.5455E-01
+   median          7.7934E-01
+   std deviation   7.7646E-02
+   skewness        -2.8624E+00
+   excess kurtosis 6.2738E+00
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2818E+01
+   arithmatic mean 1.2861E+01
+   median          1.2860E+01
+   std deviation   5.5142E-02
+   skewness        6.3074E+00
+   excess kurtosis 7.6296E+01
+Optimal value and population statistics for parameter C:
+   optimal value   6.3305E+01
+   arithmatic mean 6.6584E+01
+   median          6.6842E+01
+   std deviation   1.2685E+00
+   skewness        -8.2443E+00
+   excess kurtosis 9.0921E+01
+Optimal value and population statistics for parameter n:
+   optimal value   4.9866E+00
+   arithmatic mean 4.3248E+00
+   median          4.2942E+00
+   std deviation   1.8842E-01
+   skewness        1.3680E+00
+   excess kurtosis 1.3016E+01
+Genetic genome for the most fit creature:
+0: 111100100001010100100111
+1: 001100110011011110111100
+2: 111110100101011010110001
+3: 101110010000100011011001
+4: 111111010100010100011111
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 23 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.3149E+01
+   arithmatic mean 9.8328E+00
+   median          1.1040E+01
+   std deviation   2.8358E+00
+   skewness        -2.2099E+00
+   excess kurtosis 8.6941E-01
+Optimal value and population statistics for parameter Q:
+   optimal value   3.6006E+05
+   arithmatic mean 3.7869E+05
+   median          3.8105E+05
+   std deviation   1.3341E+04
+   skewness        -9.0032E+00
+   excess kurtosis 9.5509E+01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0335E-01
+   arithmatic mean 7.5693E-01
+   median          7.7823E-01
+   std deviation   7.2252E-02
+   skewness        -3.1485E+00
+   excess kurtosis 8.0770E+00
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2818E+01
+   arithmatic mean 1.2850E+01
+   median          1.2860E+01
+   std deviation   1.0246E-01
+   skewness        -6.9682E+00
+   excess kurtosis 6.8751E+01
+Optimal value and population statistics for parameter C:
+   optimal value   6.3305E+01
+   arithmatic mean 6.6400E+01
+   median          6.6859E+01
+   std deviation   3.3735E+00
+   skewness        -1.1609E+01
+   excess kurtosis 1.5498E+02
+Optimal value and population statistics for parameter n:
+   optimal value   4.9866E+00
+   arithmatic mean 4.3481E+00
+   median          4.2949E+00
+   std deviation   2.1530E-01
+   skewness        2.1868E+00
+   excess kurtosis 1.0870E+01
+Genetic genome for the most fit creature:
+0: 111100100001010100100111
+1: 001100110011011110111100
+2: 111110100101011010110001
+3: 101110010000100011011001
+4: 111111010100010100011111
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 24 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.3440E+01
+   arithmatic mean 9.3189E+00
+   median          1.1040E+01
+   std deviation   3.4307E+00
+   skewness        -1.6235E+00
+   excess kurtosis -1.8060E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.6006E+05
+   arithmatic mean 3.7785E+05
+   median          3.8105E+05
+   std deviation   9.8676E+03
+   skewness        -5.6606E+00
+   excess kurtosis 5.2223E+01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0335E-01
+   arithmatic mean 7.4830E-01
+   median          7.7809E-01
+   std deviation   8.6108E-02
+   skewness        -2.4684E+00
+   excess kurtosis 4.1319E+00
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2937E+01
+   arithmatic mean 1.2862E+01
+   median          1.2860E+01
+   std deviation   3.0692E-02
+   skewness        5.3765E+00
+   excess kurtosis 4.9273E+01
+Optimal value and population statistics for parameter C:
+   optimal value   6.6924E+01
+   arithmatic mean 6.6084E+01
+   median          6.6859E+01
+   std deviation   3.6548E+00
+   skewness        -9.2206E+00
+   excess kurtosis 1.0973E+02
+Optimal value and population statistics for parameter n:
+   optimal value   5.0413E+00
+   arithmatic mean 4.3696E+00
+   median          4.2985E+00
+   std deviation   2.3510E-01
+   skewness        1.6613E+00
+   excess kurtosis 5.0903E+00
+Genetic genome for the most fit creature:
+0: 111100100001010101001101
+1: 001100110011011101111101
+2: 111011000110000110011011
+3: 100100000010100101000101
+4: 111110010010100110001110
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 25 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.4497E+01
+   arithmatic mean 8.6358E+00
+   median          1.1034E+01
+   std deviation   3.9797E+00
+   skewness        -1.1600E+00
+   excess kurtosis -3.2686E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.5769E+05
+   arithmatic mean 3.7550E+05
+   median          3.8103E+05
+   std deviation   1.1927E+04
+   skewness        -3.6024E+00
+   excess kurtosis 2.3280E+01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0336E-01
+   arithmatic mean 7.3539E-01
+   median          7.7802E-01
+   std deviation   9.9433E-02
+   skewness        -1.8616E+00
+   excess kurtosis 1.4934E+00
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2894E+01
+   arithmatic mean 1.2857E+01
+   median          1.2860E+01
+   std deviation   8.1338E-02
+   skewness        -7.9681E+00
+   excess kurtosis 9.3039E+01
+Optimal value and population statistics for parameter C:
+   optimal value   6.6936E+01
+   arithmatic mean 6.6191E+01
+   median          6.6870E+01
+   std deviation   4.5624E+00
+   skewness        -9.0481E+00
+   excess kurtosis 8.8865E+01
+Optimal value and population statistics for parameter n:
+   optimal value   5.0530E+00
+   arithmatic mean 4.4121E+00
+   median          4.2986E+00
+   std deviation   2.6238E-01
+   skewness        1.8457E+00
+   excess kurtosis 1.4585E+00
+Genetic genome for the most fit creature:
+0: 111100011100010101010001
+1: 001100110011010110101101
+2: 111010100101011010110001
+3: 100100000010001111101101
+4: 111110001010100000001110
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 26 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.4497E+01
+   arithmatic mean 8.6583E+00
+   median          1.1026E+01
+   std deviation   3.8888E+00
+   skewness        -1.0349E+00
+   excess kurtosis -3.4273E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.5769E+05
+   arithmatic mean 3.7582E+05
+   median          3.8101E+05
+   std deviation   1.0973E+04
+   skewness        -2.8791E+00
+   excess kurtosis 1.4431E+01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0336E-01
+   arithmatic mean 7.1181E-01
+   median          7.7777E-01
+   std deviation   1.1614E-01
+   skewness        -1.1938E+00
+   excess kurtosis -5.5879E-01
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2894E+01
+   arithmatic mean 1.2857E+01
+   median          1.2860E+01
+   std deviation   7.5699E-02
+   skewness        -9.0606E+00
+   excess kurtosis 1.2270E+02
+Optimal value and population statistics for parameter C:
+   optimal value   6.6936E+01
+   arithmatic mean 6.5599E+01
+   median          6.6862E+01
+   std deviation   6.3654E+00
+   skewness        -6.7835E+00
+   excess kurtosis 4.7953E+01
+Optimal value and population statistics for parameter n:
+   optimal value   5.0530E+00
+   arithmatic mean 4.4409E+00
+   median          4.2986E+00
+   std deviation   3.0302E-01
+   skewness        1.4382E+00
+   excess kurtosis 4.6304E-01
+Genetic genome for the most fit creature:
+0: 111100011100010101010001
+1: 001100110011010110101101
+2: 111010100101011010110001
+3: 100100000010001111101101
+4: 111110001010100000001110
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 27 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.4540E+01
+   arithmatic mean 8.5779E+00
+   median          1.1021E+01
+   std deviation   3.8301E+00
+   skewness        -8.0011E-01
+   excess kurtosis -3.6437E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.5635E+05
+   arithmatic mean 3.7538E+05
+   median          3.8078E+05
+   std deviation   1.0420E+04
+   skewness        -1.1705E+00
+   excess kurtosis 2.6334E+00
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0348E-01
+   arithmatic mean 6.8920E-01
+   median          7.7623E-01
+   std deviation   1.2639E-01
+   skewness        -7.4105E-01
+   excess kurtosis -1.4349E+00
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2818E+01
+   arithmatic mean 1.2856E+01
+   median          1.2860E+01
+   std deviation   7.3584E-02
+   skewness        -1.0076E+01
+   excess kurtosis 1.3698E+02
+Optimal value and population statistics for parameter C:
+   optimal value   6.6936E+01
+   arithmatic mean 6.6406E+01
+   median          6.6888E+01
+   std deviation   1.9883E+00
+   skewness        -5.8605E+00
+   excess kurtosis 4.1608E+01
+Optimal value and population statistics for parameter n:
+   optimal value   5.0530E+00
+   arithmatic mean 4.5205E+00
+   median          4.3030E+00
+   std deviation   3.5637E-01
+   skewness        3.6030E-01
+   excess kurtosis -1.9723E-01
+Genetic genome for the most fit creature:
+0: 111100000001010100100111
+1: 001100110010010101011011
+2: 111110100101010010110001
+3: 100100000010001111011111
+4: 111110001010100000001000
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 28 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.4600E+01
+   arithmatic mean 8.4654E+00
+   median          1.0969E+01
+   std deviation   4.1399E+00
+   skewness        -6.1063E-01
+   excess kurtosis -3.8607E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.5676E+05
+   arithmatic mean 3.7283E+05
+   median          3.8054E+05
+   std deviation   1.1191E+04
+   skewness        -7.8694E-01
+   excess kurtosis -5.1971E-01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0318E-01
+   arithmatic mean 6.7250E-01
+   median          7.7506E-01
+   std deviation   1.3138E-01
+   skewness        -4.4838E-01
+   excess kurtosis -1.7832E+00
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2894E+01
+   arithmatic mean 1.2857E+01
+   median          1.2860E+01
+   std deviation   9.6266E-02
+   skewness        -8.7239E+00
+   excess kurtosis 9.0477E+01
+Optimal value and population statistics for parameter C:
+   optimal value   6.7830E+01
+   arithmatic mean 6.6478E+01
+   median          6.6889E+01
+   std deviation   3.1439E+00
+   skewness        -1.3543E+01
+   excess kurtosis 2.0467E+02
+Optimal value and population statistics for parameter n:
+   optimal value   5.0530E+00
+   arithmatic mean 4.5887E+00
+   median          4.3034E+00
+   std deviation   3.6141E-01
+   skewness        3.9719E-01
+   excess kurtosis -1.7789E+00
+Genetic genome for the most fit creature:
+0: 111100001100010111000111
+1: 001100110000110101110010
+2: 111010100101011011011011
+3: 100100100010001111101101
+4: 111110001010100000011110
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 29 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.4691E+01
+   arithmatic mean 8.4567E+00
+   median          1.0665E+01
+   std deviation   4.6955E+00
+   skewness        -4.1243E-01
+   excess kurtosis -4.2074E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.5676E+05
+   arithmatic mean 3.6676E+05
+   median          3.6006E+05
+   std deviation   1.1790E+04
+   skewness        7.7351E-01
+   excess kurtosis 9.6598E-01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.2223E-01
+   arithmatic mean 6.0135E-01
+   median          5.0350E-01
+   std deviation   1.2955E-01
+   skewness        6.3681E-01
+   excess kurtosis -1.5786E+00
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2860E+01
+   arithmatic mean 1.2867E+01
+   median          1.2860E+01
+   std deviation   4.9421E-02
+   skewness        -4.7297E+00
+   excess kurtosis 5.7983E+01
+Optimal value and population statistics for parameter C:
+   optimal value   6.6887E+01
+   arithmatic mean 6.6319E+01
+   median          6.6904E+01
+   std deviation   4.7086E+00
+   skewness        -9.1674E+00
+   excess kurtosis 9.4272E+01
+Optimal value and population statistics for parameter n:
+   optimal value   5.0530E+00
+   arithmatic mean 4.7663E+00
+   median          5.0414E+00
+   std deviation   3.6539E-01
+   skewness        -4.4461E-01
+   excess kurtosis -1.5622E+00
+Genetic genome for the most fit creature:
+0: 111100001100010101010001
+1: 001110010010010101011011
+2: 111010000101011011110001
+3: 100100000000101000111111
+4: 111110001010100000000111
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 30 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.4695E+01
+   arithmatic mean 1.0794E+01
+   median          1.2335E+01
+   std deviation   4.4799E+00
+   skewness        -1.2151E+00
+   excess kurtosis -2.8496E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.5676E+05
+   arithmatic mean 3.6048E+05
+   median          3.5769E+05
+   std deviation   1.2331E+04
+   skewness        -1.8803E+00
+   excess kurtosis 1.7450E+01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.2186E-01
+   arithmatic mean 5.3647E-01
+   median          5.0348E-01
+   std deviation   8.3100E-02
+   skewness        2.5314E+00
+   excess kurtosis 4.5454E+00
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2860E+01
+   arithmatic mean 1.2865E+01
+   median          1.2860E+01
+   std deviation   6.7551E-02
+   skewness        -1.2876E+01
+   excess kurtosis 1.9327E+02
+Optimal value and population statistics for parameter C:
+   optimal value   6.6936E+01
+   arithmatic mean 6.6454E+01
+   median          6.6922E+01
+   std deviation   4.6062E+00
+   skewness        -9.9332E+00
+   excess kurtosis 1.0581E+02
+Optimal value and population statistics for parameter n:
+   optimal value   5.0530E+00
+   arithmatic mean 4.9449E+00
+   median          5.0522E+00
+   std deviation   2.7159E-01
+   skewness        -2.0652E+00
+   excess kurtosis 3.0438E+00
+Genetic genome for the most fit creature:
+0: 111100001100010110100101
+1: 001110110000000101111110
+2: 111010000101011111000001
+3: 100100000010001111101001
+4: 111110001010100000001110
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 31 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.4926E+01
+   arithmatic mean 1.3370E+01
+   median          1.4304E+01
+   std deviation   2.6665E+00
+   skewness        -3.3669E+00
+   excess kurtosis 8.6636E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.5676E+05
+   arithmatic mean 3.5789E+05
+   median          3.5739E+05
+   std deviation   7.5501E+03
+   skewness        3.2415E+00
+   excess kurtosis 6.0873E+01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.2223E-01
+   arithmatic mean 5.1266E-01
+   median          5.0348E-01
+   std deviation   2.6587E-02
+   skewness        8.3011E+00
+   excess kurtosis 8.0788E+01
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2894E+01
+   arithmatic mean 1.2867E+01
+   median          1.2860E+01
+   std deviation   4.6161E-02
+   skewness        -2.6384E+00
+   excess kurtosis 4.0976E+01
+Optimal value and population statistics for parameter C:
+   optimal value   6.7831E+01
+   arithmatic mean 6.6717E+01
+   median          6.6924E+01
+   std deviation   3.0875E+00
+   skewness        -1.4297E+01
+   excess kurtosis 2.2252E+02
+Optimal value and population statistics for parameter n:
+   optimal value   5.0728E+00
+   arithmatic mean 5.0419E+00
+   median          5.0530E+00
+   std deviation   9.0695E-02
+   skewness        -7.6112E+00
+   excess kurtosis 7.0939E+01
+Genetic genome for the most fit creature:
+0: 111100001100010110100101
+1: 001110010010010101111001
+2: 111010100101001100110011
+3: 100100100010001000100101
+4: 111010001001000000001000
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 32 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.4996E+01
+   arithmatic mean 1.3410E+01
+   median          1.4570E+01
+   std deviation   3.1357E+00
+   skewness        -2.8592E+00
+   excess kurtosis 4.1780E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.5635E+05
+   arithmatic mean 3.5788E+05
+   median          3.5676E+05
+   std deviation   6.4118E+03
+   skewness        7.4481E+00
+   excess kurtosis 5.9779E+01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0277E-01
+   arithmatic mean 5.1683E-01
+   median          5.2047E-01
+   std deviation   3.1611E-02
+   skewness        7.6671E+00
+   excess kurtosis 6.4953E+01
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2860E+01
+   arithmatic mean 1.2849E+01
+   median          1.2860E+01
+   std deviation   1.3613E-01
+   skewness        -1.0762E+01
+   excess kurtosis 1.3267E+02
+Optimal value and population statistics for parameter C:
+   optimal value   6.6925E+01
+   arithmatic mean 6.6687E+01
+   median          6.6925E+01
+   std deviation   3.4618E+00
+   skewness        -1.1053E+01
+   excess kurtosis 1.4545E+02
+Optimal value and population statistics for parameter n:
+   optimal value   5.0720E+00
+   arithmatic mean 5.0494E+00
+   median          5.0530E+00
+   std deviation   8.0365E-02
+   skewness        -9.0333E+00
+   excess kurtosis 1.3272E+02
+Genetic genome for the most fit creature:
+0: 111100000001010100000100
+1: 001100010010011101011011
+2: 111010000101011111110001
+3: 100100000010101101000101
+4: 111010001010100000001000
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 33 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.5017E+01
+   arithmatic mean 1.3879E+01
+   median          1.4677E+01
+   std deviation   2.5435E+00
+   skewness        -3.6181E+00
+   excess kurtosis 9.7855E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.5635E+05
+   arithmatic mean 3.5724E+05
+   median          3.5676E+05
+   std deviation   5.3611E+03
+   skewness        1.1029E+01
+   excess kurtosis 1.2227E+02
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0277E-01
+   arithmatic mean 5.1772E-01
+   median          5.2152E-01
+   std deviation   2.0435E-02
+   skewness        9.6896E+00
+   excess kurtosis 1.2745E+02
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2851E+01
+   arithmatic mean 1.2851E+01
+   median          1.2860E+01
+   std deviation   1.1315E-01
+   skewness        -7.7761E+00
+   excess kurtosis 6.7886E+01
+Optimal value and population statistics for parameter C:
+   optimal value   6.6925E+01
+   arithmatic mean 6.6763E+01
+   median          6.6935E+01
+   std deviation   4.3121E+00
+   skewness        -1.0547E+01
+   excess kurtosis 1.1722E+02
+Optimal value and population statistics for parameter n:
+   optimal value   5.0720E+00
+   arithmatic mean 5.0584E+00
+   median          5.0530E+00
+   std deviation   4.8234E-02
+   skewness        3.3372E-01
+   excess kurtosis 5.2461E+01
+Genetic genome for the most fit creature:
+0: 111100000001010100000100
+1: 001100010010010101011011
+2: 111110000101011111110001
+3: 100100000010101101000101
+4: 111010001010100001001110
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 34 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.5083E+01
+   arithmatic mean 1.3804E+01
+   median          1.4829E+01
+   std deviation   3.0076E+00
+   skewness        -3.0830E+00
+   excess kurtosis 5.5792E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.5635E+05
+   arithmatic mean 3.5745E+05
+   median          3.5676E+05
+   std deviation   9.1250E+03
+   skewness        1.1001E+00
+   excess kurtosis 3.8118E+01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.2223E-01
+   arithmatic mean 5.1755E-01
+   median          5.2152E-01
+   std deviation   1.9156E-02
+   skewness        9.2620E+00
+   excess kurtosis 1.2418E+02
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2860E+01
+   arithmatic mean 1.2857E+01
+   median          1.2860E+01
+   std deviation   7.6305E-02
+   skewness        -8.8300E+00
+   excess kurtosis 1.1987E+02
+Optimal value and population statistics for parameter C:
+   optimal value   6.6935E+01
+   arithmatic mean 6.6869E+01
+   median          6.6928E+01
+   std deviation   1.2357E+00
+   skewness        -1.0939E+01
+   excess kurtosis 1.4300E+02
+Optimal value and population statistics for parameter n:
+   optimal value   5.1467E+00
+   arithmatic mean 5.0620E+00
+   median          5.0720E+00
+   std deviation   1.0559E-01
+   skewness        -8.4705E+00
+   excess kurtosis 9.4563E+01
+Genetic genome for the most fit creature:
+0: 111100000001010110100100
+1: 001110010010011101011011
+2: 111010000101011010110001
+3: 100100000010001000101101
+4: 111011001010100000111100
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 35 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.5130E+01
+   arithmatic mean 1.3904E+01
+   median          1.4953E+01
+   std deviation   3.2961E+00
+   skewness        -3.2183E+00
+   excess kurtosis 6.0650E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.5635E+05
+   arithmatic mean 3.5663E+05
+   median          3.5676E+05
+   std deviation   2.3582E+03
+   skewness        -7.7678E+00
+   excess kurtosis 1.3942E+02
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.2328E-01
+   arithmatic mean 5.1909E-01
+   median          5.2152E-01
+   std deviation   1.9615E-02
+   skewness        9.1407E+00
+   excess kurtosis 1.1393E+02
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2860E+01
+   arithmatic mean 1.2853E+01
+   median          1.2860E+01
+   std deviation   9.8368E-02
+   skewness        -8.1084E+00
+   excess kurtosis 8.2729E+01
+Optimal value and population statistics for parameter C:
+   optimal value   6.6891E+01
+   arithmatic mean 6.6226E+01
+   median          6.6910E+01
+   std deviation   5.4252E+00
+   skewness        -8.0930E+00
+   excess kurtosis 6.7767E+01
+Optimal value and population statistics for parameter n:
+   optimal value   5.1467E+00
+   arithmatic mean 5.0605E+00
+   median          5.0720E+00
+   std deviation   1.2759E-01
+   skewness        -7.8533E+00
+   excess kurtosis 6.6825E+01
+Genetic genome for the most fit creature:
+0: 111100000001010101010001
+1: 001110011001010101011101
+2: 111010000101011011110001
+3: 100100000000100000101111
+4: 111011001010100000001110
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 36 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.5306E+01
+   arithmatic mean 1.3969E+01
+   median          1.4982E+01
+   std deviation   3.0303E+00
+   skewness        -3.0543E+00
+   excess kurtosis 5.1482E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.5635E+05
+   arithmatic mean 3.5827E+05
+   median          3.5635E+05
+   std deviation   9.1736E+03
+   skewness        5.7367E+00
+   excess kurtosis 3.3061E+01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.0348E-01
+   arithmatic mean 5.1825E-01
+   median          5.2152E-01
+   std deviation   1.8373E-02
+   skewness        1.0272E+01
+   excess kurtosis 1.4590E+02
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2860E+01
+   arithmatic mean 1.2852E+01
+   median          1.2860E+01
+   std deviation   8.8392E-02
+   skewness        -1.0959E+01
+   excess kurtosis 1.2296E+02
+Optimal value and population statistics for parameter C:
+   optimal value   6.6925E+01
+   arithmatic mean 6.6927E+01
+   median          6.6923E+01
+   std deviation   3.8555E-01
+   skewness        5.1489E-01
+   excess kurtosis 8.7984E+01
+Optimal value and population statistics for parameter n:
+   optimal value   5.0984E+00
+   arithmatic mean 5.0647E+00
+   median          5.0728E+00
+   std deviation   1.2968E-01
+   skewness        -7.5021E+00
+   excess kurtosis 6.3277E+01
+Genetic genome for the most fit creature:
+0: 111100000001010110100110
+1: 001100110010010101001111
+2: 111010000101001111110001
+3: 100100000010101111101001
+4: 111010101001100000000111
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 37 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.5339E+01
+   arithmatic mean 1.4141E+01
+   median          1.5021E+01
+   std deviation   2.9463E+00
+   skewness        -3.5374E+00
+   excess kurtosis 8.7124E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.5635E+05
+   arithmatic mean 3.5684E+05
+   median          3.5635E+05
+   std deviation   7.2110E+03
+   skewness        2.7153E+00
+   excess kurtosis 6.1109E+01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   5.2223E-01
+   arithmatic mean 5.1843E-01
+   median          5.2152E-01
+   std deviation   1.9184E-02
+   skewness        9.1612E+00
+   excess kurtosis 1.2271E+02
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2860E+01
+   arithmatic mean 1.2855E+01
+   median          1.2857E+01
+   std deviation   2.8051E-02
+   skewness        -6.6859E+00
+   excess kurtosis 8.4169E+01
+Optimal value and population statistics for parameter C:
+   optimal value   6.6925E+01
+   arithmatic mean 6.6763E+01
+   median          6.6925E+01
+   std deviation   1.7371E+00
+   skewness        -8.9150E+00
+   excess kurtosis 8.0793E+01
+Optimal value and population statistics for parameter n:
+   optimal value   5.1189E+00
+   arithmatic mean 5.0819E+00
+   median          5.0728E+00
+   std deviation   1.1430E-01
+   skewness        -7.9326E+00
+   excess kurtosis 8.5855E+01
+Genetic genome for the most fit creature:
+0: 111100000001010110010100
+1: 001110010010011101011011
+2: 111010000101011111110001
+3: 100100000010101101001101
+4: 111011101010100000111100
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 38 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.5785E+01
+   arithmatic mean 1.4197E+01
+   median          1.5071E+01
+   std deviation   3.0436E+00
+   skewness        -3.5667E+00
+   excess kurtosis 8.8338E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.5635E+05
+   arithmatic mean 3.5691E+05
+   median          3.5635E+05
+   std deviation   5.4941E+03
+   skewness        1.0657E+01
+   excess kurtosis 1.1565E+02
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   4.7934E-01
+   arithmatic mean 5.2043E-01
+   median          5.2153E-01
+   std deviation   3.0057E-02
+   skewness        7.3870E+00
+   excess kurtosis 6.2571E+01
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2851E+01
+   arithmatic mean 1.2856E+01
+   median          1.2860E+01
+   std deviation   6.9880E-02
+   skewness        -1.0430E+01
+   excess kurtosis 1.6420E+02
+Optimal value and population statistics for parameter C:
+   optimal value   6.5862E+01
+   arithmatic mean 6.6497E+01
+   median          6.6925E+01
+   std deviation   5.1804E+00
+   skewness        -9.0030E+00
+   excess kurtosis 8.1454E+01
+Optimal value and population statistics for parameter n:
+   optimal value   5.1471E+00
+   arithmatic mean 5.0966E+00
+   median          5.0771E+00
+   std deviation   9.6507E-02
+   skewness        -9.4403E+00
+   excess kurtosis 1.1262E+02
+Genetic genome for the most fit creature:
+0: 111100000001010100000101
+1: 000110111010010101011011
+2: 111110000101011011010011
+3: 101100100000001111100101
+4: 111011001010110000011111
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 39 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.5820E+01
+   arithmatic mean 1.4226E+01
+   median          1.5228E+01
+   std deviation   3.0749E+00
+   skewness        -3.2770E+00
+   excess kurtosis 7.1181E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.5628E+05
+   arithmatic mean 3.5668E+05
+   median          3.5635E+05
+   std deviation   5.4362E+03
+   skewness        -3.0190E+00
+   excess kurtosis 7.8533E+01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   4.7934E-01
+   arithmatic mean 5.2006E-01
+   median          5.2152E-01
+   std deviation   2.9890E-02
+   skewness        6.8895E+00
+   excess kurtosis 5.6760E+01
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2851E+01
+   arithmatic mean 1.2862E+01
+   median          1.2860E+01
+   std deviation   3.0127E-02
+   skewness        6.2218E+00
+   excess kurtosis 6.4061E+01
+Optimal value and population statistics for parameter C:
+   optimal value   6.5861E+01
+   arithmatic mean 6.6480E+01
+   median          6.6925E+01
+   std deviation   4.3106E+00
+   skewness        -1.0636E+01
+   excess kurtosis 1.1510E+02
+Optimal value and population statistics for parameter n:
+   optimal value   5.1471E+00
+   arithmatic mean 5.1166E+00
+   median          5.1189E+00
+   std deviation   4.3646E-02
+   skewness        -3.4595E+00
+   excess kurtosis 5.1664E+01
+Genetic genome for the most fit creature:
+0: 111100000000010110000101
+1: 000110111010010101011011
+2: 111110000101011011010011
+3: 101100100000001100000101
+4: 111011001010110000011111
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
+
+Statistics for generation 40 with a population size of 271.
+Optimal value and population statistics for fitness:
+   optimal value   1.5852E+01
+   arithmatic mean 1.4265E+01
+   median          1.5349E+01
+   std deviation   3.3382E+00
+   skewness        -3.1791E+00
+   excess kurtosis 5.9717E+00
+Optimal value and population statistics for parameter Q:
+   optimal value   3.5635E+05
+   arithmatic mean 3.5612E+05
+   median          3.5628E+05
+   std deviation   5.8761E+03
+   skewness        -8.1381E+00
+   excess kurtosis 9.4408E+01
+Optimal value and population statistics for parameter Tt/Tm:
+   optimal value   4.7934E-01
+   arithmatic mean 5.1795E-01
+   median          5.2152E-01
+   std deviation   2.8032E-02
+   skewness        5.9143E+00
+   excess kurtosis 5.2934E+01
+Optimal value and population statistics for parameter log10(A):
+   optimal value   1.2860E+01
+   arithmatic mean 1.2857E+01
+   median          1.2860E+01
+   std deviation   7.5326E-02
+   skewness        -9.1429E+00
+   excess kurtosis 1.2613E+02
+Optimal value and population statistics for parameter C:
+   optimal value   6.5861E+01
+   arithmatic mean 6.6343E+01
+   median          6.6925E+01
+   std deviation   4.5189E+00
+   skewness        -9.4493E+00
+   excess kurtosis 9.4721E+01
+Optimal value and population statistics for parameter n:
+   optimal value   5.1471E+00
+   arithmatic mean 5.1027E+00
+   median          5.1072E+00
+   std deviation   9.2737E-02
+   skewness        -9.4595E+00
+   excess kurtosis 1.0983E+02
+Genetic genome for the most fit creature:
+0: 111100000001010110000101
+1: 000110111010010101001111
+2: 111010000101011011010011
+3: 101100100000001100000101
+4: 111011001010110000011110
+Parameters assigned fixed values:
+   ObjFn p:  2.0000E+00
+   Tm:  2.1730E+03
