@@ -337,15 +337,15 @@ has a MSB of 1 and a LSB of 0.
 
 # Methods to decode a parameter.
 
-function _grayToBinary(gray::Vector{Bool})::Vector{Bool}
-    bits   = length(gray)
+function _greyToBinary(grey::Vector{Bool})::Vector{Bool}
+    bits   = length(grey)
     binary = Vector{Bool}(undef, bits)
-    binary[1] = gray[1]
+    binary[1] = grey[1]
     for i in 2:bits
-        binary[i] = binary[i-1] ⊻ gray[i]
+        binary[i] = binary[i-1] ⊻ grey[i]
     end
     return binary
-end # _grayToBinary
+end # _greyToBinary
 
 function _binaryToInteger(binary::Vector{Bool})::Int64
     bits    = length(binary)
@@ -376,15 +376,15 @@ function decode(c::Chromosome)::Float64
     if c.genes == 0
         phenotype = deepcopy(c.minParameter)
     else
-        gray = Vector{Bool}(undef, c.genes)
+        grey = Vector{Bool}(undef, c.genes)
         for i in 1:c.genes
             if isDominant(c.genotype[i])
-                gray[i] = dominant
+                grey[i] = dominant
             else
-                gray[i] = recessive
+                grey[i] = recessive
             end
         end
-        binary    = _grayToBinary(gray)
+        binary    = _greyToBinary(grey)
         integer   = _binaryToInteger(binary)
         phenotype = _integerToPhenotype(c, integer)
     end
@@ -425,15 +425,15 @@ function _integerToBinary!(c::Chromosome, integer::Int64)::Vector{Bool}
     return binary
 end # _integerToBinary!
 
-function _binaryToGray!(binary::Vector{Bool})::Vector{Bool}
+function _binaryToGrey!(binary::Vector{Bool})::Vector{Bool}
     bits = length(binary)
-    gray = Vector{Bool}(undef, bits)
-    gray[1] = binary[1]
+    grey = Vector{Bool}(undef, bits)
+    grey[1] = binary[1]
     for i in 2:bits
-        gray[i] = binary[i-1] ⊻ binary[i]
+        grey[i] = binary[i-1] ⊻ binary[i]
     end
-    return gray
-end # _binaryToGray
+    return grey
+end # _binaryToGrey
 
 function encode!(c::Chromosome, phenotype::Float64)
     if c.genes == 0
@@ -441,12 +441,12 @@ function encode!(c::Chromosome, phenotype::Float64)
     elseif (phenotype ≥ c.minParameter) && (phenotype ≤ c.maxParameter)
         integer = _phenotypeToInteger(c, phenotype)
         binary  = _integerToBinary(c, integer)
-        gray    = _binaryToGray(binary)
+        grey    = _binaryToGrey(binary)
         for i in 1:c.genes
-            if gray[i] == dominant
-                set!(c.genotype[i], dominant))
+            if grey[i] == dominant
+                set!(c.genotype[i], dominant)
             else
-                set!(c.genotype[i], recessive))
+                set!(c.genotype[i], recessive)
             end
         end
     else

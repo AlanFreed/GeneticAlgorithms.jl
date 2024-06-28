@@ -118,7 +118,7 @@ function Base.:(setindex!)(g::Genome, chromosome::Chromosome, index::Integer)
     return nothing
 end # setindex!
 
-function Base.:(copy)(g:Genome)::Genome
+function Base.:(copy)(g::Genome)::Genome
     genes       = copy(g.genes)
     chromosomes = copy(g.chromosomes)
     genotypes   = Vector{Chromosome}(undef, chromosomes)
@@ -163,7 +163,7 @@ function mutate!(g::Genome, probabilityOfMutation::Float64)
     end
 end # mutate!
 
-function crossover(parentA::Genome, parentB::Gnome, probabilityOfMutation::Float64, probabilityOfCrossover::Float64)::Genome
+function crossover(parentA::Genome, parentB::Genome, probabilityOfMutation::Float64, probabilityOfCrossover::Float64)::Genome
 
     if parentA.genes == parentB.genes
         if parentA.chromosomes == parentB.chromosomes

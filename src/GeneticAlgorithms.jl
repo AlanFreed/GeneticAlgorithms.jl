@@ -122,9 +122,11 @@ Methods
 """
 module GeneticAlgorithms
 
+using
+    Statistics,
+    StatsBase
+
 import
-    Statistics: std, mean, median
-    StatsBase: skewness, kurtosis
     Printf: @sprintf
 
 export
