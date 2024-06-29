@@ -83,7 +83,7 @@ function alien(alienParameters::Vector{Float64}, minParameters::Vector{Float64},
     creature = Creature(minParameters, maxParameters, significantFigures)
 
     if length(alienParameters) ≠ 0
-        encode!(creature.genetics.genotypes, alienParameters)
+        encode!(creature.genetics, alienParameters)
     end
 
     return creature
