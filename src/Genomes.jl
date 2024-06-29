@@ -185,7 +185,8 @@ end # crossover
 function decode(g::Genome)::Vector{Float64}
     phenotypes = Vector{Float64}(undef, g.chromosomes)
     for i in 1:g.chromosomes
-        phenotypes[i] = decode(g.genotypes[i])
+        chromosome = g.genotypes[i]
+        phenotypes[i] = decode(chromosome)
     end
     return phenotypes
 end # decode
@@ -197,6 +198,8 @@ function encode!(g::Genome, phenotypes::Vector{Float64})
     end
 
     for i in 1:g.chromosomes
-        encode!(g.genotypes[i], phenotypes[i])
+        chromosome = g.genotypes[i]
+        phenotype  = phenotypes[i]
+        encode!(chromosome, phenotype)
     end
 end # encode!
