@@ -144,7 +144,7 @@ struct Chromosome
                 gene      = gene - 1
             end
             # The remaining higher-order binary bits are zeros, i.e., recessive.
-            for i in gene:-1:0
+            for i in gene:-1:1
                 binary[i] = recessive
             end
             # Convert to a gray binary.
@@ -351,7 +351,7 @@ function _binaryToInteger(binary::Vector{Bool})::Int64
     bits    = length(binary)
     integer = 0
     power   = 1
-    for i in bits-1:-1:0
+    for i in bits:-1:1
         if binary[i] == dominant
             integer = integer + power
         end
@@ -419,7 +419,7 @@ function _integerToBinary!(c::Chromosome, integer::Int64)::Vector{Bool}
         gene  = gene - 1
     end
     # The remaining higher-order binary bits are zeros, i.e., recessive.
-    for i in gene:-1:0
+    for i in gene:-1:1
         binary[i] = recessive
     end
     return binary
