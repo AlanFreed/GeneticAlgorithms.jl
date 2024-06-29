@@ -425,7 +425,7 @@ function _integerToBinary(c::Chromosome, integer::Int64)::Vector{Bool}
     return binary
 end # _integerToBinary
 
-function _binaryToGrey!(binary::Vector{Bool})::Vector{Bool}
+function _binaryToGrey(binary::Vector{Bool})::Vector{Bool}
     bits = length(binary)
     grey = Vector{Bool}(undef, bits)
     grey[1] = binary[1]
@@ -444,9 +444,9 @@ function encode!(c::Chromosome, phenotype::Float64)
         grey    = _binaryToGrey(binary)
         for i in 1:c.genes
             if grey[i] == dominant
-                set!(c.genotype[i], dominant)
+                c.genotype[i] = Gene(dominant)
             else
-                set!(c.genotype[i], recessive)
+                c.genotype[i] = Gene(recessive)
             end
         end
     else
