@@ -144,6 +144,7 @@ struct Chromosome
                 gene      = gene - 1
             end
             # The remaining higher-order binary bits are zeros, i.e., recessive.
+            println("gene = ", gene)
             if gene > 0
                 for i in gene:-1:1
                     binary[i] = recessive
