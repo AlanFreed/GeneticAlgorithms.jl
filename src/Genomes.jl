@@ -128,7 +128,7 @@ function Base.:(copy)(g::Genome)::Genome
     return Genome(genes, chromosomes, genotypes)
 end # copy
 
-function Base.:(deepcopy)(c::Genome)::Genome
+function Base.:(deepcopy)(g::Genome)::Genome
     genes       = deepcopy(g.genes)
     chromosomes = deepcopy(g.chromosomes)
     genotypes   = Vector{Chromosome}(undef, chromosomes)
