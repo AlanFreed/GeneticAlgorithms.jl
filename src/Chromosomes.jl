@@ -144,8 +144,10 @@ struct Chromosome
                 gene      = gene - 1
             end
             # The remaining higher-order binary bits are zeros, i.e., recessive.
-            for i in gene:-1:1
-                binary[i] = recessive
+            if gene > 0
+                for i in gene:-1:1
+                    binary[i] = recessive
+                end
             end
             # Convert to a gray binary.
             gray[1] = binary[1]
