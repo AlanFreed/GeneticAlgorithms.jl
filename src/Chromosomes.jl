@@ -156,9 +156,9 @@ struct Chromosome
             # Assign this gray encoding to the genotype.
             for i in 1:genes
                 if gray[i] == dominant
-                    set!(genotype[i], dominant)
+                    genotype[i] = Gene(dominant)
                 else
-                    set!(genotype[i], recessive)
+                    genotype[i] = Gene(recessive)
                 end
             end
 
