@@ -142,7 +142,6 @@ struct Chromosome
                 end
                 atInteger = atInteger ÷ 2
                 gene      = gene - 1
-                println("gene = ", gene)
             end
             # The remaining higher-order binary bits are zeros, i.e., recessive.
             for i in gene:-1:1
@@ -167,7 +166,7 @@ struct Chromosome
         new(minParameter, maxParameter, genes, expressions, genotype)
     end
 
-    function Chromosome(minParameter::Float64, maxParameter::Float64, genes::Int64, expressions::UInt64, genotype::Vector{Gene})
+    function Chromosome(minParameter::Float64, maxParameter::Float64, genes::Int64, expressions::Int64, genotype::Vector{Gene})
 
         new(minParameter, maxParameter, genes, expressions, genotype)
     end
