@@ -405,7 +405,7 @@ function _phenotypeToInteger(c::Chromosome, phenotype::Float64)::Int64
     return integer
 end # _phenotypeToInteger
 
-function _integerToBinary!(c::Chromosome, integer::Int64)::Vector{Bool}
+function _integerToBinary(c::Chromosome, integer::Int64)::Vector{Bool}
     binary = Vector{Bool}(undef, c.genes)
     atInt  = integer
     gene   = c.genes
@@ -423,7 +423,7 @@ function _integerToBinary!(c::Chromosome, integer::Int64)::Vector{Bool}
         binary[i] = recessive
     end
     return binary
-end # _integerToBinary!
+end # _integerToBinary
 
 function _binaryToGrey!(binary::Vector{Bool})::Vector{Bool}
     bits = length(binary)
