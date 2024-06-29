@@ -1,7 +1,7 @@
 name = "GeneticAlgorithms"
 uuid = "a19e135c-5e69-4121-b36b-f716310c090d"
 authors = ["AlanFreed <alan.d.freed@proton.me>"]
-version = "0.1.0_1"
+version = "0.1.0-1"
 
 [deps]
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
