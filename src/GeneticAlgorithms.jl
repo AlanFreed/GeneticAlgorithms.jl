@@ -1,6 +1,6 @@
 #=
 Created on Thr 14 Jun 2024
-Updated on Thr 27 Jun 2024
+Updated on Sat 29 Jun 2024
 Translated from Python (code dated 09/08/2017) and enhanced for Julia.
 =#
 
@@ -154,8 +154,11 @@ export
     deepcopy,
     get,
     getindex,
+    getFitness,
+    getParameters,
     set!,
     setindex!,
+    setFitness!,
     toString,
 
     isDominant,
@@ -164,7 +167,6 @@ export
     encode!,
     mutate!,
     crossover,
-    parameters,
     bestCreatureParameters,
     bestCreatrueFitness,
     population,

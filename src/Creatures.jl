@@ -136,14 +136,18 @@ function toString(c::Creature)::String
 end # toString
 
 function setFitness!(c::Creature, fitness::Float64)
-    c.fitness = fitness
+    c.fitness = copy(fitness)
     return nothing
-end
+end # setFitness!
 
-function parameters(c::Creature)::Vector{Float64}
+function getFitness(c::Creature)::Float64
+    return copy(c.fitness)
+end # getFitness
+
+function getParameters(c::Creature)::Vector{Float64}
     phenotypes = Vector{Float64}(undef, c.genetics.chromosomes)
     for i in 1:c.genetics.chromosomes
         phenotypes[i] = decode(c.genetics.genotypes[i])
     end
     return phenotypes
-end # parameters
+end # getParameters
