@@ -11,9 +11,9 @@ through conception.
 
 A creature has an interface of:
 
-struct Creature
-    fitness                 # a measure of quality for the set of parameters
-    genetics::Genome        # the genetic information: an array of chromosomes
+mutable struct Creature
+    fitness             # a measure of quality for the set of parameters
+    genetics::Genome    # the genetic information: an array of chromosomes
 end
 
 Internal constructors
@@ -44,7 +44,7 @@ Methods
     p = parameters(c)   returns an array of all parameters 'p'
     setFitness!(c, f)   assigns a fitness or quality 'f' to creature 'c'
 """
-struct Creature
+mutable struct Creature
     fitness::Float64
     genetics::Genome
 
