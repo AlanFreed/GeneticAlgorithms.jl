@@ -336,17 +336,15 @@ function _mate!(ga::GeneticAlgorithm)
     for i in 2:population
         parentA = _tournamentPlay(ga)
         parentB = _tournamentPlay(ga)
-        count = 0
-        while parentB == parentA
-            parentB = _tournamentPlay(ga)
-            count = count + 1
-            if count < (ga.population ÷ 2)
-                println("The population is filling up with clones.")
-                println("You should terminate and restart your run.")
-                return nothing
+        child = conceive(parentA, parentB, probabilityOfMutation, probabilityOfCrossover)
+        for j in 1:i-1
+            if child == ga.children[j]
+                # Identical twins are not permitted within a generation.
+                parentA = _tournamentPlay(ga)
+                parentB = _tournamentPlay(ga)
+                child = conceive(parentA, parentB, probabilityOfMutation, probabilityOfCrossover)
             end
         end
-        child = conceive(parentA, parentB, probabilityOfMutation, probabilityOfCrossover)
         child.fitness  = _evaluate(ga.species, child)
         ga.children[i] = child
         ga.fitness[i]  = child.fitness
