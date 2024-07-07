@@ -129,3 +129,71 @@ function runModel(s::Ex1Species, θ::Vector{Float64})::Vector{Matrix{Float64}}
     end
     return modR
 end
+
+function run()
+    species = Ex1Species
+    probabilityOfMutation  = 0.01
+    probabilityOfCrossover = 0.95
+    probabilityOfImmigrant = 0.005
+    parameterNames = Vector{String}(undef, 4)
+    parameterNames[1] = "p in p-norm, i.e., ‖x‖ₚ = (∑ₙ₌₁ᴺ|xₙ|^p)^(1/p),  p ≥ 1"
+    parameterNames[2] = "coefficient a"
+    parameterNames[3] = "coefficient b"
+    parameterNames[4] = "effective Young's modlus E (dynes/cm²)"
+    alienParameters = Vector{Float64}(undef, 0)
+    minParameters = Vector{Float64}(undef, 4)
+    maxParameters = Vector{Float64}(undef, 4)
+    minParameters[1] = 1.0
+    minParameters[2] = 0.1
+    minParameters[3] = 0.1
+    minParameters[4] = 0.1
+    maxParameters[1] = 100.0
+    maxParameters[2] = 1.5
+    maxParameters[3] = 1.5
+    maxParameters[4] = 1.5
+    significantFigures = 4
+
+    c = Colony(species, probabilityOfMutation, probabilityOfCrossover, probabilityOfImmigrant, parameterNames, alienParameters, minParameters, maxParameters, significantFigures)
+
+    ga = GeneticAlgorithm(c)
+    run(ga)
+
+    # Create a figure of the best fit for the model.
+    ϵₑ = zeros(Float64, 20)
+    σₑ = zeros(Float64, 20)
+    for i in 1:20
+        ϵₑ[i] = ga.c.species.ctrl[1][1,i]
+        σₑ[i] = ga.c.species.resp[1][1,i]
+    end
+    N  = 150
+    dϵ = 2.0 / (N - 1)
+
+    θ  = parameters(ga.c.elite)
+    ϵₘ = zeros(Float64, N)
+    σₘ = zeros(Float64, N)
+    for i in 2:N
+        ϵₘ[i] = (i - 1) * dϵ
+        σₘ[i] = _ex1Model(ϵ[i], θ)
+    end
+
+    fig = Figure(; size = (809, 500)) # (500ϕ, 500), ϕ is golden ratio
+    ax = Axis(fig[1, 1];
+        xlabel = "strain ϵ",
+        ylabel = "stress σ (dynes/cm²)",
+        title = "Genetic Algorithm Fit of Data",
+        titlesize = 24,
+        ylabelsize = 20)
+    scatter!(ax, ϵₑ, σₑ;
+        marker = :circle,
+        markersize = 10,
+        color = :black,
+        label = "data")
+    lines!(ax, ϵₘ, σₘ;
+        linewidth = 3,
+        linestyle = :solid,
+        color = :black,
+        label = "model")
+    axislegend("Legend",
+        position = :lt)
+    save(string(pwd(), "/GA_fit_2_data.png"), fig)
+end # run
