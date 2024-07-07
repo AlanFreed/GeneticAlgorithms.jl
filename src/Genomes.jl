@@ -31,11 +31,11 @@ Methods
     c = copy(g)             return a copy 'c' of genome 'g'
     c = deepcopy(g)         return a deep copy 'c' of genome 'g'
     s = toString(g)         return string 's' describing genome 'g'
-    mutate(g, probability)  random flip of gene expression with 'probability'
+    mutate!(g, probability) random flip of gene expression with 'probability'
     crossover(A, B, pM, pX) crossover between chromosomes in genomes 'A' and 'B'
                             with probabilities of mutation 'pM' & crossover 'pX'
-    p = decode(g)           return phenotypes (the parameters 'p') held by 'g'
-    encode!(g, p)           assign phenotypes 'p' to genome 'g'
+    θ = decode(g)           return phenotypes (the parameters 'θ') held by 'g'
+    encode!(g, θ)           assign phenotypes 'θ' to genome 'g'
 """
 struct Genome
     genes::Int64
@@ -51,6 +51,14 @@ struct Genome
         else
             msg = "Vectors minParameters and maxParameters must have the same length."
             throw(DimensionMismatch, msg)
+        end
+
+        # The p-norm is only defined for p ≥ 1.
+        if minParameters[1] < 1.0
+            minParameters[1] = 1.0
+        end
+        if maxParameters[1] < 1.0
+            maxParameters[1] = 1.0
         end
 
         genotypes = Vector{Chromosome}(undef, chromosomes)

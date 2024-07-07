@@ -40,9 +40,9 @@ Methods
     d = copy(c)             return a copy 'd' of chromosome 'c'
     d = deepcopy(c)         return a deep copy 'd' of chromosome 'c'
     s = toString(c)         return a string 's' describing chromosome 'c'
-    p = decode(c)           return a phenotype (the parameter 'p') held by 'c'
-    encode!(c, p)           assigns a phenotype 'p' to chromosome 'c'
-    mutate(c, probability)  random flip of gene expressions at a 'probability'
+    θ = decode(c)           return a phenotype (the parameter 'θ') held by 'c'
+    encode!(c, θ)           assigns a phenotype 'θ' to chromosome 'c'
+    mutate!(c, probability) random flip of gene expressions at a 'probability'
     crossover(A, B, pM, pX) crossover between chromosomes 'A' and 'B' at
                             probabilities of mutation 'pM' and crossover 'pX'
 """
@@ -71,7 +71,7 @@ struct Chromosome
 
             # Verify the input.
             if minParameter > maxParameter
-                msg = "Cannot create chromosome unless maxParameter > minParameter."
+                msg = "Cannot create chromosome unless maxParameter ≥ minParameter."
                 throw(ErrorException, msg)
             end
 

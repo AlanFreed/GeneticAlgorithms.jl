@@ -41,8 +41,7 @@ Methods
     d = copy(c)         returns a copy 'd' of creature 'c'
     d = deepcopy(c)     returns a deep copy 'd' of creature 'c'
     s = toString(c)     returns a string 's' describing creature 'c'
-    p = parameters(c)   returns an array of all parameters 'p'
-    setFitness!(c, f)   assigns a fitness or quality 'f' to creature 'c'
+    θ = parameters(c)   returns an array of all parameters 'θ'
 """
 mutable struct Creature
     fitness::Float64
@@ -135,19 +134,10 @@ function toString(c::Creature)::String
     return toString(c.genetics)
 end # toString
 
-function setFitness!(c::Creature, fitness::Float64)
-    c.fitness = copy(fitness)
-    return nothing
-end # setFitness!
-
-function getFitness(c::Creature)::Float64
-    return copy(c.fitness)
-end # getFitness
-
-function getParameters(c::Creature)::Vector{Float64}
+function parameters(c::Creature)::Vector{Float64}
     phenotypes = Vector{Float64}(undef, c.genetics.chromosomes)
     for i in 1:c.genetics.chromosomes
         phenotypes[i] = decode(c.genetics.genotypes[i])
     end
     return phenotypes
-end # getParameters
+end # parameters
