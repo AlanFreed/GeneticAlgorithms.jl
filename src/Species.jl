@@ -92,6 +92,50 @@ responses(s::AbstractSpecies) = s.resp
 
 stdDevInResponses(s::AbstractSpecies) = s.stdR
 
+# Define the runModel function.
+
+function runModel(s::AbstractSpecies, θ::Vector{Float64})::Vector{Matrix{Float64}}
+    # NOTE: the model's parameters are to index from 2,
+    # as θ[1] is an internal parameter assigned by the optimizer.
+    # Retrieve the data held within MySpecies s.
+    nExp = experiments(s)
+    nCtl = controlsPerExp(s)
+    nRes = responsesPerExp(s)
+    nPts = dataPointsPerExp(s)
+    ctrl = controls(s)
+    resp = responses(s)
+    stdR = stdDevInResponses(s)
+    # This function returns the model's response as an array of dimension:
+    #   [nExp] x [nRes x nPts]  indexed as  [i][j,k]
+    #       nExp    number of experiments the model is to be fit against
+    #       nRes    number of  responses  for each experiment  i
+    #       nPts    number of data points for each experiment  i
+    # Create the returned array that is to hold the model's response.
+    modR = Vector{Matrix{Float64}}(undef, nExp)
+    for exp in 1:nExp
+        mtxR = Matrix{Float64}(undef, nRes[exp], nPts[exp])
+        modR[exp] = mtxR
+    end
+    # Run your model subject to MySpecies s' controls, viz., subject to ctrl.
+    # This model can be a function, a differential equation, an integral
+    # equation, or whatever else the user may choose to implement here.  Be
+    # aware that here is where the greatest expense of this algorithm resides.
+    # ...
+    for i in 1:nExp
+        # ...
+        for j in 1:nRes[i]
+            # ...
+            for k in 1:nPts[i]
+                # ...
+            end
+            # ...
+        end
+        # ...
+    end
+    # ...
+    return modR
+end
+
 #= 
 # The following template, of sorts, addresses how to create an optimizer using Julia's notion of multiple dispatch, versus an object oriented approach where the model is handled as a method.  This example was taken from the web site https://discourse.julialang.org/t/alternative-to-function-as-field-in-struct/55094/4
 
