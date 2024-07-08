@@ -289,7 +289,7 @@ function _mate!(c::Colony)
     return nothing
 end # _mate!
 
-function _evaluate(s::Species, c::Creature)::Float64
+function _evaluate(s::AbstractSpecies, c::Creature)::Float64
     θ = parameters(c)
     # Ensure the p-norm is bound from below such that p ≥ 1.
     if θ[1] ≥ 1.0
