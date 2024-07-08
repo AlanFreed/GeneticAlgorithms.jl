@@ -155,7 +155,7 @@ mutable struct Colony
         str = "p in p-norm, i.e., ‖x‖ₚ = (∑ₙ₌₁ᴺ|xₙ|^p)^(1/p),  p ≥ 1"
         parameterNames[1] = str
 
-        if (length(alienParameters) ≠ dim) && (length(alienParameters ≠ 0))
+        if (length(alienParameters) ≠ dim) && (length(alienParameters) ≠ 0)
             msg = "The supplied alien has the wrong number of parameters."
             throw(DimensionMismatch(msg))
         end
