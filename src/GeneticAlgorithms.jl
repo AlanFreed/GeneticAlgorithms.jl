@@ -85,6 +85,7 @@ export
     advanceToNextGeneration!,
     report,
     run,
+    runModel,
 
     # constants
     dominant,
