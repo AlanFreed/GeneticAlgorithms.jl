@@ -6,24 +6,25 @@ module example1
 
 using
     CairoMakie,       # Pixel based figure construction.
-    GeneticAlgorithm,
+    GeneticAlgorithms,
     Statistics
 
 export
     Ex1Species,
-    runModel
+    runModel,
+    run
 #=
 --------------------------------------------------------------------------------
 =#
 
 struct Ex1Species <: AbstractSpecies
-    nExp::Int64                     number of experiments
-    nCtl::Vector{Int64}             number of control  variables per experiment
-    nRes::Vector{Int64}             number of response variables per experiment
-    nPts::Vector{Int64}             number of datum points per experiment
-    ctrl::Vector{Matrix{Float64}}   control  data for  each experiment
-    resp::Vector{Matrix{Float64}}   response data from each experiment
-    stdR::Vector{Vector{Float64}}   standard deviation in the responses per exp
+    nExp::Int64                    # number of experiments
+    nCtl::Vector{Int64}            # number of control  variables per experiment
+    nRes::Vector{Int64}            # number of response variables per experiment
+    nPts::Vector{Int64}            # number of datum points per experiment
+    ctrl::Vector{Matrix{Float64}}  # control  data for  each experiment
+    resp::Vector{Matrix{Float64}}  # response data from each experiment
+    stdR::Vector{Vector{Float64}}  # standard deviation in the responses per exp
 
     # constructor
 
@@ -96,9 +97,9 @@ function _ex1Model(ϵ::Float64, θ::Vector{Float64})::Float64
     a = θ[2]
     b = θ[3]
     E = θ[4]
-    σ = E * sinh(a*ϵ) / (a * cosh(a*ϵ) - b * sinh(a*\epsilon))
+    σ = E * sinh(a*ϵ) / (a * cosh(a*ϵ) - b * sinh(a*ϵ))
     return σ
-end _ex1Model
+end # _ex1Model
 
 function runModel(s::Ex1Species, θ::Vector{Float64})::Vector{Matrix{Float64}}
     # Retrieve the data held within MySpecies s.
@@ -128,7 +129,7 @@ function runModel(s::Ex1Species, θ::Vector{Float64})::Vector{Matrix{Float64}}
         end
     end
     return modR
-end
+end # runModel
 
 function run()
     species = Ex1Species
@@ -197,3 +198,5 @@ function run()
         position = :lt)
     save(string(pwd(), "/GA_fit_2_data.png"), fig)
 end # run
+
+end # example1
