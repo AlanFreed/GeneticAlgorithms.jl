@@ -137,7 +137,7 @@ end # _writeMyReport
 
 # Method
 
-function run(ga:GeneticAlgorithm, verbose::Bool=true)
+function run(ga::GeneticAlgorithm, verbose::Bool=true)
     println("Each ⋅ represents a generation advanced.")
     print("    ")
 
