@@ -12,11 +12,13 @@ end
 
 Constructors
 
-    g = Genome(minParameters, maxParameters, significantFigures)
+    g = Genome(minParameters, maxParameters, constrainedParameters,
+               significantFigures)
 
-        minParameters       array of most-negative values parameters can have
-        maxParameters       array of most-positive values parameters can have
-        significantFigures  seek parameters with significant figure accuracy
+        minParameters           array of most-negative parameter values θₘᵢₙ[i]
+        maxParameters           array of most-positive parameter values θₘₐₓ[i]
+        constrainedParameters   array of tuples (θL, θR) where θL[i] < θR[i]
+        significantFigures      seek parameters with significant figure accuracy
 or
     g = Genome(genes, chromosomes, genotypes)
 
@@ -38,13 +40,13 @@ Methods
     encode!(g, θ)           assign phenotypes 'θ' to genome 'g'
 """
 struct Genome
-    genes::Int64
-    chromosomes::Int64
+    genes::Int
+    chromosomes::Int
     genotypes::Vector{Chromosome}
 
     # constructors
 
-    function Genome(minParameters::Vector{Float64}, maxParameters::Vector{Float64}, significantFigures::Int64)
+    function Genome(minParameters::Vector{Real}, maxParameters::Vector{Real}, significantFigures::Int)
 
         if length(minParameters) == length(maxParameters)
             chromosomes = length(minParameters)
@@ -74,7 +76,7 @@ struct Genome
         new(genes, chromosomes, genotypes)
     end
 
-    function Genome(genes::Int64, chromosomes::Int64, genotypes::Vector{Chromosome})
+    function Genome(genes::Int, chromosomes::Int, genotypes::Vector{Chromosome})
         new(genes, chromosomes, genotypes)
     end
 end # Genome
@@ -165,13 +167,13 @@ function toString(g::Genome)::String
     return str
 end # toString
 
-function mutate!(g::Genome, probabilityOfMutation::Float64)
+function mutate!(g::Genome, probabilityOfMutation::Real)
     for i in 1:g.chromosomes
         mutate!(g.genotypes[i], probabilityOfMutation)
     end
 end # mutate!
 
-function crossover(parentA::Genome, parentB::Genome, probabilityOfMutation::Float64, probabilityOfCrossover::Float64)::Genome
+function crossover(parentA::Genome, parentB::Genome, probabilityOfMutation::Real, probabilityOfCrossover::Real)::Genome
 
     if parentA.genes == parentB.genes
         if parentA.chromosomes == parentB.chromosomes
@@ -190,8 +192,8 @@ function crossover(parentA::Genome, parentB::Genome, probabilityOfMutation::Floa
     return child
 end # crossover
 
-function decode(g::Genome)::Vector{Float64}
-    phenotypes = Vector{Float64}(undef, g.chromosomes)
+function decode(g::Genome)::Vector{Real}
+    phenotypes = Vector{Real}(undef, g.chromosomes)
     for i in 1:g.chromosomes
         chromosome = g.genotypes[i]
         phenotypes[i] = decode(chromosome)
@@ -199,7 +201,7 @@ function decode(g::Genome)::Vector{Float64}
     return phenotypes
 end # decode
 
-function encode!(g::Genome, phenotypes::Vector{Float64})
+function encode!(g::Genome, phenotypes::Vector{Real})
     if g.chromosomes ≠ length(phenotypes)
         msg = "Number of chromosomes must equal number of phenotypes."
         throw(DimensionMismatch, msg)

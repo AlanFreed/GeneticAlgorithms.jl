@@ -1,6 +1,6 @@
 #=
 Created on Thr 14 Jun 2024
-Updated on Sun 07 Jul 2024
+Updated on Sun 14 Jul 2024
 Translated from Python (code dated 09/08/2017) and enhanced for Julia.
 =#
 
@@ -15,6 +15,12 @@ one generation to the next.  Mating between creatures occurs through a process
 known as tournament play, where the most fit contestant from a random selection
 of contestants is chosen for mating.  Typically, each successive generation is
 more fit than its predecessor, i.e., the colony's quality improves over time.
+
+To install this package, download the following packages from their URL address:
+
+using Pkg
+Pkg.add(url = "https://github.com/tbreloff/ConcreteAbstractions.jl")
+Pkg.add(url = "https://github.com/AlanFreed/GeneticAlgorithms.jl")
 
 A genetic algorithm has an interface of
 
@@ -34,7 +40,8 @@ Method
     and number of generations to advance through are determined internally.
     A report is written to file for the user to read.  If verbose is 'true,'
     the default, then a page in the report is written for each generation of
-    the colony; otherwise, only a report for the final generation is written.
+    the colony; otherwise, the report only contains information regarding the
+    final generation.
 """
 module GeneticAlgorithms
 
@@ -46,6 +53,10 @@ import
     Printf: @sprintf
 
 export
+    # macros copied from https://github.com/tbreloff/ConcreteAbstractions.jl
+    @base,
+    @extend,
+
     # abstract type
     AbstractSpecies,
 
@@ -87,9 +98,11 @@ export
     run,
     runModel,
 
-    # constants
+# constants
     dominant,
     recessive
+
+include("ConcreteAbstractions.jl")
 
 include("Expressions.jl")
 
@@ -117,66 +130,54 @@ struct GeneticAlgorithm
     end
 end # GeneticAlgorithm
 
-# local method
-
-function _writeMyReport(report::String)
-    my_dir = string(pwd(), "/files")
-    if !isdir(my_dir)
-        mkdir(my_dir)
-    end
-    my_file = string(my_dir, "/ga_report.txt")
-    if isfile(my_file)
-        my_stream = open(my_file; lock=true, read=false, write=true, create=false, truncate=true, append=true)
-    else
-        my_stream = open(my_file; lock=true, read=false, write=true, create=true, truncate=true, append=true)
-    end
-    seekstart(my_stream)
-    write(my_stream, report)
-    flush(my_stream)
-    close(my_stream)
-    return nothing
-end # _writeMyReport
-
 # Method
 
 function run(ga::GeneticAlgorithm, verbose::Bool=true)
-    println("Each ⋅ represents a generation advanced.")
+    println("Each ⋅ represents one generation advanced out of ", ga.c.generationsToConvergence, " generations total.")
     print("    ")
 
     # Open an IO-stream to write to.
-    my_dir = string(pwd(), "/files")
-    if !isdir(my_dir)
-        mkdir(my_dir)
+    myDir = string(pwd(), "/files")
+    if !isdir(myDir)
+        mkdir(myDir)
     end
-    my_file = string(my_dir, "/ga_report.txt")
-    if isfile(my_file)
-        my_stream = open(my_file; lock=true, read=false, write=true, create=false, truncate=true, append=true)
+    myFile = string(myDir, "/ga_report.txt")
+    if isfile(myFile)
+        myStream = open(myFile; lock=true, read=false, write=true, create=false, truncate=true, append=true)
     else
-        my_stream = open(my_file; lock=true, read=false, write=true, create=true, truncate=true, append=true)
+        myStream = open(myFile; lock=true, read=false, write=true, create=true, truncate=true, append=true)
     end
-    seekstart(my_stream)
+    seekstart(myStream)
+
+    # The first generation.
+    s = string("\n\n", "For generation ", ga.c.generation, " of ", ga.c.generationsToConvergence, ":\n\n")
+    s = string(s, report(ga.c))
+    write(myStream, s)
+    flush(myStream)
 
     # Run the genetic algorithm.
     if verbose
-        s = string("For generation ", ga.c.generation, "of ", ga.c.generationsToConvergence, ":\n\n")
-        write(my_stream, s)
         for i in 2:ga.c.generationsToConvergence
             print("⋅")
             advanceToNextGeneration!(ga.c)
-            s = string("\n\n", "For generation ", ga.c.generation, "of ", ga.c.generationsToConvergence, ":\n\n")
+            s = string("\n\n", "For generation ", ga.c.generation, " of ", ga.c.generationsToConvergence, ":\n\n")
             s = string(s, report(ga.c))
-            write(my_stream, s)
+            write(myStream, s)
+            flush(myStream)
         end
     else
-        for i in 2:ga.c.generationsToConvergence-1
+        for i in 2:ga.c.generationsToConvergence
             print("⋅")
             advanceToNextGeneration!(ga.c)
         end
-        advanceToNextGeneration!(ga.c)
-        s = report(ga.c)
-        write(my_stream, s)
+        s = string("\n\n", "For generation ", ga.c.generation, " of ", ga.c.generationsToConvergence, ":\n\n")
+        s = string(s, report(ga.c))
+        write(myStream, s)
+        flush(myStream)
     end
-    println("See ", my_file, " for a report.")
+    close(myStream)
+    println()
+    println("See ", myFile, " for a report.")
 end # run
 
 end # module GeneticAlgorithms

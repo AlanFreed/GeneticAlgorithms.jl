@@ -18,18 +18,21 @@ end
 
 Internal constructors
 
-    c = Creature(minParameters, maxParameters, significantFigures,
-                 probabilityOfMutation, probabilityOfCrossover)
+    c = Creature(minParameters, maxParameters, constrainedParameters,
+                 significantFigures, probabilityOfMutation,
+                 probabilityOfCrossover)
 or
     c = Creature(fitness, genetics)
 
 External constructors
 
-    c = procreate(minParameters, maxParameters, significantFigures,
-                  probabilityOfMutation, probabilityOfCrossover)
-    c = alien(alienParameters, minParameters, maxParameters,
-              significantFigures, probabilityOfMutation, probabilityOfCrossover)
-    c = conceive(parentA, parentB, probabilityOfMutation,
+    c = procreate(minParameters, maxParameters, constrainedParameters,
+                  significantFigures, probabilityOfMutation,
+                  probabilityOfCrossover)
+    c = alien(alienParameters, minParameters, maxParameters, 
+              constrainedParameters, significantFigures, probabilityOfMutation,
+              probabilityOfCrossover)
+    c = conceive(parentA, parentB, constrainedParameters, probabilityOfMutation,
                  probabilityOfCrossover)
 
 Operators
@@ -44,12 +47,12 @@ Methods
     θ = parameters(c)   returns an array of all parameters 'θ'
 """
 mutable struct Creature
-    fitness::Float64
+    fitness::Real
     genetics::Genome
 
     # Internal constructors
 
-    function Creature(minParameters::Vector{Float64}, maxParameters::Vector{Float64}, significantFigures::Int64)
+    function Creature(minParameters::Vector{Real}, maxParameters::Vector{Real}, significantFigures::Int)
 
         fitness  = -1.0
         genetics = Genome(minParameters, maxParameters, significantFigures)
@@ -57,7 +60,7 @@ mutable struct Creature
         new(fitness, genetics)
     end
 
-    function Creature(fitness::Float64, genetics::Genome)
+    function Creature(fitness::Real, genetics::Genome)
 
         new(fitness, genetics)
     end
@@ -65,36 +68,118 @@ end # Creature
 
 # external constructors
 
-function procreate(minParameters::Vector{Float64}, maxParameters::Vector{Float64}, significantFigures::Int64)::Creature
+function procreate(minParameters::Vector{Real}, maxParameters::Vector{Real}, constrainedParameters::Vector{Tuple{Int,Int}}, significantFigures::Int)::Creature
 
     creature = Creature(minParameters, maxParameters, significantFigures)
+
+    if length(constrainedParameters) > 0
+        recreate = false
+        creatureParameters = parameters(creature)
+        for i in 1:length(constrainedParameters)
+            (pL, pR) = constrainedParameters[i]
+            if creatureParameters[pL] > creatureParameters[pR]
+                recreate = true
+                break
+            end
+        end
+        recreations = 1
+        while recreate
+            recreate    = false
+            recreations = recreations + 1
+            creature    = Creature(minParameters, maxParameters, significantFigures)
+            creatureParameters = parameters(creature)
+            for i in 1:length(constrainedParameters)
+                (pL, pR) = constrainedParameters[i]
+                if creatureParameters[pL] > creatureParameters[pR]
+                    recreate = true
+                    break
+                end
+                if recreations == 25
+                    # This is a safety valve.  It should not occur.
+                    msg = "In 25 attempts, parameters θ[i] obeying "
+                    msg = string(msg, "constraint θ[", pL, "]")
+                    msg = string(msg, " < θ[", pR, "]\n were not gotten")
+                    msg = string(msg, " through creature procreation.")
+                    throw(ExceptionError(msg))
+                end
+            end
+        end
+    end
 
     return creature
 end # procreate
 
-function alien(alienParameters::Vector{Float64}, minParameters::Vector{Float64}, maxParameters::Vector{Float64}, significantFigures::Int64)::Creature
+function alien(alienParameters::Vector{Real}, minParameters::Vector{Real}, maxParameters::Vector{Real}, constrainedParameters::Vector{Tuple{Int,Int}}, significantFigures::Int)::Creature
 
-    if length(alienParameters) ≠ length(minParameters)
-        msg = "Vector alienParameters has the wrong length."
-        throw(DimensionMismatch, msg)
-    end
+    if length(alienParameters) == 0
+        creature = procreate(minParameters, maxParameters, constrainedParameters
+            , significantFigures)
+    else
+        # Verify the input.
+        if length(alienParameters) ≠ length(minParameters)
+            msg = "Vector alienParameters has the wrong length."
+            throw(DimensionMismatch, msg)
+        end
 
-    creature = Creature(minParameters, maxParameters, significantFigures)
+        # Ensure that the alien's parameters obey their constraints.
+        for i in 1:length(constrainedParameters)
+            (pL, pR) = constrainedParameters[i]
+            if alienParameters[pL] > alienParameters[pR]
+                msg = "Alien parameters θ[i] violate their constraint"
+                msg = string(msg, " of θ[", pL, "] < θ[", pR, "].")
+                throw(ExceptionError(msg))
+            end
+        end
 
-    if length(alienParameters) ≠ 0
+        creature = Creature(minParameters, maxParameters, significantFigures)
         encode!(creature.genetics, alienParameters)
     end
 
     return creature
 end # alien
 
-function conceive(parentA::Creature, parentB::Creature, probabilityOfMutation::Float64, probabilityOfCrossover::Float64)::Creature
+function conceive(parentA::Creature, parentB::Creature, constrainedParameters::Vector{Tuple{Int,Int}}, probabilityOfMutation::Real, probabilityOfCrossover::Real)::Creature
 
     fitness = -1.0
 
     childGenetics = crossover(parentA.genetics, parentB.genetics, probabilityOfMutation, probabilityOfCrossover)
 
     child = Creature(fitness, childGenetics)
+
+    if length(constrainedParameters) > 0
+        reconceive = false
+        childParameters = parameters(child)
+        for i in 1:length(constrainedParameters)
+            (pL, pR) = constrainedParameters[i]
+            if childParameters[pL] > childParameters[pR]
+                reconceive = true
+                break
+            end
+         end
+        reconceptions = 1
+        while reconceive
+            reconceive    = false
+            reconceptions = reconceptions + 1
+            childGenetics = crossover(parentA.genetics, parentB.genetics, probabilityOfMutation, probabilityOfCrossover)
+            child = Creature(fitness, childGenetics)
+            childParameters = parameters(child)
+            for i in 1:length(constrainedParameters)
+                (pL, pR) = constrainedParameters[i]
+                if childParameters[pL] > childParameters[pR]
+                    reconceive = true
+                    break
+                end
+                if reconceptions == 25
+                    # This is a safety valve.  It should not occur.
+                    msg = "In 25 attempts, parameters θ[i] obeying "
+                    msg = string(msg, "constraint θ[", pL, "]")
+                    msg = string(msg, " < θ[", pR, "]\n were not gotten")
+                    msg = string(msg, " through creature conception.")
+                    throw(ExceptionError(msg))
+                end
+            end
+        end
+    end
 
     return child
 end # conceive
@@ -134,8 +219,8 @@ function toString(c::Creature)::String
     return toString(c.genetics)
 end # toString
 
-function parameters(c::Creature)::Vector{Float64}
-    phenotypes = Vector{Float64}(undef, c.genetics.chromosomes)
+function parameters(c::Creature)::Vector{Real}
+    phenotypes = Vector{Real}(undef, c.genetics.chromosomes)
     for i in 1:c.genetics.chromosomes
         phenotypes[i] = decode(c.genetics.genotypes[i])
     end

@@ -48,16 +48,16 @@ Methods
 """
 struct Chromosome
     # Fields that bound a parameter.
-    minParameter::Float64
-    maxParameter::Float64
+    minParameter::Real
+    maxParameter::Real
     # Fields that describe a chromosome.
-    genes::Int64
-    expressions::Int64
+    genes::Int
+    expressions::Int
     genotype::Vector{Gene}
 
     # constructor
 
-    function Chromosome(minParameter::Float64, maxParameter::Float64, significantFigures::Int64)
+    function Chromosome(minParameter::Real, maxParameter::Real, significantFigures::Int)
 
         if minParameter ≈ maxParameter
 
@@ -88,9 +88,9 @@ struct Chromosome
                 logDecades = log10(-minParameter*maxParameter)
             end
             if logDecades > 0.0
-                decades = Int64(ceil(logDecades))
+                decades = Int(ceil(logDecades))
             else
-                decades = abs(Int64(floor(logDecades)))
+                decades = abs(Int(floor(logDecades)))
             end
             if decades < 1
                 decades = 1
@@ -166,7 +166,7 @@ struct Chromosome
         new(minParameter, maxParameter, genes, expressions, genotype)
     end
 
-    function Chromosome(minParameter::Float64, maxParameter::Float64, genes::Int64, expressions::Int64, genotype::Vector{Gene})
+    function Chromosome(minParameter::Real, maxParameter::Real, genes::Int, expressions::Int, genotype::Vector{Gene})
 
         new(minParameter, maxParameter, genes, expressions, genotype)
     end
@@ -255,7 +255,7 @@ function toString(c::Chromosome)::String
     return str
 end # toString
 
-function mutate!(c::Chromosome, probabilityOfMutation::Float64)
+function mutate!(c::Chromosome, probabilityOfMutation::Real)
     for i in 1:c.genes
         mutate!(c.genotype[i], probabilityOfMutation)
     end
@@ -269,7 +269,7 @@ random pair of neighboring genes).  The outcome is a child of the parents.
 There is a small chance that the child will be a clone of one of its parents--a
 chance that is dictated by the assigned probabilities.
 """
-function crossover(parentA::Chromosome, parentB::Chromosome, probabilityOfMutation::Float64, probabilityOfCrossover::Float64)::Chromosome
+function crossover(parentA::Chromosome, parentB::Chromosome, probabilityOfMutation::Real, probabilityOfCrossover::Real)::Chromosome
 
     if (probabilityOfCrossover < 0.0) || (probabilityOfCrossover ≥ 1.0)
         msg = "A probability of crossover must belong to unit interval [0, 1)."
@@ -347,7 +347,7 @@ function _greyToBinary(grey::Vector{Bool})::Vector{Bool}
     return binary
 end # _greyToBinary
 
-function _binaryToInteger(binary::Vector{Bool})::Int64
+function _binaryToInteger(binary::Vector{Bool})::Int
     bits    = length(binary)
     integer = 0
     power   = 1
@@ -360,8 +360,8 @@ function _binaryToInteger(binary::Vector{Bool})::Int64
     return integer
 end # _binaryToInteger
 
-function _integerToPhenotype(c::Chromosome, integer::Int64)::Float64
-    phenotype = (c.minParameter + (Float64(integer) / Float64(c.expressions))
+function _integerToPhenotype(c::Chromosome, integer::Int)::Real
+    phenotype = (c.minParameter + (Real(integer) / Real(c.expressions))
         * (c.maxParameter - c.minParameter))
     if phenotype < c.minParameter
         phenotype = c.minParameter
@@ -372,7 +372,7 @@ function _integerToPhenotype(c::Chromosome, integer::Int64)::Float64
     return phenotype
 end # _integerToPhenotype
 
-function decode(c::Chromosome)::Float64
+function decode(c::Chromosome)::Real
     if c.genes == 0
         phenotype = deepcopy(c.minParameter)
     else
@@ -393,19 +393,19 @@ end # decode
 
 # Methods to encode a parameter.
 
-function _phenotypeToInteger(c::Chromosome, phenotype::Float64)::Int64
+function _phenotypeToInteger(c::Chromosome, phenotype::Real)::Int
     fraction = (phenotype - c.minParameter) / (c.maxParameter - c.minParameter)
-    integer  = Int64(round(fraction * Float64(c.expressions)))
+    integer  = Int(round(fraction * Real(c.expressions)))
     if integer < 0
         integer = 0
     end
-    if integer > typemax(Int64)
-        integer = typemax(Int64)
+    if integer > typemax(Int)
+        integer = typemax(Int)
     end
     return integer
 end # _phenotypeToInteger
 
-function _integerToBinary(c::Chromosome, integer::Int64)::Vector{Bool}
+function _integerToBinary(c::Chromosome, integer::Int)::Vector{Bool}
     binary = Vector{Bool}(undef, c.genes)
     atInt  = integer
     gene   = c.genes
@@ -435,7 +435,7 @@ function _binaryToGrey(binary::Vector{Bool})::Vector{Bool}
     return grey
 end # _binaryToGrey
 
-function encode!(c::Chromosome, phenotype::Float64)
+function encode!(c::Chromosome, phenotype::Real)
     if c.genes == 0
         # do nothing
     elseif (phenotype ≥ c.minParameter) && (phenotype ≤ c.maxParameter)
