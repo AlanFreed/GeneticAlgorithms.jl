@@ -1,11 +1,15 @@
 #=
 Created on Thr 14 Jun 2024
-Updated on Sun 14 Jul 2024
-Translated from Python (code dated 09/08/2017) and enhanced for Julia.
+Updated on Mon 15 Jul 2024
+Translated from python (code dated 09/08/2017) with enhancements for julia.
 =#
 
 """
-This module was taken from the author's course on numerical methods at TAMU.
+This julia module is a translation of a python module written for the author's
+course on numerical methods at TAMU, which was a translation of a pascal module,
+which was a translation of the author's original genetic algorithm written in
+zonnon that the author first used to illustrate to his students at SVSU the art
+of writing object-oriented code, for which genetic algorithms are well suited.
 
 From a biologic interpretation, the genetic algorithm implemented here is a
 colony of creatures that advances their quality of life (fitness) from one
@@ -14,15 +18,14 @@ file, is a colony or collection of creatures whose population is sustained from
 one generation to the next.  Mating between creatures occurs through a process
 known as tournament play, where the most fit contestant from a random selection
 of contestants is chosen for mating.  Typically, each successive generation is
-more fit than its predecessor, i.e., the colony's quality improves over time.
+more fit than its predecessor, i.e., the colony's quality improves with time.
 
-To install this package, download the following packages from their URL address:
+To install this package, download the following package from its URL address:
 
 using Pkg
-Pkg.add(url = "https://github.com/tbreloff/ConcreteAbstractions.jl")
 Pkg.add(url = "https://github.com/AlanFreed/GeneticAlgorithms.jl")
 
-A genetic algorithm has an interface of
+The data structure for genetic algorithm has an interface of
 
 struct GeneticAlgorithm
     c::Colony
@@ -32,16 +35,16 @@ with constructor
 
     ga = GeneticAlgorithm(colony)
 
-Method
+and procedure
 
     run(ga, verbose)
 
-    Method 'run' runs a solver for this genetic algorithm whose population size
-    and number of generations to advance through are determined internally.
-    A report is written to file for the user to read.  If verbose is 'true,'
-    the default, then a page in the report is written for each generation of
-    the colony; otherwise, the report only contains information regarding the
-    final generation.
+    Function 'run' runs a solver for genetic algorithm 'ga' whose population
+    size and number of generations to advance through are determined internally.
+    A report is written to file for the user to read.  If 'verbose' is true,
+    the default, then a page in this report is written for each generation of
+    the colony; otherwise, the report only contains information pertaining to
+    the final generation.
 """
 module GeneticAlgorithms
 
@@ -53,12 +56,12 @@ import
     Printf: @sprintf
 
 export
-    # macros copied from https://github.com/tbreloff/ConcreteAbstractions.jl
+    # macros taken from https://github.com/tbreloff/ConcreteAbstractions.jl
     @base,
     @extend,
 
     # abstract type
-    AbstractSpecies,
+    AbstractSpecies,    # defined using @base
 
     # types, including internal constructors
     Expression,
@@ -98,7 +101,7 @@ export
     run,
     runModel,
 
-# constants
+    # constants
     dominant,
     recessive
 
@@ -150,34 +153,35 @@ function run(ga::GeneticAlgorithm, verbose::Bool=true)
     seekstart(myStream)
 
     # The first generation.
-    s = string("\n\n", "For generation ", ga.c.generation, " of ", ga.c.generationsToConvergence, ":\n\n")
-    s = string(s, report(ga.c))
-    write(myStream, s)
-    flush(myStream)
-
-    # Run the genetic algorithm.
     if verbose
-        for i in 2:ga.c.generationsToConvergence
-            print("⋅")
-            advanceToNextGeneration!(ga.c)
-            s = string("\n\n", "For generation ", ga.c.generation, " of ", ga.c.generationsToConvergence, ":\n\n")
-            s = string(s, report(ga.c))
-            write(myStream, s)
-            flush(myStream)
-        end
-    else
-        for i in 2:ga.c.generationsToConvergence
-            print("⋅")
-            advanceToNextGeneration!(ga.c)
-        end
         s = string("\n\n", "For generation ", ga.c.generation, " of ", ga.c.generationsToConvergence, ":\n\n")
         s = string(s, report(ga.c))
         write(myStream, s)
         flush(myStream)
     end
+
+    # Run the genetic algorithm.
+    for i in 2:ga.c.generationsToConvergence-1
+        print("⋅")
+        advanceToNextGeneration!(ga.c)
+        if verbose
+            s = string("\n\n", "For generation ", ga.c.generation, " of ", ga.c.generationsToConvergence, ":\n\n")
+            s = string(s, report(ga.c))
+            write(myStream, s)
+            flush(myStream)
+        end
+    end
+    println("⋅")
+    advanceToNextGeneration!(ga.c)
+    println("The genetic algorithm has finished.")
+    s = string("\n\n", "For generation ", ga.c.generation, " of ", ga.c.generationsToConvergence, ":\n\n")
+    s = string(s, report(ga.c))
+    write(myStream, s)
+    flush(myStream)
     close(myStream)
-    println()
     println("See ", myFile, " for a report.")
+
+    return nothing
 end # run
 
 end # module GeneticAlgorithms

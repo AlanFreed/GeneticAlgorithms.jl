@@ -1,5 +1,7 @@
 # This code is from url https://github.com/tbreloff/ConcreteAbstractions.jl.
-# It is very old and apparently not maintained, so it has been replicated here.
+# It is very old, and apparently not maintained, because this package is
+# missing its necessary Manifest.toml and Project.toml files.  Consequently,
+# it's macros have been replicated without change for export here.
 
 const _base_types = Dict{Symbol, Tuple}()
 
