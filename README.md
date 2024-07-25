@@ -2,11 +2,10 @@
 
 This module originated from courses in numerical methods that the author (Alan Freed) taught at both Saginaw Valley State University (SVSU) and at Texas A&M University (TAMU).
 
-To use this module, you will need to add the following repositories to your project:
+To use this module, you will need to add the following repository to your project:
 
 ```
 using Pkg
-Pkg.add(url = "https://github.com/tbreloff/ConcreteAbstractions.jl")
 Pkg.add(url = "https://github.com/AlanFreed/GeneticAlgorithms.jl")
 ```
 
