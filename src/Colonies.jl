@@ -2,226 +2,219 @@
 A colony is a collection of creatures in a genetic algorithm.  It is the colony
 that evolves from generation to generation, leading toward an optimum condition.
 
-A Colony is a mutable data structure, because its data change from generation to
-generation.  A colony has an interface of:
+A colony has an interface of:
 
-mutable struct Colony
+struct Colony{Parameters} where Parameters <: AbstractParameters
+    parameters              # model parameters: object from AbstractParameters
+    data                    # experimental data that model is to be fit against
     # Fields pertaining to the creatures of a colony.
-    species                 # kind of creatures that comprise the colony
-    probabilityOfMutation   # probability of single gene mutating at creation
-    probabilityOfCrossover  # probability of a child sharing its parents genes
-    probabilityOfImmigrant  # probability of an immigrant entering the colony
-    parameterNames          # string representation for each model parameter
-    minParameters           # lower bounds when searching for optimal parameters
-    maxParameters           # upper bounds when searching for optimal parameters
-    constrainedParameters   # tuples of specifying constraints: left < right
-    significantFigures      # digits of accuracy sought for optimal parameters
+    probability_mutation    # probability of single gene mutating at creation
+    probability_crossover   # probability of a child sharing its parents genes
+    probability_immigrant   # probability of an immigrant entering the colony
+    parameters_names        # string representation for each model parameter
+    parameters_min          # lower bounds when searching for optimal parameters
+    parameters_max          # upper bounds when searching for optimal parameters
+    parameters_constrained  # tuples specifying constraints of: left < right
+    significant_figures     # digits of accuracy sought for optimal parameters
     # Fields pertaining to the colony itself.
-    populationSize          # number of creatures comprising the colony
+    population_size         # number of creatures comprising the colony
     generation              # counter specifying the current generation
-    generationsToConvergence    # generation whose elite is the solution sought
+    generations_to_convergence  # generation whose elite is the solution sought
     elite                   # most fit resident in the current generation
     children                # adults for the next generation
     adults                  # adults from the current generation
-    fitnesses               # fitness of each adult in the current generation
+    fitness                 # fitness of each adult in the current generation
 end
 
 Constructors
 
     The constructor most likely to be called by a user.
 
-    c = Colony(species, probabilityOfMutation, probabilityOfCrossover, probabilityOfImmigrant, parameterNames, alienParameters, minParameters, maxParameters, constrainedParameters, significantFigures)
+    c = Colony(parameters, data, probability_mutation, probability_crossover, probability_immigrant, parameters_alien, parameters_min, parameters_max, parameters_constrained, significant_figures)
 
     where
 
-        species                 An implementation of the class AbstractSpecies.
-                                Here is where the user's model is introduced,
-                                and where the experimental data are assigned.
-        probabilityOfMutation   The probability of a gene mutation occurring at
+        parameters              An object holding the model's parameters as a
+                                𝑚𝑢𝑡𝑎𝑏𝑙𝑒 composite type whose parent type is
+                                AbstractParameters.  What is important here is
+                                the object, not the values held by the object.
+        data                    Experimental data that the model is to be fit
+                                against, whose optimal parameters θ are sought.
+        probability_mutation    The probability of a gene mutation occurring at
                                 conception, i.e. a gene swapping its expression.
                                 Typically this is a low value, e.g., < 0.01.
-        probabilityOfCrossover  The probability of a crossover event occurring
+        probability_crossover   The probability of a crossover event occurring
                                 at conception, i.e., a chromosome splitting.
                                 Typically this is a large value, e.g., > 0.85.
-        probabilityOfImmigrant  The probability of introducing an immigrant
+        probability_immigrant   The probability of introducing an immigrant
                                 into the gene pool after the first generation.
                                 (The first generation is all immigrants.)  Use
                                 as you see fit.  I usually assign it so as to
                                 introduce one immigrant per generation or so.
-        parameterNames          A string associated with each model parameter.
-                                This makes the report much more readable.
-        alienParameters         If the user has a best guess for θ, then this is
+        parameters_alien        If the user has a best guess for θ, then this is
                                 where these parameters are input.  If the user
                                 doesn't, then send: θ = Vector{Real}(undef,0).
-        minParameters           Lower bounds for the parameters θ being sought.
-        maxParameters           Upper bounds for the parameters θ being sought.
-        constrainedParameters   Tuples of indices (left, right) that impose an
+        parameters_min          Lower bounds for the parameters θ being sought.
+        parameters_max          Upper bounds for the parameters θ being sought.
+        parameters_constrained  Tuples of indices (left, right) that impose an
                                 inequality constraint, viz.: θ[left] < θ[right].
-        significantFigures      The number of significant figures of accuracy
+                                No constraints? Send: Vector{Tuples}(undef,0).
+        significant_figures     The number of significant figures of accuracy
                                 sought in a final solution for the parameters.
                                 There is a strong correlation between this value
                                 and how long it takes to get a solution.  Values
                                 of 4 or 5 are common.  They are bound to [1, 7].
 
-    If parameter minParameters[i] equals parameter maxParameters[i] for any i, then parameter θ[i] is taken to be fixed.
-
-The basic constructor (which will typically not be called externally) is
-
-    c = Colony(species, probabilityOfMutation, probabilityOfCrossover, probabilityOfImmigrant, parameterNames, minParameters, maxParameters, constrainedParameters, significantFigures, populationSize, generation, generationsToConvergence, elite, children, adults, fitnesses)
-
-IMPORTANT!!!!!
-
-For the parameter arrays, index 1 is reserved for selecting the best objective
-function.  Specifically, a dimensionless error is computed as
-    error[i] = |model[i] - experiment[i]| / sdtDev(experiment)
-where i indexes over the set of all experimental data being considered, whose
-error is normalized by the standard deviation of experimental response.
-A p-norm of this error is then computed, i.e.,
-    ‖x‖ₚ = (∑ᵢ₌₁ⁿ|xᵢ|^p)^(1/p), p ≥ 1, with xᵢ = error[i] and n = s.nPts
-from which a quality value is tabulated as
-    fitness = ∑ᵢ₌₁ⁿ 1/‖x‖ₚ[i] with n = s.nExp
-where the creature whose 'fitness' is the greatest is deemed most fit, i.e.,
-the elite.  The first entry in all parameter arrays is a 'p' for the p-norm.
-
-Exponent 'p', p ≥ 1, is treated here as just another parameter to be optimized.
-It can be fixed or allowed to vary.  E.g., setting minParameters[1] = 1
-and maxParameters[1] = 1 would impose the taxicab norm, while setting
-minParameters[1] = 2 and maxParameters[1] = 2 would impose the Euclidean norm.
-In addition, as 'p' goes toward infinity, the resulting p-norm will tend
-towards the infinity (or maximum) norm.  A setting of minParameters[1] = 1 and
-maxParameters[1] = 100 would be fairly typical.  Here one would seek an optimal
-objective function (i.e., reciprocal p-norm) wherein the range of p would lie 
-within the range [1, 100] for the specific set of data being considered.
+    If parameter parameters_min[i] equals parameter parameters_max[i] for any
+    index i, then parameter θ[i] is taken to be fixed.
 
 Methods
 
-advanceToNextGeneration!(c)     advances the colony 'c' to its next generation
+advance_to_next_generation!(c)  Advances the colony 'c' to its next generation.
 
-str = report(c)                 returns a human-readable report via a string
+str = report(c)                 Returns a human-readable report via a string
                                 'str,' which describes health of the current
-                                generation and its statistics
+                                generation and its statistics.
 """
-mutable struct Colony
+struct Colony{Parameters} where Parameters <: AbstractParameters
+    parameters::Parameters
+    data::ExperimentalData
     # Fields pertaining to the creatures of a colony.
-    species::AbstractSpecies
-    probabilityOfMutation::Real
-    probabilityOfCrossover::Real
-    probabilityOfImmigrant::Real
-    parameterNames::Vector{String}
-    minParameters::Vector{Real}
-    maxParameters::Vector{Real}
-    constrainedParameters::Vector{Tuple{Int,Int}}
-    significantFigures::Int
+    probability_mutation::Real
+    probability_crossover::Real
+    probability_immigrant::Real
+    parameters_name::Vector{String}
+    parameters_min::Vector{Real}
+    parameters_max::Vector{Real}
+    parameters_constrained::Vector{Tuple{Integer,Integer}}
+    significant_figures::Integer
     # Fields pertaining to the colony itself.
-    populationSize::Int
-    generation::Int
-    generationsToConvergence::Int
+    population_size::Integer
+    generations_to_convergence::Integer
+    # Mutable fields pertaining to the colony itself.
+    generation::Counter
     elite::Creature
     children::Vector{Creature}
     adults::Vector{Creature}
-    fitnesses::Vector{Real}
+    fitness::Vector{Real}
 
-    function Colony(species::AbstractSpecies, probabilityOfMutation::Real, probabilityOfCrossover::Real, probabilityOfImmigrant::Real, parameterNames::Vector{String}, alienParameters::Vector{Real}, minParameters::Vector{Real}, maxParameters::Vector{Real}, constrainedParameters::Vector{Tuple{Int,Int}}, significantFigures::Int)
+    # constructor
+
+    function Colony(parameters::Parameters, data::ExperimentalData, probability_mutation::Real, probability_crossover::Real, probability_immigrant::Real, parameters_alien::Vector{Real}, parameters_min::Vector{Real}, parameters_max::Vector{Real}, parameters_constrained::Vector{Tuple{Integer,Integer}}, significant_figures::Integer)
 
         # bound inputs
 
-        if significantFigures < 1
-            significantFigures = 1
+        if significant_figures < 1
+            significant_figures = 1
         end
-        if significantFigures > 7
-            significantFigures = 7
-        end
-
-        if probabilityOfMutation < 1.0e-6
-            probabilityOfMutation = 1.0e-6
-        end
-        if probabilityOfMutation > 0.999999
-            probabilityOfMutation = 0.999999
+        if significant_figures > 7
+            significant_figures = 7
         end
 
-        if probabilityOfCrossover < 1.0e-6
-            probabilityOfCrossover = 1.0e-6
+        if probability_mutation < 1.0e-6
+            probability_mutation = 1.0e-6
         end
-        if probabilityOfCrossover > 0.999999
-            probabilityOfCrossover = 0.999999
+        if probability_mutation > 0.999999
+            probability_mutation = 0.999999
         end
 
-        if probabilityOfImmigrant < 1.0e-6
-            probabilityOfImmigrant = 1.0e-6
+        if probability_crossover < 1.0e-6
+            probability_crossover = 1.0e-6
         end
-        if probabilityOfImmigrant > 0.999999
-            probabilityOfImmigrant = 0.999999
+        if probability_crossover > 0.999999
+            probability_crossover = 0.999999
+        end
+
+        if probability_immigrant < 1.0e-6
+            probability_immigrant = 1.0e-6
+        end
+        if probability_immigrant > 0.999999
+            probability_immigrant = 0.999999
         end
 
         # Verify dimensions.
-        # Vector lengths should be 1 + number of parameters in the model itself.
 
-        dim = length(parameterNames)
-        str = "p in p-norm, i.e., ‖x‖ₚ = (∑ᵢ₌₁ⁿ|xᵢ|^p)^(1/p),  p ≥ 1"
-        parameterNames[1] = str
+        N = fieldcount(parameters)
 
-        if (length(alienParameters) ≠ dim) && (length(alienParameters) ≠ 0)
+        if (length(parameters_alien) ≠ N) && (length(parameters_alien) ≠ 0)
             msg = "The supplied alien has the wrong number of parameters."
             throw(DimensionMismatch(msg))
         end
 
-        if (length(minParameters) ≠ dim) || (length(maxParameters) ≠ dim)
+        if (length(parameters_min) ≠ N) || (length(parameters_max) ≠ N)
             msg = "The supplied bounds have the wrong number of parameters."
             throw(DimensionMismatch(msg))
         end
 
-        # Ensure the p-norm has a value of p ≥ 1.
-        if minParameters[1] < 1.0
-            minParameters[1] = 1.0
-        end
-        if maxParameters[1] < 1.0
-            minParameters[1] = 1.0
-            maxParameters[1] = 1.0
+        # Ensure the parameters range of constrained pairs are compatible.
+
+        for i in 1:length(parameters_constrained)
+            (pL, pR) = parameters_constrained[i]
+            if parameters_min[pL] > parameters_min[pR]
+                parameters_min[pL] = parameters_min[pR]
+            end
+            if parameters_max[pR] < parameters_max[pL]
+                parameters_max[pR] = parameters_max[pL]
+            end
         end
 
-        # Ensure parameter ranges of constrained pairs are compatible.
-        for i in 1:length(constrainedParameters)
-            (pL, pR) = constrainedParameters[i]
-            if minParameters[pL] > minParameters[pR]
-                minParameters[pL] = minParameters[pR]
-            end
-            if maxParameters[pR] < maxParameters[pL]
-                maxParameters[pR] = maxParameters[pL]
+        # Verify that the fields of object parameters are all Real valued.
+
+        for n in 1:N
+            symbol  = fieldnames(parameters, n)
+            if !isa(fieldtype(parameters, symbol), Real)
+                msg = "All fields in object parameters must belong to Real."
+                throw(ErrorException, msg)
             end
         end
+
+        # Get parameter names from the fields of object parameters.
+
+        parameters_name = Vector{String}(undef, N)
+        for n in 1:N
+            symbol = fieldnames(parameters, n)
+            parameters_name[n] = String(symbol)
+        end
+
+        # Create the model.
+
+        model = Model(parameters, data)
 
         # elite
 
-        elite = alien(alienParameters, minParameters, maxParameters, constrainedParameters, significantFigures)
-        elite.fitness = _evaluate(species, elite)
+        elite = alien(parameters_alien, parameters_min, parameters_max, parameters_constrained, significant_figures)
+        set!(model.θ, phenotypes(elite))
+        set!(elite.fitness, _evaluate(model))
 
-        # populationSize
+        # population_size
 
-        # Formula is from D. Goldberg (2002) for estimating populationSize size.
+        # Formula is from D. Goldberg (2002) for estimating population size.
         alphabet = 2    # viz., expressions are: dominant and recessive
-        schemata = significantFigures
-        populationSize = Int(ceil(schemata * log(alphabet) * alphabet^schemata + log(elite.genetics.genes)))
+        schemata = significant_figures
+        population_size = Int(ceil(schemata * log(alphabet) * alphabet^schemata
+            + log(elite.genetics.genes)))
 
         # generations
 
         generation = 1
 
-        # Formula of D. Goldberg (2002) for estimating convergence.
-        combatants = Int(max(3, populationSize÷50))
-        generationsToConvergence = Int(ceil(sqrt(elite.genetics.genes)
-            * log(populationSize - combatants)))
+        # Formula is from D. Goldberg (2002) for estimating convergence.
+        combatants = Int(max(3, population_size÷50))
+        generations_to_convergence = Int(ceil(sqrt(elite.genetics.genes)
+            * log(population_size - combatants)))
 
         # adults
 
-        adults = Vector{Creature}(undef, populationSize)
+        adults = Vector{Creature}(undef, population_size)
         adults[1] = elite
-        Threads.@threads for i in 2:populationSize
-            adult = procreate(minParameters, maxParameters, constrainedParameters, significantFigures)
-            adult.fitness = _evaluate(species, adult)
+        Threads.@threads for i in 2:population_size
+            adult = procreate(parameters_min, parameters_max, parameters_constrained, significant_figures)
+            set!(model, phenotypes(adult))
+            set!(adult.fitness, _evaluate(model))
             adults[i] = adult
         end
 
-        for i in 2:populationSize
+        for i in 2:population_size
             adult = adults[i]
             if adult.fitness > elite.fitness
                 elite = adult
@@ -230,70 +223,67 @@ mutable struct Colony
 
         # children
 
-        children = Vector{Creature}(undef, populationSize)
+        children = Vector{Creature}(undef, population_size)
 
         # fitness
 
-        fitnesses = Vector{Real}(undef, populationSize)
-        Threads.@threads for i in 1:populationSize
+        fitness = Vector{Real}(undef, population_size)
+        for i in 1:population_size
             adult = adults[i]
-            fitnesses[i] = adult.fitness
+            fitness[i] = get(adult.fitness)
         end
 
-        new(species, probabilityOfMutation, probabilityOfCrossover, probabilityOfImmigrant, parameterNames, minParameters, maxParameters, constrainedParameters, significantFigures, populationSize, generation, generationsToConvergence, elite, children, adults, fitnesses)
-    end
-
-    function Colony(species::AbstractSpecies, probabilityOfMutation::Real, probabilityOfCrossover::Real, probabilityOfImmigrant::Real, parameterNames::Vector{String}, minParameters::Vector{Real}, maxParameters::Vector{Real}, constrainedParameters::Vector{Tuple{Int,Int}}, significantFigures::Int, populationSize::Int, generation::Int, generationsToConvergence::Int, elite::Creature, children::Vector{Creature}, adults::Vector{Creature}, fitnesses::Vector{Real})
-
-        new(species, probabilityOfMutation, probabilityOfCrossover, probabilityOfImmigrant, parameterNames, minParameters, maxParameters, constrainedParameters, significantFigures, populationSize, generation, generationsToConvergence, elite, children, adults, fitnesses)
+        new(parameters, data, probability_mutation, probability_crossover, probability_immigrant, parameters_name, parameters_min, parameters_max, parameters_constrained, significant_figures, population_size, generations_to_convergence, generation, elite, children, adults, fitness)
     end
 end # Colony
 
 # internal methods
 
 function _tournamentPlay(c::Colony)::Creature
-    combatants  = Int(max(3, c.populationSize÷50))
+    combatants  = Int(max(3, c.population_size÷50))
     contestants = Vector{Creature}(undef, combatants)
-    if c.probabilityOfImmigrant > rand()
-        mostFit = procreate(c.minParameters, c.maxParameters, c.constrainedParameters, c.significantFigures)
-        _evaluate(c.species, mostFit)
+    if c.probability_immigrant > rand()
+        mostfit = procreate(c.parameters_min, c.parameters_max, c.parameters_constrained, c.significant_figures)
+        model = Model(c.parameters, c.data)
+        set!(model, phenotypes(mostfit))
+        set!(mostfit.fitness, _evaluate(model))
     else
         for i in 1:combatants
-            combatant = rand(1:c.populationSize)
+            combatant = rand(1:c.population_size)
             contestants[i] = c.adults[combatant]
         end
-        mostFit = contestants[1]
+        mostfit = contestants[1]
         for i in 2:combatants
             contestant = contestants[i]
-            if contestant.fitness > mostFit.fitness
-                mostFit = contestant
+            if contestant.fitness > mostfit.fitness
+                mostfit = contestant
             end
         end
     end
-    return mostFit
+    return mostfit
 end # _tournamentPlay
 
 function _mate!(c::Colony)
     # Elite creature from current generation lives into the next generation.
     c.children[1] = copy(c.elite)
-    c.fitness[1]  = c.elite.fitness
+    c.fitness[1]  = get(c.elite.fitness)
 
     # Mate the population.
     Threads.@threads for i in 2:population
         parentA = _tournamentPlay(c)
         parentB = _tournamentPlay(c)
-        child   = conceive(parentA, parentB, c.constrainedParameters, c.probabilityOfMutation, c.probabilityOfCrossover)
+        child   = conceive(parentA, parentB, c.parameters_constrained, c.probability_mutation, c.probability_crossover)
     end
 
     # Ensure their are no clones, i.e., that there are no identical twins.
-    for i in 2:populationSize
+    for i in 2:population_size
         child = c.children[i]
         for j in 1:i-1
             if child == c.children[j]
                 # Identical twins are not permitted within a generation.
                 parentA = _tournamentPlay(c)
                 parentB = _tournamentPlay(c)
-                child   = conceive(parentA, parentB, c.constrainedParameters, c.probabilityOfMutation, c.probabilityOfCrossover)
+                child   = conceive(parentA, parentB, c.parameters_constrained, c.probability_mutation, c.probability_crossover)
                 c.children[i] = child
                 break
             end
@@ -301,62 +291,64 @@ function _mate!(c::Colony)
     end
 
     # Determine the fitness for each child born into the colony.
-    Threads.@threads for i in 1:populationSize
+    Threads.@threads for i in 2:population_size
         child = c.children[i]
-        child.fitness  = _evaluate(c.species, child)
-        c.fitnesses[i] = child.fitness
-        c.children[i]  = child
+        model = Model(c.parameters, c.data)
+        set!(model, phenotypes(child))
+        set!(child.fitness, _evaluate(model))
+        c.fitness[i]  = get(child.fitness)
+        c.children[i] = child
     end
 
     return nothing
 end # _mate!
 
-function _evaluate(s::AbstractSpecies, c::Creature)::Real
-    θ = parameters(c)
-    modelResponse = runModel(s, θ)
+function _evaluate(m::Model)::Real
+    model_responses = solve(m.θ, m.d, m)
     fitness = 0.0
-    for i in 1:s.nExp
-        sum = 0.0
-        for j in 1:s.nRsp[i]
-            for k in 1:s.nPts[i]
-                sum = sum + ((abs(modelResponse[i][j,k] - s.resp[i][j,k])
-                    / s.stdR[i][j])^θ[1])
+    for i in 1:m.d.experiments
+        squared_error = 0.0
+        for j in 1:m.d.variables_response[i]
+            for k in 1:m.d.data_points[i]
+                squared_error = (squared_error
+                    + ((model_responses[i][j,k] - m.d.responses[i][j,k])
+                    / m.d.stdR[i][j])^2)
             end
         end
-        pNorm   = sum^(1.0/θ[1])
-        fitness = fitness + 1.0 / pNorm
+        twonorm = sqrt(squared_error)
+        fitness = fitness + 1.0 / twonorm
     end
     return fitness
 end # _evaluate
 
 function _stdDevElite(c::Colony)::Vector{Real}
-    eliteParameters = parameters(c.elite)
-    len = length(ePara)
+    parameters_elite = phenotypes(c.elite)
+    len = length(parameters_elite)
     sde = Vector{Real}(undef, len)
     sum = zeros(Real, len)
-    for i in 1:c.populationSize
+    for i in 1:c.population_size
         adult = c.adults[i]
-        adultParameters = parameters(adult)
+        parameters_adult = phenotypes(adult)
         for j in 1:len
-            sum[j] = sum[j] + (adultParameters[j] - eliteParameters[j])^2
+            sum[j] = sum[j] + (parameters_adult[j] - parameters_elite[j])^2
         end
     end
     for i in 1:len
-        sde[i] = sqrt(sum[i] / (c.populationSize - 1))
+        sde[i] = sqrt(sum[i] / (c.population_size - 1))
     end
     return sde
 end # _stdDevElite
 
 function _2string(c::Colony, x::Real)::String
-    if c.significantFigures ≤ 2
+    if c.significant_figures ≤ 2
         s = @sprintf "%.1e" x;
-    elseif c.significantFigures == 3
+    elseif c.significant_figures == 3
         s = @sprintf "%.2e" x;
-    elseif c.significantFigures == 4
+    elseif c.significant_figures == 4
         s = @sprintf "%.3e" x;
-    elseif c.significantFigures == 5
+    elseif c.significant_figures == 5
         s = @sprintf "%.4e" x;
-    elseif c.significantFigures == 6
+    elseif c.significant_figures == 6
         s = @sprintf "%.5e" x;
     else
         s = @sprintf "%.6e" x;
@@ -366,36 +358,44 @@ end # _2string
 
 # exported methods
 
-function advanceToNextGeneration!(c::Colony)
-    c.generation = c.generation + 1
+function advance_to_next_generation!(c::Colony)
+    set!(c.generation, get(c.generation)+1)
     _mate!(c)
 
     # Children become the new adults.
-    Threads.@threads for i in 1:c.populationSize
-        newAdult = c.children[i]
-        c.adults[i] = copy(newAdult)
+    for i in 1:c.population_size
+        c.adults[i] = copy(c.children[i])
     end
 
     # Determine the elite adult for this next generation.
-    c.elite = c.adults[1]
-    for i in 2:populationSize
+    elite = c.adults[1]
+    for i in 2:population_size
         adult = c.adult[i]
         if adult.fitness > c.elite.fitness
-            c.elite = adult
+            elite = adult
         end
     end
+    set!(c.elite.fitness, get(elite.fitness))
+    for chromosome in 1:c.elite.genetics.chromosomes
+        genotype_c = c.elite.genetics.genotypes[chromosome]
+        genotype_e =   elite.genetics.genotypes[chromosome]
+        for gene in 1:genotype_c.genes
+            setindex!(genotype_c, getindex(genotype_e, gene), gene)
+        end
+    end
+    return nothing
 end # advanceToNextGeneration
 
 function report(c::Colony)::String
     s = "\n"
     s = string(s, "Statistics for generation ", c.generation)
-    s = string(s, " with a population size of ", c.populationSize, ".\n")
-    s = string(s, "Optimal value and population statistics for fitness:\n")
-    fitness = c.elite.fitness
+    s = string(s, " with a population size of ", c.population_size, ".\n")
+    s = string(s, "Optimum fitness and population statistics for fitness:\n")
+    fitness = get(c.elite.fitness)
     if fitness ≥ 0.0
-        s = string(s, "   optimal fitness  ", _2string(c, fitness), "\n")
+        s = string(s, "   optimum fitness  ", _2string(c, fitness), "\n")
     else
-        s = string(s, "   optimal fitness ", _2string(c, fitness), "\n")
+        s = string(s, "   optimum fitness ", _2string(c, fitness), "\n")
     end
     statMean = mean(c.fitness)
     if statMean ≥ 0.0
@@ -421,46 +421,46 @@ function report(c::Colony)::String
     else
         s = string(s, "   excess kurtosis ", _2string(c, statKurtosis), "\n")
     end
-    s = string(s, "Genome from the most fit creature:\n")
-    s = string(s, "   ", toString(c.elite.genetics))
-    s = string(s, "Listings of [minParameter, bestParameter, maxParameter]:\n")
-    bestParameters = parameters(c.elite)
-    len = length(bestParameters)
+    s = string(s, "The genome from the most fit creature:\n")
+    s = string(s, "   ", tostring(c.elite.genetics))
+    s = string(s, "Lists for [parameter_min, parameter_best, parameter_max]:\n")
+    parameters_best = phenotypes(c.elite)
+    len = length(parameters_best)
     for i in 1:len
         if len < 10
-            s = string(s, i, ": ", c.parameterNames[i], "\n")
+            s = string(s, i, ": ", c.parameters_name[i], "\n")
             s = string(s, "      ")
         else
             if i < 10
-                s = string(s, i, ":  ", c.parameterNames[i], "\n")
+                s = string(s, i, ":  ", c.parameters_name[i], "\n")
             else
-                s = string(s, i, ": ", c.parameterNames[i], "\n")
+                s = string(s, i, ": ", c.parameters_name[i], "\n")
             end
             s = string(s, "       ")
         end
-        s = string(s, "[", _2string(c.minParameters[i]), ", ",
-            _2string(bestParameters[i]), ", ",
-            _2string(c.maxParameters[i]), "]\n")
+        s = string(s, "[", _2string(c, c.parameters_min[i]), ", ",
+            _2string(c, parameters_best[i]), ", ",
+            _2string(c, c.parameters_max[i]), "]\n")
     end
-    s = string(s, "Values for bestParameter ± error, where an RMSE ")
+    s = string(s, "Values for best parameter ± error, where an RMSE ")
     s = string(s, "is computed wrt best values.\n")
     s = string(s, "Data are the parameters from all adults living ")
     s = string(s, "in the current population.\n")
     err = _stdDevElite(c)
     for i in 1:len
         if len < 10
-            s = string(s, i, ": ", c.parameterNames[i], "\n")
+            s = string(s, i, ": ", c.parameters_name[i], "\n")
             s = string(s, "      ")
         else
             if i < 10
-                s = string(s, i, ":  ", c.parameterNames[i], "\n")
+                s = string(s, i, ":  ", c.parameters_name[i], "\n")
             else
-                s = string(s, i, ": ", c.parameterNames[i], "\n")
+                s = string(s, i, ": ", c.parameters_name[i], "\n")
             end
             s = string(s, "       ")
         end
-        s = string(s, _2string(bestParameters[i]), " ± ",
-            _2string(err[i]), "\n")
+        s = string(s, _2string(c, parameters_best[i]), " ± ",
+            _2string(c, err[i]), "\n")
     end
     s = string(s, "\n")
     return s

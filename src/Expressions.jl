@@ -15,8 +15,8 @@ end
 
 Constructors
 
-    e = Expression()            creates a random expression 'e'
-    e = Expression(dominant)    creates a dominant expression 'e'
+    e = Expression()            creates a  random   expression 'e'
+    e = Expression(dominant)    creates a dominant  expression 'e'
     e = Expression(recessive)   creates a recessive expression 'e'
 
 Operators
@@ -26,17 +26,16 @@ Operators
 Methods
 
     expression = get(e)     returns 'expression' held by Expression 'e'
-    set!(e, expression)     assigns `expression` to Expression 'e'
-    c = copy(e)             returns copy 'c' of Expression 'e'
-    c = deepcopy(e)         returns deep copy 'c' of Expression 'e'
-    s = toString(e)         returns string representation 's' of Expression 'e'
-    b = isDominant(e)       returns true if e.expression == dominant
-    b = isRecessive(e)      returns true if e.expression == recessive
+    set!(e, expression)     assigns 'expression' to Expression 'e'
+    c = copy(e)             returns a copy 'c' of Expression 'e'
+    s = tostring(e)         returns string representation 's' of Expression 'e'
+    b = isdominant(e)       returns true if e.expression == dominant
+    b = isrecessive(e)      returns true if e.expression == recessive
 """
 mutable struct Expression
     expression::Bool
 
-    # constructors
+    # constructor
 
     function Expression()
         value = rand()    # Returns a random real from the interval [0, 1).
@@ -45,10 +44,6 @@ mutable struct Expression
         else
             expression = dominant
         end
-        new(expression)
-    end
-
-    function Expression(expression::Bool)
         new(expression)
     end
 end # Expression
@@ -106,11 +101,11 @@ end # ≠
 # methods
 
 function Base.:(get)(e::Expression)::Bool
-    return deepcopy(e.expression)
+    return copy(e.expression)
 end # get
 
 function set!(e::Expression, expression::Bool)
-    e.expression = deepcopy(expression)
+    e.expression = copy(expression)
     return nothing
 end # set!
 
@@ -119,32 +114,27 @@ function Base.:(copy)(e::Expression)::Expression
     return Expression(expression)
 end # copy
 
-function Base.:(deepcopy)(e::Expression)::Expression
-    expression = deepcopy(e.expression)
-    return Expression(expression)
-end # deepcopy
-
-function toString(e::Expression)::String
+function tostring(e::Expression)::String
     if e.expression == dominant
         str = "1"
     else
         str = "0"
     end
     return str
-end # toString
+end # tostring
 
-function isDominant(e::Expression)::Bool
+function isdominant(e::Expression)::Bool
     if e.expression == dominant
         return true
     else
         return false
     end
-end # isDominant
+end # isdominant
 
-function isRecessive(e::Expression)::Bool
+function isrecessive(e::Expression)::Bool
     if e.expression == recessive
         return true
     else
         return false
     end
-end # isRecessive
+end # isrecessive

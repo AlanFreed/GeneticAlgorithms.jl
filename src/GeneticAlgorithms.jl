@@ -1,6 +1,6 @@
 #=
 Created on Thr 14 Jun 2024
-Updated on Mon 15 Jul 2024
+Updated on Thr 25 Jul 2024
 Translated from python (code dated 09/08/2017) with enhancements for julia.
 =#
 
@@ -56,58 +56,66 @@ import
     Printf: @sprintf
 
 export
-    # macros taken from https://github.com/tbreloff/ConcreteAbstractions.jl
-    @base,
-    @extend,
-
     # abstract type
-    AbstractSpecies,    # defined using @base
+    AbstractParameters,
 
-    # types, including internal constructors
+    # genetic types
     Expression,
+    Counter,
+    Variable,
     Gene,
     Chromosome,
     Genome,
     Creature,
     Colony,
-    GeneticAlgorithm,
 
-    # operators
-    ==, ≠,
-
-    # external constructors
+    # external constructors for type Creature
     procreate,
     alien,
     conceive,
 
+    # algorithm types
+    ExperimentalData,
+    Model,
+    GeneticAlgorithm,
+
+    # operators: 
+    # logical
+    ==, ≠, <, ≤, >, ≥,
+    # arithmetic unary
+    +, -,
+    # arithmetic binary
+    +, -, *, ÷, %, /, ^,
+
     # methods
     copy,
-    deepcopy,
     get,
     getindex,
     set!,
     setindex!,
-    toString,
+    tostring,
 
-    isDominant,
-    isRecessive,
+    isdominant,
+    isrecessive,
+    mutate!,
     decode,
     encode!,
-    mutate!,
     crossover,
-    parameters,
-    advanceToNextGeneration!,
+    phenotypes,
+    solve,
+    advance_to_next_generation!,
     report,
     run,
-    runModel,
 
     # constants
     dominant,
     recessive
 
-include("ConcreteAbstractions.jl")
-
 include("Expressions.jl")
+
+include("Counters.jl")
+
+inclued("Variables.jl")
 
 include("Genes.jl")
 
@@ -117,7 +125,7 @@ include("Genomes.jl")
 
 include("Creatures.jl")
 
-include("Species.jl")
+include("UserInterface.jl")
 
 include("Colonies.jl")
 
@@ -125,61 +133,55 @@ include("Colonies.jl")
 
 struct GeneticAlgorithm
     c::Colony
-
-    # constructor
-
-    function GeneticAlgorithm(c::Colony)
-        new(c)
-    end
 end # GeneticAlgorithm
 
 # Method
 
 function run(ga::GeneticAlgorithm, verbose::Bool=true)
-    println("Each ⋅ represents one generation advanced out of ", ga.c.generationsToConvergence, " generations total.")
+    println("Each ⋅ represents one generation advanced out of ", String(ga.c.generations_to_convergence), " generations total.")
     print("    ")
 
     # Open an IO-stream to write to.
-    myDir = string(pwd(), "/files")
-    if !isdir(myDir)
-        mkdir(myDir)
+    mydir = string(pwd(), "/files")
+    if !isdir(mydir)
+        mkdir(mydir)
     end
-    myFile = string(myDir, "/ga_report.txt")
-    if isfile(myFile)
-        myStream = open(myFile; lock=true, read=false, write=true, create=false, truncate=true, append=true)
+    myfile = string(mydir, "/ga_report.txt")
+    if isfile(myfile)
+        mystream = open(myfile; lock=true, read=false, write=true, create=false, truncate=true, append=true)
     else
-        myStream = open(myFile; lock=true, read=false, write=true, create=true, truncate=true, append=true)
+        mystream = open(myfile; lock=true, read=false, write=true, create=true, truncate=true, append=true)
     end
-    seekstart(myStream)
+    seekstart(mystream)
 
     # The first generation.
     if verbose
-        s = string("\n\n", "For generation ", ga.c.generation, " of ", ga.c.generationsToConvergence, ":\n\n")
+        s = string("\n\n", "For generation ", tostring(ga.c.generation), " of ", String(ga.c.generations_to_convergence), ":\n\n")
         s = string(s, report(ga.c))
-        write(myStream, s)
-        flush(myStream)
+        write(mystream, s)
+        flush(mystream)
     end
 
     # Run the genetic algorithm.
-    for i in 2:ga.c.generationsToConvergence-1
+    for i in 2:ga.c.generations_to_convergence-1
         print("⋅")
-        advanceToNextGeneration!(ga.c)
+        advance_to_next_generation!(ga.c)
         if verbose
-            s = string("\n\n", "For generation ", ga.c.generation, " of ", ga.c.generationsToConvergence, ":\n\n")
+            s = string("\n\n", "For generation ", tostring(ga.c.generation), " of ", String(ga.c.generations_to_convergence), ":\n\n")
             s = string(s, report(ga.c))
-            write(myStream, s)
-            flush(myStream)
+            write(mystream, s)
+            flush(mystream)
         end
     end
     println("⋅")
-    advanceToNextGeneration!(ga.c)
+    advance_to_next_generation!(ga.c)
     println("The genetic algorithm has finished.")
-    s = string("\n\n", "For generation ", ga.c.generation, " of ", ga.c.generationsToConvergence, ":\n\n")
+    s = string("\n\n", "For generation ", tostring(ga.c.generation), " of ", String(ga.c.generations_to_convergence), ":\n\n")
     s = string(s, report(ga.c))
-    write(myStream, s)
-    flush(myStream)
-    close(myStream)
-    println("See ", myFile, " for a report.")
+    write(mystream, s)
+    flush(mystream)
+    close(mystream)
+    println("See ", myfile, " for a report.")
 
     return nothing
 end # run

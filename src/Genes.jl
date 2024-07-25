@@ -25,10 +25,9 @@ Methods
     e = get(g)                  returns expression 'e' held by gene 'g'
     set!(g, expression)         assigns a gene `expression` to g.expression
     c = copy(g)                 returns a copy 'c' of gene 'g'
-    c = deepcopy(g)             returns a deep copy 'c' of gene 'g'
-    s = toString(g)             returns a string representation 's' of gene 'g'
-    b = isDominant(g)           returns true if g.expression == dominant
-    b = isRecessive(g)          returns true if g.expression == recessive
+    s = tostring(g)             returns a string representation 's' of gene 'g'
+    b = isdominant(g)           returns true if g.expression == dominant
+    b = isrecessive(g)          returns true if g.expression == recessive
     mutate!(g, probability)     random flip in gene expression at 'probability'
 """
 struct Gene
@@ -37,17 +36,13 @@ struct Gene
     # constructors
 
     function Gene()
-        expression = Expression()
-        new(expression)
+        gene_expression = Expression()
+        new(gene_expression)
     end
 
     function Gene(expression::Bool)
-        gene = Expression(expression)
-        new(gene)
-    end
-
-    function Gene(expression::Expression)
-        new(expression)
+        gene_expression = Expression(expression)
+        new(gene_expression)
     end
 end # Gene
 
@@ -149,38 +144,33 @@ function Base.:(copy)(g::Gene)::Gene
     return Gene(expression)
 end # copy
 
-function Base.:(deepcopy)(g::Gene)::Gene
-    expression = deepcopy(g.expression)
-    return Gene(expression)
-end # deepcopy
+function tostring(g::Gene)::String
+    return tostring(g.expression)
+end # tostring
 
-function toString(g::Gene)::String
-    return toString(g.expression)
-end # toString
+function isdominant(g::Gene)::Bool
+    return isdominant(g.expression)
+end # isdominant
 
-function isDominant(g::Gene)::Bool
-    return isDominant(g.expression)
-end # isDominant
-
-function isRecessive(g::Gene)::Bool
-    return isRecessive(g.expression)
-end # isRecessive
+function isrecessive(g::Gene)::Bool
+    return isrecessive(g.expression)
+end # isrecessive
 
 """
 mutate! addresses the occurrence of a gene's expression changing from dominant
-to recessive, or vice versa, with a chance of change at probabilityOfMutation.
+to recessive, or vice versa, with a chance of change at probability_mutation.
 """
-function mutate!(g::Gene, probabilityOfMutation::Float64)
-    if (probabilityOfMutation < 0.0) || (probabilityOfMutation ≥ 1.0)
+function mutate!(g::Gene, probability_mutation::Real)
+    if probability_mutation < 0.0 || probability_mutation ≥ 1.0
         msg = "A probability of mutation must belong to unit interval [0, 1)."
         throw(ErrorException, msg)
     end
-    if probabilityOfMutation > rand()
-        if g.expression == dominant
-            set!(g.expression, recessive)
+    if probability_mutation > rand()
+        if isdominant(g)
+            set!(g, recessive)
         else
-            set!(g.expression, dominant)
+            set!(g, dominant)
         end
     end
     return nothing
-end # mutate
+end # mutate!

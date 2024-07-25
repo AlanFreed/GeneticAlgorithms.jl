@@ -10,24 +10,22 @@ Chromosomes are where genetics and optimization meet.
 A chromosome has an interface of:
 
 struct Chromosome
-    minParameter    # minimum value that a chromosome can represent
-    maxParameter    # maximum value that a chromosome can represent
+    parameter_min   # minimum value that a chromosome can represent
+    parameter_max   # maximum value that a chromosome can represent
     genes           # number of genes that comprise a chromosome
     expressions     # number of gene expressions a chromosome can represent
     genotype        # genetic material, i.e., genes, comprising a chromosome
 end
 
-A parameter will be considered fixed if its minParameter ≈ maxParameter.
+A parameter will be considered fixed if its parameter_min ≈ parameter_max.
 
-Constructors
+Constructor
 
-    c = Chromosome(minParameter, maxParameter, significantFigures)
+    c = Chromosome(parameter_min, parameter_max, significant_figures)
 
-        minParameter        most negative value a parameter can take on
-        maxParameter        most positive value a parameter can take on
-        significantFigures  seek parameter with significant figure accuracy
-or
-    c = Chromosome(minParameter, maxParameter, genes, expressions, genotype)
+        parameter_min           least value a parameter can take on
+        parameter_max           greatest value a parameter can take on
+        significant_figures     seek parameter with significant figure accuracy
 
 Operators
 
@@ -35,62 +33,61 @@ Operators
 
 Methods
 
-    g = getindex(c, l)      return gene 'g' from chromosome 'c' at index 'l'
-    setindex!(c, g, l)      assign gene 'g' to chromosome 'c' at location 'l'
+    g = getindex(c, i)      return gene 'g' from chromosome 'c' at index 'i'
+    setindex!(c, g, i)      assign gene 'g' to chromosome 'c' at index 'i'
     d = copy(c)             return a copy 'd' of chromosome 'c'
-    d = deepcopy(c)         return a deep copy 'd' of chromosome 'c'
-    s = toString(c)         return a string 's' describing chromosome 'c'
+    s = tostring(c)         return a string 's' describing chromosome 'c'
     θ = decode(c)           return a phenotype (the parameter 'θ') held by 'c'
-    encode!(c, θ)           assigns a phenotype 'θ' to chromosome 'c'
-    mutate!(c, probability) random flip of gene expressions at a 'probability'
+    encode!(c, θ)           assign a phenotype 'θ' to chromosome 'c'
+    mutate!(c, pM)          random flip of gene expressions at probability 'pM'
     crossover(A, B, pM, pX) crossover between chromosomes 'A' and 'B' at
                             probabilities of mutation 'pM' and crossover 'pX'
 """
 struct Chromosome
     # Fields that bound a parameter.
-    minParameter::Real
-    maxParameter::Real
+    parameter_min::Real
+    parameter_max::Real
     # Fields that describe a chromosome.
-    genes::Int
-    expressions::Int
+    genes::Integer
+    expressions::Integer
     genotype::Vector{Gene}
 
     # constructor
 
-    function Chromosome(minParameter::Real, maxParameter::Real, significantFigures::Int)
+    function Chromosome(parameter_min::Real, parameter_max::Real, significant_figures::Integer)
 
-        if minParameter ≈ maxParameter
+        if parameter_min ≈ parameter_max
 
             # Handle the case of a fixed parameter.
-            minParameter = maxParameter
-            genes        = 0
-            expressions  = 0 
-            genotype     = Vector{Gene}(undef, 0)
+            parameter_min = parameter_max
+            genes         = 0
+            expressions   = 0
+            genotype      = Vector{Gene}(undef, 0)
 
         else
 
             # Verify the input.
-            if minParameter > maxParameter
-                msg = "Cannot create chromosome unless maxParameter ≥ minParameter."
+            if parameter_min > parameter_max
+                msg = "Cannot create a chromosome unless parameter_max ≥ parameter_min."
                 throw(ErrorException, msg)
             end
 
-            # Number of decades that span [minParameter, maxParameter].
-            if minParameter > 0.0
-                logDecades = log10(maxParameter/minParameter)
-            elseif maxParameter < 0.0
-                logDecades = log10(minParameter/maxParameter)
-            elseif minParameter == 0.0
-                logDecades = log10(maxParameter)
-            elseif maxParameter == 0.0
-                logDecades = log10(-minParameter)
-            else # minParameter < 0.0 and maxParameter > 0.0
-                logDecades = log10(-minParameter*maxParameter)
+            # Number of decades that span [parameter_min, parameter_max].
+            if parameter_min > 0.0
+                logdecades = log10(parameter_max/parameter_min)
+            elseif parameter_max < 0.0
+                logdecades = log10(parameter_min/parameter_max)
+            elseif parameter_min ≈ 0.0
+                logdecades = log10(parameter_max)
+            elseif parameter_max ≈ 0.0
+                logdecades = log10(-parameter_min)
+            else # parameter_min < 0.0 and parameter_max > 0.0
+                logdecades = log10(-parameter_min*parameter_max)
             end
-            if logDecades > 0.0
-                decades = Int(ceil(logDecades))
+            if logdecades > 0.0
+                decades = Int(ceil(logdecades))
             else
-                decades = abs(Int(floor(logDecades)))
+                decades = abs(Int(floor(logdecades)))
             end
             if decades < 1
                 decades = 1
@@ -100,24 +97,24 @@ struct Chromosome
             end
 
             # Number of genes per decade of span in the parameter range.
-            if significantFigures < 2
-                genesPerDecade = 7
-            elseif significantFigures == 2
-                genesPerDecade = 10
-            elseif significantFigures == 3
-                genesPerDecade = 14
-            elseif significantFigures == 4
-                genesPerDecade = 17
-            elseif significantFigures == 5
-                genesPerDecade = 20
-            elseif significantFigures == 6
-                genesPerDecade = 24
+            if significant_figures < 2
+                genes_per_decade = 7
+            elseif significant_figures == 2
+                genes_per_decade = 10
+            elseif significant_figures == 3
+                genes_per_decade = 14
+            elseif significant_figures == 4
+                genes_per_decade = 17
+            elseif significant_figures == 5
+                genes_per_decade = 20
+            elseif significant_figures == 6
+                genes_per_decade = 24
             else
-                genesPerDecade = 27
+                genes_per_decade = 27
             end
 
             # Number of genes and the number of possible gene expressions.
-            genes = genesPerDecade * decades
+            genes = genes_per_decade * decades
             if genes > 63
                 genes = 63
             end
@@ -129,46 +126,42 @@ struct Chromosome
 
             # This constructor creates a random genotype
             genotype  = Vector{Gene}(undef, genes)
-            # using the following temporary variables.
-            binary    = Vector{Bool}(undef, genes)
-            gray      = Vector{Bool}(undef, genes)
-            atInteger = Int64(rand(1:expressions))
-            gene      = genes
-            while (atInteger > 0) && (gene > 0)
-                if atInteger % 2 == 0
-                    binary[gene] = recessive
-                else
-                    binary[gene] = dominant
+            if genes > 0
+                # Use the following temporary variables.
+                binary    = Vector{Bool}(undef, genes)
+                gray      = Vector{Bool}(undef, genes)
+                atinteger = rand(1:expressions)
+                gene      = genes
+                while atinteger > 0 && gene > 0
+                    if atinteger % 2 == 0
+                        binary[gene] = recessive
+                    else
+                        binary[gene] = dominant
+                    end
+                    atinteger = atinteger ÷ 2
+                    gene      = gene - 1
                 end
-                atInteger = atInteger ÷ 2
-                gene      = gene - 1
-            end
-            # The remaining higher-order binary bits are zeros, i.e., recessive.
-            for i in gene:-1:1
-                binary[i] = recessive
-            end
-            # Convert to a gray binary.
-            gray[1] = binary[1]
-            for i in 2:genes
-                gray[i] = binary[i-1] ⊻ binary[i]
-            end
-            # Assign this gray encoding to the genotype.
-            for i in 1:genes
-                if gray[i] == dominant
-                    genotype[i] = Gene(dominant)
-                else
-                    genotype[i] = Gene(recessive)
+                # Remaining higher-order binary bits are zeros, i.e., recessive.
+                for i in gene:-1:1
+                    binary[i] = recessive
+                end
+                # Convert to a gray binary.
+                gray[1] = binary[1]
+                for i in 2:genes
+                    gray[i] = binary[i-1] ⊻ binary[i]
+                end
+                # Assign this gray encoding to the genotype.
+                for i in 1:genes
+                    if gray[i] == dominant
+                        genotype[i] = Gene(dominant)
+                    else
+                        genotype[i] = Gene(recessive)
+                    end
                 end
             end
-
         end
 
-        new(minParameter, maxParameter, genes, expressions, genotype)
-    end
-
-    function Chromosome(minParameter::Real, maxParameter::Real, genes::Int, expressions::Int, genotype::Vector{Gene})
-
-        new(minParameter, maxParameter, genes, expressions, genotype)
+        new(parameter_min, parameter_max, genes, expressions, genotype)
     end
 end # Chromosome
 
@@ -178,7 +171,7 @@ function Base.:(==)(cL::Chromosome, cR::Chromosome)::Bool
     if cL.genes ≠ cR.genes
         return false
     end
-    if (cL.genes == 0) && (cL.minParameter ≈ cR.minParameter)
+    if cL.genes == 0 && cL.parameter_min ≈ cR.parameter_min
         return true
     end
     for i in 1:cL.genes
@@ -202,19 +195,19 @@ end # ≠
 function Base.:(getindex)(c::Chromosome, index::Integer)::Gene
     if c.genes == 0
         return nothing
-    elseif (index ≥ 1) && (index ≤ c.genes)
+    elseif index ≥ 1 && index ≤ c.genes
         gene = c.genotype[index]
     else
         msg = string("Admissible gene indices are ∈ [1…", c.genes, "].")
         throw(DimensionMismatch(msg))
     end
-    return deepcopy(gene)
+    return copy(gene)
 end # getindex
 
 function Base.:(setindex!)(c::Chromosome, gene::Gene, index::Integer)
     if c.genes == 0
         return nothing
-    elseif (index ≥ 1) && (index ≤ c.genes)
+    elseif index ≥ 1 && index ≤ c.genes
         set!(c.genotype[index], get(gene))
     else
         msg = string("Admissible gene indices are ∈ [1…", c.genes, "].")
@@ -224,41 +217,30 @@ function Base.:(setindex!)(c::Chromosome, gene::Gene, index::Integer)
 end # setindex!
 
 function Base.:(copy)(c::Chromosome)::Chromosome
-    minParameter = copy(c.minParameter)
-    maxParameter = copy(c.maxParameter)
-    genes        = copy(c.genes)
-    expressions  = copy(c.expressions)
-    genotype     = Vector{Gene}(undef, genes)
+    parameter_min = copy(c.parameter_min)
+    parameter_max = copy(c.parameter_max)
+    genes         = copy(c.genes)
+    expressions   = copy(c.expressions)
+    genotype      = Vector{Gene}(undef, genes)
     for i in 1:genes
         genotype[i] = copy(c.genotype[i])
     end
-    return Chromosome(minParameter, maxParameter, genes, expressions, genotype)
+    return Chromosome(parameter_min, parameter_max, genes, expressions, genotype)
 end # copy
 
-function Base.:(deepcopy)(c::Chromosome)::Chromosome
-    minParameter = deepcopy(c.minParameter)
-    maxParameter = deepcopy(c.maxParameter)
-    genes        = deepcopy(c.genes)
-    expressions  = deepcopy(c.expressions)
-    genotype     = Vector{Gene}(undef, genes)
-    for i in 1:genes
-        genotype[i] = deepcopy(c.genotype[i])
-    end
-    return Chromosome(minParameter, maxParameter, genes, expressions, genotype)
-end # deepcopy
-
-function toString(c::Chromosome)::String
+function tostring(c::Chromosome)::String
     str = ""
     for i in 1:c.genes
-        str = string(str, toString(c.genotype[i]))
+        str = string(str, tostring(c.genotype[i]))
     end
     return str
-end # toString
+end # tostring
 
-function mutate!(c::Chromosome, probabilityOfMutation::Real)
+function mutate!(c::Chromosome, probability_mutation::Real)
     for i in 1:c.genes
-        mutate!(c.genotype[i], probabilityOfMutation)
+        mutate!(c.genotype[i], probability_mutation)
     end
+    return nothing
 end # mutate!
 
 """
@@ -269,18 +251,18 @@ random pair of neighboring genes).  The outcome is a child of the parents.
 There is a small chance that the child will be a clone of one of its parents--a
 chance that is dictated by the assigned probabilities.
 """
-function crossover(parentA::Chromosome, parentB::Chromosome, probabilityOfMutation::Real, probabilityOfCrossover::Real)::Chromosome
+function crossover(parentA::Chromosome, parentB::Chromosome, probability_mutation::Real, probability_crossover::Real)::Chromosome
 
-    if (probabilityOfCrossover < 0.0) || (probabilityOfCrossover ≥ 1.0)
+    if probability_crossover < 0.0 || probability_crossover ≥ 1.0
         msg = "A probability of crossover must belong to unit interval [0, 1)."
         throw(ErrorException, msg)
     end
 
     if parentA.genes == parentB.genes
         if rand() < 0.5
-            child = deepcopy(parentA)
+            child = copy(parentA)
             # Left side of chromosome splice belongs to parent A.
-            if probabilityOfCrossover > rand()
+            if probability_crossover > rand()
                 if child.genes > 5
                     xover = rand(3:child.genes-2)
                     for i in xover:child.genes
@@ -296,9 +278,9 @@ function crossover(parentA::Chromosome, parentB::Chromosome, probabilityOfMutati
                 end
             end
         else
-            child = deepcopy(parentB)
+            child = copy(parentB)
             # Left side of chromosome splice belongs to parent B.
-            if probabilityOfCrossover > rand()
+            if probability_crossover > rand()
                 if child.genes > 5
                     xover = rand(3:child.genes-2)
                     for i in xover:child.genes
@@ -319,13 +301,13 @@ function crossover(parentA::Chromosome, parentB::Chromosome, probabilityOfMutati
         throw(DimensionMismatch(msg))
     end
 
-    mutate!(child, probabilityOfMutation)
+    mutate!(child, probability_mutation)
 
     return child
 end # crossover
 
 #=
-The decode/encode maps between a real phenotype and its Haploid representation.
+The decode/encode map between a real phenotype and its haploid representation.
 
 The algorithm for converting between binary and gray codes assumes the most
 significant bit (MSB) is at the [Low] position of the code, while the least
@@ -337,17 +319,17 @@ has a MSB of 1 and a LSB of 0.
 
 # Methods to decode a parameter.
 
-function _greyToBinary(grey::Vector{Bool})::Vector{Bool}
-    bits   = length(grey)
+function _gray2binary(gray::Vector{Bool})::Vector{Bool}
+    bits   = length(gray)
     binary = Vector{Bool}(undef, bits)
-    binary[1] = grey[1]
+    binary[1] = gray[1]
     for i in 2:bits
-        binary[i] = binary[i-1] ⊻ grey[i]
+        binary[i] = binary[i-1] ⊻ gray[i]
     end
     return binary
-end # _greyToBinary
+end # _gray2binary
 
-function _binaryToInteger(binary::Vector{Bool})::Int
+function _binary2integer(binary::Vector{Bool})::Integer
     bits    = length(binary)
     integer = 0
     power   = 1
@@ -358,99 +340,99 @@ function _binaryToInteger(binary::Vector{Bool})::Int
         power = 2power
     end
     return integer
-end # _binaryToInteger
+end # _binary2integer
 
-function _integerToPhenotype(c::Chromosome, integer::Int)::Real
-    phenotype = (c.minParameter + (Real(integer) / Real(c.expressions))
-        * (c.maxParameter - c.minParameter))
-    if phenotype < c.minParameter
-        phenotype = c.minParameter
+function _integer2phenotype(c::Chromosome, integer::Integer)::Real
+    phenotype = (c.parameter_min + (integer / c.expressions)
+        * (c.parameter_max - c.parameter_min))
+    if phenotype < c.parameter_min
+        phenotype = c.parameter_min
     end
-    if phenotype > c.maxParameter
-        phenotype = c.maxParameter
+    if phenotype > c.parameter_max
+        phenotype = c.parameter_max
     end
     return phenotype
-end # _integerToPhenotype
+end # _integer2phenotype
 
 function decode(c::Chromosome)::Real
     if c.genes == 0
-        phenotype = deepcopy(c.minParameter)
+        phenotype = copy(c.parameter_min)
     else
-        grey = Vector{Bool}(undef, c.genes)
+        gray = Vector{Bool}(undef, c.genes)
         for i in 1:c.genes
-            if isDominant(c.genotype[i])
-                grey[i] = dominant
+            if isdominant(c.genotype[i])
+                gray[i] = dominant
             else
-                grey[i] = recessive
+                gray[i] = recessive
             end
         end
-        binary    = _greyToBinary(grey)
-        integer   = _binaryToInteger(binary)
-        phenotype = _integerToPhenotype(c, integer)
+        binary    = _gray2binary(gray)
+        integer   = _binary2integer(binary)
+        phenotype = _integer2phenotype(c, integer)
     end
     return phenotype
 end # decode
 
 # Methods to encode a parameter.
 
-function _phenotypeToInteger(c::Chromosome, phenotype::Real)::Int
-    fraction = (phenotype - c.minParameter) / (c.maxParameter - c.minParameter)
-    integer  = Int(round(fraction * Real(c.expressions)))
+function _phenotype2integer(c::Chromosome, phenotype::Real)::Integer
+    fraction = (phenotype - c.parameter_min) / (c.parameter_max - c.parameter_min)
+    integer  = Int(round(fraction * c.expressions))
     if integer < 0
         integer = 0
     end
-    if integer > typemax(Int)
-        integer = typemax(Int)
+    if integer > typemax(Int64)
+        integer = typemax(Int64)
     end
     return integer
-end # _phenotypeToInteger
+end # _phenotype2integer
 
-function _integerToBinary(c::Chromosome, integer::Int)::Vector{Bool}
-    binary = Vector{Bool}(undef, c.genes)
-    atInt  = integer
-    gene   = c.genes
-    while atInt > 0
-        if atInt % 2 == 0
+function _integer2binary(c::Chromosome, integer::Integer)::Vector{Bool}
+    binary    = Vector{Bool}(undef, c.genes)
+    atinteger = integer
+    gene      = c.genes
+    while atinteger > 0
+        if atinteger % 2 == 0
             binary[gene] = recessive
         else
             binary[gene] = dominant
         end
-        atInt = atInt ÷ 2
-        gene  = gene - 1
+        atinteger = atinteger ÷ 2
+        gene      = gene - 1
     end
-    # The remaining higher-order binary bits are zeros, i.e., recessive.
+    # The remaining higher-order binary bits are zeros, i.e., recessive genes.
     for i in gene:-1:1
         binary[i] = recessive
     end
     return binary
-end # _integerToBinary
+end # _integer2binary
 
-function _binaryToGrey(binary::Vector{Bool})::Vector{Bool}
+function _binary2gray(binary::Vector{Bool})::Vector{Bool}
     bits = length(binary)
-    grey = Vector{Bool}(undef, bits)
-    grey[1] = binary[1]
+    gray = Vector{Bool}(undef, bits)
+    gray[1] = binary[1]
     for i in 2:bits
-        grey[i] = binary[i-1] ⊻ binary[i]
+        gray[i] = binary[i-1] ⊻ binary[i]
     end
-    return grey
-end # _binaryToGrey
+    return gray
+end # _binary2gray
 
 function encode!(c::Chromosome, phenotype::Real)
     if c.genes == 0
         # do nothing
-    elseif (phenotype ≥ c.minParameter) && (phenotype ≤ c.maxParameter)
-        integer = _phenotypeToInteger(c, phenotype)
-        binary  = _integerToBinary(c, integer)
-        grey    = _binaryToGrey(binary)
+    elseif phenotype ≥ c.parameter_min && phenotype ≤ c.parameter_max
+        integer = _phenotype2integer(c, phenotype)
+        binary  = _integer2binary(c, integer)
+        gray    = _binary2gray(binary)
         for i in 1:c.genes
-            if grey[i] == dominant
+            if gray[i] == dominant
                 c.genotype[i] = Gene(dominant)
             else
                 c.genotype[i] = Gene(recessive)
             end
         end
     else
-        msg = "The phenotype must lie within [c.minParameter, c.maxParameter]."
+        msg = "The phenotype must lie within [c.parameter_min, c.parameter_max]."
         throw(ErrorException, msg)
     end
     return nothing

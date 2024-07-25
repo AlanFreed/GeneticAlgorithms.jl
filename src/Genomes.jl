@@ -1,26 +1,24 @@
 """
 A genome is a genetic container of chromosomes.  Here is where all the genetic
-information exists that makes a creature unique from other creatures.
+information exists that makes up a creature.
 
 A genome has an interface of:
 
 struct Genome
     genes           # number of genes that comprise a genome
     chromosomes     # number of chromosomes that comprise a genome
-    genotypes       # an array of chromosomes, i.e., its genome
+    genotypes       # array of chromosomes, i.e., its genome
 end
 
-Constructors
+Constructor
 
-    g = Genome(minParameters, maxParameters, constrainedParameters,
-               significantFigures)
+    g = Genome(parameters_min, parameters_max, parameters_constrained,
+               significant_figures)
 
-        minParameters           array of most-negative parameter values θₘᵢₙ[i]
-        maxParameters           array of most-positive parameter values θₘₐₓ[i]
-        constrainedParameters   array of tuples (θL, θR) where θL[i] < θR[i]
-        significantFigures      seek parameters with significant figure accuracy
-or
-    g = Genome(genes, chromosomes, genotypes)
+        parameters_min          array of most-negative parameter values θₘᵢₙ[i]
+        parameters_max          array of most-positive parameter values θₘₐₓ[i]
+        parameters_constrained  array of tuples (θL, θR) where θL[i] < θR[i]
+        significant_figures     seek parameters with significant figure accuracy
 
 Operators
 
@@ -31,52 +29,40 @@ Methods
     c = getindex(g, l)      return chromosome 'c' in genome 'g' at location 'l'
     setindex!(g, c, l)      assign chromosome 'c' to genome 'g' at location 'l'
     c = copy(g)             return a copy 'c' of genome 'g'
-    c = deepcopy(g)         return a deep copy 'c' of genome 'g'
-    s = toString(g)         return string 's' describing genome 'g'
-    mutate!(g, probability) random flip of gene expression with 'probability'
+    s = tostring(g)         return string 's' describing genome 'g'
+    mutate!(g, pM)          random flip of gene expression with probability 'pM'
     crossover(A, B, pM, pX) crossover between chromosomes in genomes 'A' and 'B'
                             with probabilities of mutation 'pM' & crossover 'pX'
     θ = decode(g)           return phenotypes (the parameters 'θ') held by 'g'
-    encode!(g, θ)           assign phenotypes 'θ' to genome 'g'
+    encode!(g, θ)           assign phenotypes (the parameters 'θ') to genome 'g'
 """
 struct Genome
-    genes::Int
-    chromosomes::Int
+    genes::Integer
+    chromosomes::Integer
     genotypes::Vector{Chromosome}
 
-    # constructors
+    # constructor
 
-    function Genome(minParameters::Vector{Real}, maxParameters::Vector{Real}, significantFigures::Int)
+    function Genome(parameters_min::Vector{Real}, parameters_max::Vector{Real}, significant_figures::Integer)
 
-        if length(minParameters) == length(maxParameters)
-            chromosomes = length(minParameters)
+        if length(parameters_min) == length(parameters_max)
+            chromosomes = length(parameters_min)
         else
-            msg = "Vectors minParameters and maxParameters must have the same length."
+            msg = "Vectors parameters_min and parameters_max must have the same length."
             throw(DimensionMismatch, msg)
-        end
-
-        # The p-norm is only defined for p ≥ 1.
-        if minParameters[1] < 1.0
-            minParameters[1] = 1.0
-        end
-        if maxParameters[1] < 1.0
-            maxParameters[1] = 1.0
         end
 
         genotypes = Vector{Chromosome}(undef, chromosomes)
         for i in 1:chromosomes
-            genotypes[i] = Chromosome(minParameters[i], maxParameters[i], significantFigures)
+            genotypes[i] = Chromosome(parameters_min[i], parameters_max[i], significant_figures)
         end
 
         genes = 0
         for i in 1:chromosomes
-            genes = genes + genotypes[i].genes
+            chromosome = genotypes[i]
+            genes = genes + chromosome.genes
         end
 
-        new(genes, chromosomes, genotypes)
-    end
-
-    function Genome(genes::Int, chromosomes::Int, genotypes::Vector{Chromosome})
         new(genes, chromosomes, genotypes)
     end
 end # Genome
@@ -109,18 +95,18 @@ end # ≠
 # methods
 
 function Base.:(getindex)(g::Genome, index::Integer)::Chromosome
-    if (index ≥ 1) && (index ≤ g.chromosomes)
+    if index ≥ 1 && index ≤ g.chromosomes
         chromosome = g.genotypes[index]
     else
         msg = string("Admissible chromosome indices are ∈ [1…", g.chromosomes, "].")
         throw(DimensionMismatch(msg))
     end
-    return deepcopy(chromosome)
+    return copy(chromosome)
 end # getindex
 
 function Base.:(setindex!)(g::Genome, chromosome::Chromosome, index::Integer)
-    if (index ≥ 1) && (index ≤ g.chromosomes)
-        g.genotypes[index] = deepcopy(chromosome)
+    if index ≥ 1 && index ≤ g.chromosomes
+        g.genotypes[index] = copy(chromosome)
     else
         msg = string("Admissible chromosome indices are ∈ [1…", g.chromosomes, "].")
         throw(DimensionMismatch(msg))
@@ -138,26 +124,16 @@ function Base.:(copy)(g::Genome)::Genome
     return Genome(genes, chromosomes, genotypes)
 end # copy
 
-function Base.:(deepcopy)(g::Genome)::Genome
-    genes       = deepcopy(g.genes)
-    chromosomes = deepcopy(g.chromosomes)
-    genotypes   = Vector{Chromosome}(undef, chromosomes)
-    for i in 1:chromosomes
-        genotypes[i] = deepcopy(g.genotypes[i])
-    end
-    return Genome(genes, chromosomes, genotypes)
-end # deepcopy
-
-function toString(g::Genome)::String
+function tostring(g::Genome)::String
     str = ""
     for i in 1:g.chromosomes
         if g.chromosomes < 10
-            str = string(str, i, ": ", toString(g.genotypes[i]))
+            str = string(str, String(i), ": ", tostring(g.genotypes[i]))
         else
             if i < 10
-                str = string(str, i, ":  ", toString(g.genotypes[i]))
+                str = string(str, String(i), ":  ", tostring(g.genotypes[i]))
             else
-                str = string(str, i, ": ", toString(g.genotypes[i]))
+                str = string(str, String(i), ": ", tostring(g.genotypes[i]))
             end
         end
         if i < g.chromosomes
@@ -165,21 +141,21 @@ function toString(g::Genome)::String
         end
     end
     return str
-end # toString
+end # tostring
 
-function mutate!(g::Genome, probabilityOfMutation::Real)
+function mutate!(g::Genome, probability_mutation::Real)
     for i in 1:g.chromosomes
-        mutate!(g.genotypes[i], probabilityOfMutation)
+        mutate!(g.genotypes[i], probability_mutation)
     end
 end # mutate!
 
-function crossover(parentA::Genome, parentB::Genome, probabilityOfMutation::Real, probabilityOfCrossover::Real)::Genome
+function crossover(parentA::Genome, parentB::Genome, probability_mutation::Real, probability_crossover::Real)::Genome
 
     if parentA.genes == parentB.genes
         if parentA.chromosomes == parentB.chromosomes
-            child = deepcopy(parentA)
+            child = copy(parentA)
             for i in 1:child.chromosomes
-                child[i] = crossover(parentA[i], parentB[i], probabilityOfMutation, probabilityOfCrossover)
+                child[i] = crossover(parentA[i], parentB[i], probability_mutation, probability_crossover)
             end
         else
             msg = "Crossover parents must have the same number of chromosomes."

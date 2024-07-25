@@ -1,39 +1,37 @@
 """
-A creature has the genetic material of a genome plus a means for its origin.
+A creature has the genetic material of a genome, plus a means for its origin.
 After a creature (its object) has been created, it needs to have its genetic
 material assigned to it.  This can occur in one of three ways:
     1) procreation (i.e., random),
     2) alien       (i.e., divinely assigned) or
     3) conceived   (i.e., coming from its parents).
 The first generation of a colony is procreated with the possible exception that
-their be an alien (an Adam) assignment.  After that, all creatures are created
-through conception.
+their is an alien (an Adam) assignment.  After that, all creatures are created
+through conception, with a possibility of immigrants entering the population.
 
 A creature has an interface of:
 
 mutable struct Creature
-    fitness             # a measure of quality for the set of parameters
+    fitness::Real       # a measure of quality for the set of parameters
     genetics::Genome    # the genetic information: an array of chromosomes
 end
 
-Internal constructors
+Internal constructor
 
-    c = Creature(minParameters, maxParameters, constrainedParameters,
-                 significantFigures, probabilityOfMutation,
-                 probabilityOfCrossover)
-or
-    c = Creature(fitness, genetics)
+    c = Creature(parameters_min, parameters_max, parameters_constrained,
+                 significant_figures, probability_mutation,
+                 probability_crossover)
 
 External constructors
 
-    c = procreate(minParameters, maxParameters, constrainedParameters,
-                  significantFigures, probabilityOfMutation,
-                  probabilityOfCrossover)
-    c = alien(alienParameters, minParameters, maxParameters, 
-              constrainedParameters, significantFigures, probabilityOfMutation,
-              probabilityOfCrossover)
-    c = conceive(parentA, parentB, constrainedParameters, probabilityOfMutation,
-                 probabilityOfCrossover)
+    c = procreate(parameters_min, parameters_max, parameters_constrained,
+                  significant_figures, probability_mutation,
+                  probability_crossover)
+    c = alien(parameters_alien, parameters_min, parameters_max, 
+              parameters_constrained, significant_figures, probability_mutation,
+              probability_crossover)
+    c = conceive(parentA, parentB, parameters_constrained, probability_mutation,
+                 probability_crossover)
 
 Operators
 
@@ -42,25 +40,19 @@ Operators
 Methods
 
     d = copy(c)         returns a copy 'd' of creature 'c'
-    d = deepcopy(c)     returns a deep copy 'd' of creature 'c'
-    s = toString(c)     returns a string 's' describing creature 'c'
-    θ = parameters(c)   returns an array of all parameters 'θ'
+    s = tostring(c)     returns a string 's' describing creature 'c'
+    θ = phenotypes(c)   returns an array of the model's parameters 'θ'
 """
-mutable struct Creature
-    fitness::Real
+struct Creature
+    fitness::Variable
     genetics::Genome
 
     # Internal constructors
 
-    function Creature(minParameters::Vector{Real}, maxParameters::Vector{Real}, significantFigures::Int)
+    function Creature(parameters_min::Vector{Real}, parameters_max::Vector{Real}, significant_figures::Integer)
 
-        fitness  = -1.0
-        genetics = Genome(minParameters, maxParameters, significantFigures)
-
-        new(fitness, genetics)
-    end
-
-    function Creature(fitness::Real, genetics::Genome)
+        fitness  = Variable(-1.0)
+        genetics = Genome(parameters_min, parameters_max, significant_figures)
 
         new(fitness, genetics)
     end
@@ -68,29 +60,29 @@ end # Creature
 
 # external constructors
 
-function procreate(minParameters::Vector{Real}, maxParameters::Vector{Real}, constrainedParameters::Vector{Tuple{Int,Int}}, significantFigures::Int)::Creature
+function procreate(parameters_min::Vector{Real}, parameters_max::Vector{Real}, parameters_constrained::Vector{Tuple{Integer,Integer}}, significant_figures::Integer)::Creature
 
-    creature = Creature(minParameters, maxParameters, significantFigures)
+    creature = Creature(parameters_min, parameters_max, significant_figures)
 
-    if length(constrainedParameters) > 0
+    if length(parameters_constrained) > 0
         recreate = false
-        creatureParameters = parameters(creature)
-        for i in 1:length(constrainedParameters)
-            (pL, pR) = constrainedParameters[i]
-            if creatureParameters[pL] > creatureParameters[pR]
+        parameters_creature = pheontypes(creature)
+        for i in 1:length(parameters_constrained)
+            (pL, pR) = parameters_constrained[i]
+            if parameters_creature[pL] > parameters_creature[pR]
                 recreate = true
                 break
             end
         end
-        recreations = 1
+        recreations = 0
         while recreate
             recreate    = false
             recreations = recreations + 1
-            creature    = Creature(minParameters, maxParameters, significantFigures)
-            creatureParameters = parameters(creature)
-            for i in 1:length(constrainedParameters)
-                (pL, pR) = constrainedParameters[i]
-                if creatureParameters[pL] > creatureParameters[pR]
+            creature    = Creature(parameters_min, parameters_max, significant_figures)
+            parameters_creature = phenotypes(creature)
+            for i in 1:length(parameters_constrained)
+                (pL, pR) = parameters_constrained[i]
+                if parameters_creature[pL] > parameters_creature[pR]
                     recreate = true
                     break
                 end
@@ -109,63 +101,61 @@ function procreate(minParameters::Vector{Real}, maxParameters::Vector{Real}, con
     return creature
 end # procreate
 
-function alien(alienParameters::Vector{Real}, minParameters::Vector{Real}, maxParameters::Vector{Real}, constrainedParameters::Vector{Tuple{Int,Int}}, significantFigures::Int)::Creature
+function alien(parameters_alien::Vector{Real}, parameters_min::Vector{Real}, parameters_max::Vector{Real}, parameters_constrained::Vector{Tuple{Integer,Integer}}, significant_figures::Integer)::Creature
 
-    if length(alienParameters) == 0
-        creature = procreate(minParameters, maxParameters, constrainedParameters
-            , significantFigures)
+    if length(parameters_alien) == 0
+        creature = procreate(parameters_min, parameters_max, parameters_constrained, significant_figures)
     else
         # Verify the input.
-        if length(alienParameters) ≠ length(minParameters)
-            msg = "Vector alienParameters has the wrong length."
+        if length(parameters_alien) ≠ length(parameters_min)
+            msg = "Vector parameters_alien has the wrong length."
             throw(DimensionMismatch, msg)
         end
 
         # Ensure that the alien's parameters obey their constraints.
-        for i in 1:length(constrainedParameters)
-            (pL, pR) = constrainedParameters[i]
-            if alienParameters[pL] > alienParameters[pR]
+        for i in 1:length(parameters_constrained)
+            (pL, pR) = parameters_constrained[i]
+            if parameters_alien[pL] > parameters_alien[pR]
                 msg = "Alien parameters θ[i] violate their constraint"
                 msg = string(msg, " of θ[", pL, "] < θ[", pR, "].")
                 throw(ExceptionError(msg))
             end
         end
 
-        creature = Creature(minParameters, maxParameters, significantFigures)
-        encode!(creature.genetics, alienParameters)
+        creature = Creature(parameters_min, parameters_max, significant_figures)
+        encode!(creature.genetics, parameters_alien)
     end
 
     return creature
 end # alien
 
-function conceive(parentA::Creature, parentB::Creature, constrainedParameters::Vector{Tuple{Int,Int}}, probabilityOfMutation::Real, probabilityOfCrossover::Real)::Creature
+function conceive(parentA::Creature, parentB::Creature, parameters_constrained::Vector{Tuple{Integer,Integer}}, probability_mutation::Real, probability_crossover::Real)::Creature
 
-    fitness = -1.0
+    genetics_child = crossover(parentA.genetics, parentB.genetics, probability_mutation, probability_crossover)
 
-    childGenetics = crossover(parentA.genetics, parentB.genetics, probabilityOfMutation, probabilityOfCrossover)
+    fitness = Variable(-1.0)
+    child   = Creature(fitness, genetics_child)
 
-    child = Creature(fitness, childGenetics)
-
-    if length(constrainedParameters) > 0
+    if length(parameters_constrained) > 0
         reconceive = false
-        childParameters = parameters(child)
-        for i in 1:length(constrainedParameters)
-            (pL, pR) = constrainedParameters[i]
-            if childParameters[pL] > childParameters[pR]
+        parameters_child = phenotypes(child)
+        for i in 1:length(parameters_constrained)
+            (pL, pR) = parameters_constrained[i]
+            if parameters_child[pL] > parameters_child[pR]
                 reconceive = true
                 break
             end
          end
-        reconceptions = 1
+        reconceptions = 0
         while reconceive
-            reconceive    = false
-            reconceptions = reconceptions + 1
-            childGenetics = crossover(parentA.genetics, parentB.genetics, probabilityOfMutation, probabilityOfCrossover)
-            child = Creature(fitness, childGenetics)
-            childParameters = parameters(child)
-            for i in 1:length(constrainedParameters)
-                (pL, pR) = constrainedParameters[i]
-                if childParameters[pL] > childParameters[pR]
+            reconceive     = false
+            reconceptions  = reconceptions + 1
+            genetics_child = crossover(parentA.genetics, parentB.genetics, probability_mutation, probability_crossover)
+            child = Creature(fitness, genetics_child)
+            parameters_child = phenotypes(child)
+            for i in 1:length(parameters_constrained)
+                (pL, pR) = parameters_constrained[i]
+                if parameters_child[pL] > parameters_child[pR]
                     reconceive = true
                     break
                 end
@@ -209,20 +199,14 @@ function Base.:(copy)(c::Creature)::Creature
     return Creature(fitness, genetics)
 end # copy
 
-function Base.:(deepcopy)(c::Creature)::Creature
-    fitness  = deepcopy(c.fitness)
-    genetics = deeepcopy(c.genetics)
-    return Creature(fitness, genetics)
-end # deepcopy
+function tostring(c::Creature)::String
+    return tostring(c.genetics)
+end # tostring
 
-function toString(c::Creature)::String
-    return toString(c.genetics)
-end # toString
-
-function parameters(c::Creature)::Vector{Real}
-    phenotypes = Vector{Real}(undef, c.genetics.chromosomes)
+function phenotypes(c::Creature)::Vector{Real}
+    θ = Vector{Real}(undef, c.genetics.chromosomes)
     for i in 1:c.genetics.chromosomes
-        phenotypes[i] = decode(c.genetics.genotypes[i])
+        θ[i] = decode(c.genetics.genotypes[i])
     end
-    return phenotypes
-end # parameters
+    return θ
+end # phenotypes
