@@ -272,6 +272,15 @@ function _mate!(c::Colony)
     Threads.@threads for i in 2:population
         parentA = _tournamentPlay(c)
         parentB = _tournamentPlay(c)
+        count = 1
+        while parentB == parentA
+            count   = count + 1
+            parentB = _tournamentPlay(c)
+            if count == 25
+                break
+            end
+        end
+
         child   = conceive(parentA, parentB, c.parameters_constrained, c.probability_mutation, c.probability_crossover)
     end
 
