@@ -163,7 +163,7 @@ to recessive, or vice versa, with a chance of change at probability_mutation.
 function mutate!(g::Gene, probability_mutation::Real)
     if probability_mutation < 0.0 || probability_mutation ≥ 1.0
         msg = "A probability of mutation must belong to unit interval [0, 1)."
-        throw(ErrorException, msg)
+        error(msg)
     end
     if probability_mutation > rand()
         if isdominant(g)

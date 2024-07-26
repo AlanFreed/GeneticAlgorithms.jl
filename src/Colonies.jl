@@ -76,8 +76,8 @@ str = report(c)                 Returns a human-readable report via a string
                                 'str,' which describes health of the current
                                 generation and its statistics.
 """
-struct Colony{Parameters} where Parameters <: AbstractParameters
-    parameters::Parameters
+struct Colony
+    parameters::AbstractParameters
     data::ExperimentalData
     # Fields pertaining to the creatures of a colony.
     probability_mutation::Real
@@ -100,7 +100,12 @@ struct Colony{Parameters} where Parameters <: AbstractParameters
 
     # constructor
 
-    function Colony(parameters::Parameters, data::ExperimentalData, probability_mutation::Real, probability_crossover::Real, probability_immigrant::Real, parameters_alien::Vector{Real}, parameters_min::Vector{Real}, parameters_max::Vector{Real}, parameters_constrained::Vector{Tuple{Integer,Integer}}, significant_figures::Integer)
+    function Colony(parameters::AbstractParameters, data::ExperimentalData, probability_mutation::Real, probability_crossover::Real, probability_immigrant::Real, parameters_alien::Vector{Real}, parameters_min::Vector{Real}, parameters_max::Vector{Real}, parameters_constrained::Vector{Tuple{Integer,Integer}}, significant_figures::Integer)
+
+        if !isa(supertype(parameters), AbstractParameters)
+            msg = "Argument parameters must be a concrete composite type."
+            error(msg)
+        end
 
         # bound inputs
 
@@ -164,7 +169,7 @@ struct Colony{Parameters} where Parameters <: AbstractParameters
             symbol  = fieldnames(parameters, n)
             if !isa(fieldtype(parameters, symbol), Real)
                 msg = "All fields in object parameters must belong to Real."
-                throw(ErrorException, msg)
+                error(msg)
             end
         end
 

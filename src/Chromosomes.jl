@@ -69,7 +69,7 @@ struct Chromosome
             # Verify the input.
             if parameter_min > parameter_max
                 msg = "Cannot create a chromosome unless parameter_max ≥ parameter_min."
-                throw(ErrorException, msg)
+                error(msg)
             end
 
             # Number of decades that span [parameter_min, parameter_max].
@@ -255,7 +255,7 @@ function crossover(parentA::Chromosome, parentB::Chromosome, probability_mutatio
 
     if probability_crossover < 0.0 || probability_crossover ≥ 1.0
         msg = "A probability of crossover must belong to unit interval [0, 1)."
-        throw(ErrorException, msg)
+        error(msg)
     end
 
     if parentA.genes == parentB.genes
@@ -433,7 +433,7 @@ function encode!(c::Chromosome, phenotype::Real)
         end
     else
         msg = "The phenotype must lie within [c.parameter_min, c.parameter_max]."
-        throw(ErrorException, msg)
+        error(msg)
     end
     return nothing
 end # encode

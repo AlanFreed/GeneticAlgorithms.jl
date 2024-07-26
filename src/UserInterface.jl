@@ -111,7 +111,7 @@ end # get
 function Base.:(getindex)(m::Model, index::Integer)::Real
     if index < 1 || index > fieldcount(m.θ)
         msg = "The index in getindex is out of range."
-        throw(ErrorException, msg)
+        error(msg)
     end
     symbol = fieldnames(m.θ, index)
     θ = getfield(m.θ, symbol)
@@ -127,7 +127,7 @@ function set!(m::Model, θ::Vector{Real})
         end
     else
         msg = "The parameters to be assigned have the wrong dimension."
-        throw(ErrorException, msg)
+        error(msg)
     end
     return nothing
 end # set!
@@ -135,7 +135,7 @@ end # set!
 function setindex!(m::Model, θ::Real, index::Integer)
     if index < 1 || index > fieldcount(m.θ)
         msg = "The index in setindex! is out of range."
-        throw(ErrorException, msg)
+        error(msg)
     end
     symbol = fieldnames(m.θ, index)
     setfield!(m.θ, symbol, θ)

@@ -92,7 +92,7 @@ function procreate(parameters_min::Vector{Real}, parameters_max::Vector{Real}, p
                     msg = string(msg, "constraint θ[", pL, "]")
                     msg = string(msg, " < θ[", pR, "]\n were not gotten")
                     msg = string(msg, " through creature procreation.")
-                    throw(ExceptionError(msg))
+                    error(msg)
                 end
             end
         end
@@ -118,7 +118,7 @@ function alien(parameters_alien::Vector{Real}, parameters_min::Vector{Real}, par
             if parameters_alien[pL] > parameters_alien[pR]
                 msg = "Alien parameters θ[i] violate their constraint"
                 msg = string(msg, " of θ[", pL, "] < θ[", pR, "].")
-                throw(ExceptionError(msg))
+                error(msg)
             end
         end
 
@@ -165,7 +165,7 @@ function conceive(parentA::Creature, parentB::Creature, parameters_constrained::
                     msg = string(msg, "constraint θ[", pL, "]")
                     msg = string(msg, " < θ[", pR, "]\n were not gotten")
                     msg = string(msg, " through creature conception.")
-                    throw(ExceptionError(msg))
+                    error(msg)
                 end
             end
         end
