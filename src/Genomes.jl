@@ -133,12 +133,12 @@ function tostring(g::Genome)::String
     str = ""
     for i in 1:g.chromosomes
         if g.chromosomes < 10
-            str = string(str, String(i), ": ", tostring(g.genotypes[i]))
+            str = string(str, i, ": ", tostring(g.genotypes[i]))
         else
             if i < 10
-                str = string(str, String(i), ":  ", tostring(g.genotypes[i]))
+                str = string(str, i, ":  ", tostring(g.genotypes[i]))
             else
-                str = string(str, String(i), ": ", tostring(g.genotypes[i]))
+                str = string(str, i, ": ", tostring(g.genotypes[i]))
             end
         end
         if i < g.chromosomes
