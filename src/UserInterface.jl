@@ -80,7 +80,7 @@ abstract type AbstractParameters end
 Model is the type wherein an user establishes their model.
 """
 struct Model
-    θ::Parameters <: AbstractParameters # This must be a mutable composite type.
+    θ::AbstractParameters   # This must be a mutable composite type.
     d::ExperimentalData
 end
 
