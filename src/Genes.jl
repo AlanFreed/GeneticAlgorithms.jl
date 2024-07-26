@@ -36,8 +36,8 @@ struct Gene
     # constructors
 
     function Gene()
-        gene_expression = Expression()
-        new(gene_expression)
+        expression = Expression()
+        new(expression)
     end
 
     function Gene(expression::Bool)
