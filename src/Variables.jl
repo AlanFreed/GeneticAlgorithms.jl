@@ -262,7 +262,7 @@ function set!(v::Variable, value::Real)
     v.value = copy(value)
 end # set!
 
-function Base.:(copy)(v::Varaible)::Variable
+function Base.:(copy)(v::Variable)::Variable
     value = copy(v.value)
     return Variable(value)
 end # copy
