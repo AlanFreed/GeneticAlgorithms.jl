@@ -115,7 +115,7 @@ include("Expressions.jl")
 
 include("Counters.jl")
 
-inclued("Variables.jl")
+include("Variables.jl")
 
 include("Genes.jl")
 
