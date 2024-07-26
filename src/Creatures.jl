@@ -56,6 +56,10 @@ struct Creature
 
         new(fitness, genetics)
     end
+
+    function Creature(fitness::Variable, genetics::Genome)
+        new(fitness, genetics)
+    end
 end # Creature
 
 # external constructors

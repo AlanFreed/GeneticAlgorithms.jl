@@ -163,6 +163,11 @@ struct Chromosome
 
         new(parameter_min, parameter_max, genes, expressions, genotype)
     end
+
+    function Chromosome(parameter_min::Real, parameter_max::Real, genes::Integer, expressions::Integer, genotype::Vector{Gene})
+        
+        new(parameter_min, parameter_max, genes, expressions, genotype)
+    end
 end # Chromosome
 
 # operators

@@ -35,7 +35,7 @@ Methods
 mutable struct Expression
     expression::Bool
 
-    # constructor
+    # constructors
 
     function Expression()
         value = rand()    # Returns a random real from the interval [0, 1).
@@ -44,6 +44,10 @@ mutable struct Expression
         else
             expression = dominant
         end
+        new(expression)
+    end
+
+    function Expression(expression::Bool)
         new(expression)
     end
 end # Expression

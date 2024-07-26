@@ -44,6 +44,10 @@ struct Gene
         gene_expression = Expression(expression)
         new(gene_expression)
     end
+
+    function Gene(expression::Expression)
+        new(expression)
+    end
 end # Gene
 
 # operators

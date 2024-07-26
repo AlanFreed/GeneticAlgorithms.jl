@@ -240,6 +240,11 @@ struct Colony
 
         new(parameters, data, probability_mutation, probability_crossover, probability_immigrant, parameters_name, parameters_min, parameters_max, parameters_constrained, significant_figures, population_size, generations_to_convergence, generation, elite, children, adults, fitness)
     end
+
+    function Colony(parameters::AbstractParameters, data::ExperimentalData, probability_mutation::Real, probability_crossover::Real, probability_immigrant::Real, parameters_name::Vector{String}, parameters_min::Vector{Real}, parameters_max::Vector{Real}, parameters_constrained::Vector{Tuple{Integer,Integer}}, significant_figures::Integer, population_size::Integer, generations_to_convergence::Integer, generation::Counter, elite::Creature, children::Vector{Creature}, adults::Vector{Creature}, fitness::Vector{Real})
+
+        new(parameters, data, probability_mutation, probability_crossover, probability_immigrant, parameters_name, parameters_min, parameters_max, parameters_constrained, significant_figures, population_size, generations_to_convergence, generation, elite, children, adults, fitness)
+    end
 end # Colony
 
 # internal methods

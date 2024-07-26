@@ -133,6 +133,12 @@ include("Colonies.jl")
 
 struct GeneticAlgorithm
     c::Colony
+
+    # constructor
+
+    function GeneticAlgorithm(c::Colony)
+        new(c)
+    end
 end # GeneticAlgorithm
 
 # Method

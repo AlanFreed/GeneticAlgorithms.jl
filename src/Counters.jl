@@ -34,6 +34,10 @@ mutable struct Counter
         count = 0
         new(count)
     end
+
+    function Counter(count::Integer)
+        new(count)
+    end
 end # Counter
 
 # boolean operators

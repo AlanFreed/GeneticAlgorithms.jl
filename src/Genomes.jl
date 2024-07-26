@@ -65,6 +65,11 @@ struct Genome
 
         new(genes, chromosomes, genotypes)
     end
+
+    function Genome(genes::Integer, chromosomes::Integer, genotypes::Vector{Chromosome})
+
+        new(genes, chromosomes, genotypes)
+    end
 end # Genome
 
 # operators

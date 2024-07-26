@@ -34,6 +34,10 @@ mutable struct Variable
         value = 0.0
         new(value)
     end
+
+    function Variable(value::Real)
+        new(value)
+    end
 end # Variable
 
 # boolean operators

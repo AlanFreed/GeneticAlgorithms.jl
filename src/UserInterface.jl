@@ -69,6 +69,11 @@ struct ExperimentalData
 
         new(experiments, variables_control, variables_response, data_points, controls, responses, responses_std)
     end
+
+    function ExperimentalData(experiments::Integer, variables_control::Vector{Integer}, variables_response::Vector{Integer}, data_points::Vector{Integer}, controls::Vector{Matrix{Real}}, responses::Vector{Matrix{Real}}, responses_std::Vector{Vector{Real}})
+
+        new(experiments, variables_control, variables_response, data_points, controls, responses, responses_std)
+    end
 end # ExperimentalData
 
 """
