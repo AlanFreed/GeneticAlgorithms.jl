@@ -64,7 +64,7 @@ end # Creature
 
 # external constructors
 
-function procreate(parameters_min::Vector{Real}, parameters_max::Vector{Real}, parameters_constrained::Vector{Tuple{Integer,Integer}}, significant_figures::Integer)::Creature
+function procreate(parameters_min::Vector{Real}, parameters_max::Vector{Real}, parameters_constrained::Vector{Tuple}, significant_figures::Integer)::Creature
 
     creature = Creature(parameters_min, parameters_max, significant_figures)
 
@@ -105,7 +105,7 @@ function procreate(parameters_min::Vector{Real}, parameters_max::Vector{Real}, p
     return creature
 end # procreate
 
-function alien(parameters_alien::Vector{Real}, parameters_min::Vector{Real}, parameters_max::Vector{Real}, parameters_constrained::Vector{Tuple{Integer,Integer}}, significant_figures::Integer)::Creature
+function alien(parameters_alien::Vector{Real}, parameters_min::Vector{Real}, parameters_max::Vector{Real}, parameters_constrained::Vector{Tuple}, significant_figures::Integer)::Creature
 
     if length(parameters_alien) == 0
         creature = procreate(parameters_min, parameters_max, parameters_constrained, significant_figures)
@@ -133,7 +133,7 @@ function alien(parameters_alien::Vector{Real}, parameters_min::Vector{Real}, par
     return creature
 end # alien
 
-function conceive(parentA::Creature, parentB::Creature, parameters_constrained::Vector{Tuple{Integer,Integer}}, probability_mutation::Real, probability_crossover::Real)::Creature
+function conceive(parentA::Creature, parentB::Creature, parameters_constrained::Vector{Tuple}, probability_mutation::Real, probability_crossover::Real)::Creature
 
     genetics_child = crossover(parentA.genetics, parentB.genetics, probability_mutation, probability_crossover)
 
