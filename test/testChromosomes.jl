@@ -12,8 +12,6 @@ using
 export
     run
 
-
-
 function run()
     minX = 1.0
     maxX = 5.0
@@ -24,9 +22,9 @@ function run()
     crm2 = Chromosome(minX, maxX, sigF)
     crm3 = crossover(crm1, crm2, prbM, prbX)
     s = string("These chromosomes are made of ", crm1.genes, " genes.\n")
-    s = string(s, "First  chromosome has gene expression ", toString(crm1), ".\n")
-    s = string(s, "Second chromosome has gene expression ", toString(crm2), ".\n")
-    s = string(s, "Their offspring has a gene expression ", toString(crm3), ".\n")
+    s = string(s, "First  chromosome has gene expression ", tostring(crm1), ".\n")
+    s = string(s, "Second chromosome has gene expression ", tostring(crm2), ".\n")
+    s = string(s, "Their offspring has a gene expression ", tostring(crm3), ".\n")
     print(s)
     if crm1 == crm3 || crm2 == crm3
         println("   The child is a clone.")
@@ -47,9 +45,9 @@ function run()
     encode!(crm1, x1)
     encode!(crm2, x2)
     encode!(crm3, x3)
-    s = string(s, "   For the first:  ", toString(crm1), "\n")
-    s = string(s, "   For the second: ", toString(crm2), "\n")
-    s = string(s, "   For the third:  ", toString(crm3))
+    s = string(s, "   For the first:  ", tostring(crm1), "\n")
+    s = string(s, "   For the second: ", tostring(crm2), "\n")
+    s = string(s, "   For the third:  ", tostring(crm3))
     println(s)
 
     println()

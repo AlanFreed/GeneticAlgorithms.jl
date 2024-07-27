@@ -13,8 +13,14 @@ export
     run
 
 function run()
-    minX = [0.0, -1.0, -5.0]
-    maxX = [1.0,  1.0, -1.0]
+    minX = Vector{Real}(undef, 3)
+    minX[1] =  0.0
+    minX[2] = -1.0
+    minX[3] = -5.0
+    maxX = Vector{Real}(undef, 3)
+    maxX[1] =  1.0
+    maxX[2] =  1.0
+    maxX[3] = -1.0
     prbM = 0.01
     prbX = 0.85
     sigF = 4
@@ -25,11 +31,11 @@ function run()
         " chromosomes.")
     println()
     println("The first genome has a gene expression of:")
-    println(toString(gnm1))
+    println(tostring(gnm1))
     println("The second genome has a gene expression of:")
-    println(toString(gnm2))
+    println(tostring(gnm2))
     println("Their offspring has a gene expression of:")
-    println(toString(gnm3))
+    println(tostring(gnm3))
     if gnm1 == gnm3 || gnm2 == gnm3
         println("The child is a clone.")
     else
@@ -47,11 +53,11 @@ function run()
     encode!(gnm2, x2)
     encode!(gnm3, x3)
     println("First genome has a gene expression of:")
-    println(toString(gnm1))
+    println(tostring(gnm1))
     println("Second genome has a gene expression of:")
-    println(toString(gnm2))
+    println(tostring(gnm2))
     println("Their offspring has a gene expression of:")
-    println(toString(gnm3))
+    println(tostring(gnm3))
 end # run
 
 end # testGenome
