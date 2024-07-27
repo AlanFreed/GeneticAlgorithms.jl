@@ -79,7 +79,7 @@ export
     Model,
     GeneticAlgorithm,
 
-    # operators: 
+    # operators:
     # logical
     ==, ≠, <, ≤, >, ≥,
     # arithmetic unary
@@ -132,19 +132,19 @@ include("Colonies.jl")
 # The genetic algorithm.
 
 struct GeneticAlgorithm
-    c::Colony
+    colony::Colony
 
     # constructor
 
-    function GeneticAlgorithm(c::Colony)
-        new(c)
+    function GeneticAlgorithm(colony::Colony)
+        new(colony)
     end
 end # GeneticAlgorithm
 
 # Method
 
 function run(ga::GeneticAlgorithm, verbose::Bool=true)
-    println("Each ⋅ represents one generation advanced out of ", String(ga.c.generations_to_convergence), " generations total.")
+    println("Each ⋅ represents one generation advanced out of ", ga.colony.generations_to_convergence, " generations total.")
     print("    ")
 
     # Open an IO-stream to write to.
@@ -162,28 +162,28 @@ function run(ga::GeneticAlgorithm, verbose::Bool=true)
 
     # The first generation.
     if verbose
-        s = string("\n\n", "For generation ", tostring(ga.c.generation), " of ", String(ga.c.generations_to_convergence), ":\n\n")
-        s = string(s, report(ga.c))
+        s = string("\n\n", "For generation ", tostring(ga.colony.generation), " of ", ga.colony.generations_to_convergence, ":\n\n")
+        s = string(s, report(ga.colony))
         write(mystream, s)
         flush(mystream)
     end
 
     # Run the genetic algorithm.
-    for i in 2:ga.c.generations_to_convergence-1
+    for i in 2:ga.colony.generations_to_convergence-1
         print("⋅")
-        advance_to_next_generation!(ga.c)
+        advance_to_next_generation!(ga.colony)
         if verbose
-            s = string("\n\n", "For generation ", tostring(ga.c.generation), " of ", String(ga.c.generations_to_convergence), ":\n\n")
-            s = string(s, report(ga.c))
+            s = string("\n\n", "For generation ", tostring(ga.colony.generation), " of ", ga.colony.generations_to_convergence, ":\n\n")
+            s = string(s, report(ga.colony))
             write(mystream, s)
             flush(mystream)
         end
     end
     println("⋅")
-    advance_to_next_generation!(ga.c)
+    advance_to_next_generation!(ga.colony)
     println("The genetic algorithm has finished.")
-    s = string("\n\n", "For generation ", tostring(ga.c.generation), " of ", String(ga.c.generations_to_convergence), ":\n\n")
-    s = string(s, report(ga.c))
+    s = string("\n\n", "For generation ", tostring(ga.colony.generation), " of ", ga.colony.generations_to_convergence, ":\n\n")
+    s = string(s, report(ga.colony))
     write(mystream, s)
     flush(mystream)
     close(mystream)
