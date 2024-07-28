@@ -70,7 +70,7 @@ function procreate(parameters_min::Vector{Real}, parameters_max::Vector{Real}, p
 
     if length(parameters_constrained) > 0
         recreate = false
-        parameters_creature = pheontypes(creature)
+        parameters_creature = phenotypes(creature)
         for i in 1:length(parameters_constrained)
             (pL, pR) = parameters_constrained[i]
             if parameters_creature[pL] > parameters_creature[pR]
