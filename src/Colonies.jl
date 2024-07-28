@@ -161,7 +161,7 @@ struct Colony
         # Verify that the fields of object parameters are all Real valued.
 
         for n in 1:N
-            symbol  = fieldnames(typeof(parameters), n)
+            symbol  = fieldname(typeof(parameters), n)
             if !isa(fieldtype(typeof(parameters), symbol), Real)
                 msg = "All fields in object parameters must belong to Real."
                 error(msg)
@@ -172,7 +172,7 @@ struct Colony
 
         parameters_name = Vector{String}(undef, N)
         for n in 1:N
-            symbol = fieldnames(typeof(parameters), n)
+            symbol = fieldname(typeof(parameters), n)
             parameters_name[n] = String(symbol)
         end
 
