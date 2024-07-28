@@ -158,6 +158,7 @@ struct Colony
             end
         end
 
+        #=
         # Verify that the fields of object parameters are all Real valued.
 
         for n in 1:N
@@ -167,6 +168,7 @@ struct Colony
                 error(msg)
             end
         end
+        =#
 
         # Get parameter names from the fields of object parameters.
 
