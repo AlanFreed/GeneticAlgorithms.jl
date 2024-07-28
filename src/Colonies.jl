@@ -102,11 +102,6 @@ struct Colony
 
     function Colony(parameters::AbstractParameters, data::ExperimentalData, probability_mutation::Real, probability_crossover::Real, probability_immigrant::Real, parameters_alien::Vector{Real}, parameters_min::Vector{Real}, parameters_max::Vector{Real}, parameters_constrained::Vector{Tuple{Integer,Integer}}, significant_figures::Integer)
 
-        if !isa(supertype(typeof(parameters)), AbstractParameters)
-            msg = "Argument parameters must be a concrete composite type."
-            error(msg)
-        end
-
         # bound inputs
 
         if significant_figures < 1
