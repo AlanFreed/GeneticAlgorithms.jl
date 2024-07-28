@@ -104,30 +104,30 @@ mymodel = Model(θ::MyParameters, d::ExperimentalData)
 =#
 
 function Base.:(get)(m::Model)::Vector{Real}
-    N = fieldcount(m.θ)
+    N = fieldcount(typeof(m.θ))
     θ = Vector{Real}(undef, N)
     for n in 1:N
-        symbol = fieldnames(m.θ, n)
+        symbol = fieldname(typeof(m.θ), n)
         θ[n]   = getfield(m.θ, symbol)
     end
     return θ
 end # get
 
 function Base.:(getindex)(m::Model, index::Integer)::Real
-    if index < 1 || index > fieldcount(m.θ)
-        msg = "The index in getindex is out of range."
+    if index < 1 || index > fieldcount(typeof(m.θ))
+        msg = "The index in getindex, i.e., θ = m.θ[index], is out of range."
         error(msg)
     end
-    symbol = fieldnames(m.θ, index)
+    symbol = fieldname(typeof(m.θ), index)
     θ = getfield(m.θ, symbol)
     return θ
 end # getindex
 
 function set!(m::Model, θ::Vector{Real})
-    N = fieldcount(m.θ)
+    N = fieldcount(typeof(m.θ))
     if length(θ) == N
         for n in 1:N
-            symbol = fieldnames(m.θ, n)
+            symbol = fieldname(typeof(m.θ), n)
             setfield!(m.θ, symbol, θ[n])
         end
     else
@@ -138,11 +138,11 @@ function set!(m::Model, θ::Vector{Real})
 end # set!
 
 function setindex!(m::Model, θ::Real, index::Integer)
-    if index < 1 || index > fieldcount(m.θ)
-        msg = "The index in setindex! is out of range."
+    if index < 1 || index > fieldcount(typeof(m.θ))
+        msg = "The index in setindex!, i.e., m.θ[index] = θ, is out of range."
         error(msg)
     end
-    symbol = fieldnames(m.θ, index)
+    symbol = fieldname(typeof(m.θ), index)
     setfield!(m.θ, symbol, θ)
     return nothing
 end # setindex!
