@@ -185,7 +185,7 @@ struct Colony
         # elite
 
         elite = alien(parameters_alien, parameters_min, parameters_max, parameters_constrained, significant_figures)
-        set!(model.θ, phenotypes(elite))
+        set!(model, phenotypes(elite))
         set!(elite.fitness, _evaluate(model))
 
         # population_size
@@ -211,8 +211,9 @@ struct Colony
         adults[1] = elite
         Threads.@threads for i in 2:population_size
             adult = procreate(parameters_min, parameters_max, parameters_constrained, significant_figures)
-            set!(model, phenotypes(adult))
-            set!(adult.fitness, _evaluate(model))
+            thread_model = Model(parameters, data)
+            set!(thread_model, phenotypes(adult))
+            set!(adult.fitness, _evaluate(thread_model))
             adults[i] = adult
         end
 
