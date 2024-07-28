@@ -134,7 +134,7 @@ struct Colony
 
         # Verify dimensions.
 
-        N = fieldcount(parameters)
+        N = fieldcount(typeof(parameters))
 
         if (length(parameters_alien) ≠ N) && (length(parameters_alien) ≠ 0)
             msg = "The supplied alien has the wrong number of parameters."
@@ -161,8 +161,8 @@ struct Colony
         # Verify that the fields of object parameters are all Real valued.
 
         for n in 1:N
-            symbol  = fieldnames(parameters, n)
-            if !isa(fieldtype(parameters, symbol), Real)
+            symbol  = fieldnames(typeof(parameters), n)
+            if !isa(fieldtype(typeof(parameters), symbol), Real)
                 msg = "All fields in object parameters must belong to Real."
                 error(msg)
             end
@@ -172,7 +172,7 @@ struct Colony
 
         parameters_name = Vector{String}(undef, N)
         for n in 1:N
-            symbol = fieldnames(parameters, n)
+            symbol = fieldnames(typeof(parameters), n)
             parameters_name[n] = String(symbol)
         end
 
