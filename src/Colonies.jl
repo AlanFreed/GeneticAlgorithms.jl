@@ -321,7 +321,7 @@ function _mate!(c::Colony)
 end # _mate!
 
 function _evaluate(m::Model)::Real
-    model_responses = solve(m.θ, m.d, m)
+    model_responses = solve(m)
     fitness = 0.0
     for i in 1:m.d.experiments
         squared_error = 0.0
