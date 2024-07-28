@@ -61,7 +61,7 @@ struct ExperimentalData
 
         responses_std = Vector{Vector{Real}}(undef, experiments)
         for exp = 1:experiments
-            stdR[exp] = Vector{Real}(undef, variables_response[exp])
+            responses_std[exp] = Vector{Real}(undef, variables_response[exp])
             for res = 1:variables_response[exp]
                 responses_std[exp][res] = std(responses[exp][res, :])
             end
