@@ -198,7 +198,7 @@ struct Colony
 
         # generations
 
-        generation = 1
+        generation = Counter(1)
 
         # Formula is from D. Goldberg (2002) for estimating convergence.
         combatants = Int(max(3, population_size÷50))
