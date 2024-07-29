@@ -277,7 +277,7 @@ function _mate!(c::Colony)
     c.fitness[1]  = get(c.elite.fitness)
 
     # Mate the population.
-    Threads.@threads for i in 2:population_size
+    Threads.@threads for i in 2:c.population_size
         parentA = _tournamentPlay(c)
         parentB = _tournamentPlay(c)
         count = 1
@@ -285,6 +285,7 @@ function _mate!(c::Colony)
             count   = count + 1
             parentB = _tournamentPlay(c)
             if count == 25
+                # This is for safety. It should not occur in practice.
                 break
             end
         end
