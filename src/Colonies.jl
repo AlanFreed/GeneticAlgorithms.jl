@@ -277,7 +277,7 @@ function _mate!(c::Colony)
     c.fitness[1]  = get(c.elite.fitness)
 
     # Mate the population.
-    Threads.@threads for i in 2:population
+    Threads.@threads for i in 2:population_size
         parentA = _tournamentPlay(c)
         parentB = _tournamentPlay(c)
         count = 1
