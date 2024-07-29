@@ -278,17 +278,17 @@ end # deepcopy
 
 function tostring(v::Variable; significant_figures::Integer)::String
     if significant_figures ≤ 2
-        s = @sprintf "%.1e" v.value;
+        str = @sprintf "%.1e" v.value;
     elseif significant_figures == 3
-        s = @sprintf "%.2e" v.value;
+        str = @sprintf "%.2e" v.value;
     elseif significant_figures == 4
-        s = @sprintf "%.3e" v.value;
+        str = @sprintf "%.3e" v.value;
     elseif significant_figures == 5
-        s = @sprintf "%.4e" v.value;
+        str = @sprintf "%.4e" v.value;
     elseif significant_figures == 6
-        s = @sprintf "%.5e" v.value;
+        str = @sprintf "%.5e" v.value;
     else
-        s = @sprintf "%.6e" v.value;
+        str = @sprintf "%.6e" v.value;
     end
-    return s
+    return str
 end # tostring

@@ -284,5 +284,6 @@ function Base.:(copy)(c::Counter)::Counter
 end # copy
 
 function tostring(c::Counter)::String
-    return String(c.count)
+    str = string(c.count)
+    return str
 end # tostring
