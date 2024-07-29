@@ -294,7 +294,7 @@ function _mate!(c::Colony)
     end
 
     # Ensure their are no clones, i.e., that there are no identical twins.
-    for i in 2:population_size
+    for i in 2:c.population_size
         child = c.children[i]
         for j in 1:i-1
             if child == c.children[j]
@@ -309,7 +309,7 @@ function _mate!(c::Colony)
     end
 
     # Determine the fitness for each child born into the colony.
-    Threads.@threads for i in 2:population_size
+    Threads.@threads for i in 2:c.population_size
         child = c.children[i]
         model = Model(c.parameters, c.data)
         set!(model, phenotypes(child))
