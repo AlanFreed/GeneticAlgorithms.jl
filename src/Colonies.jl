@@ -329,7 +329,7 @@ function _evaluate(m::Model)::Real
             for k in 1:m.d.data_points[i]
                 squared_error = (squared_error
                     + ((model_responses[i][j,k] - m.d.responses[i][j,k])
-                    / m.d.stdR[i][j])^2)
+                    / m.d.responses_std[i][j])^2)
             end
         end
         twonorm = sqrt(squared_error)
