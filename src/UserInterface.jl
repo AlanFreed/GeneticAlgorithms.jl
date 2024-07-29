@@ -153,7 +153,7 @@ determines which model is to be run.
 The returned array for model response has the same dimensions as the array
 m.d.responses, which holds the experimental response to be compared against.
 """
-solve(m::Model) = solve(m.θ::P, m::Model) where {P <: AbstractParameters}
+solve(m::Model) = solve(m.θ, m)
 
 #=
 As a template, consider:
