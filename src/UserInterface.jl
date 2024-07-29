@@ -84,23 +84,20 @@ abstract type AbstractParameters end
 """
 Model is the type wherein an user establishes their model.
 """
-struct Model
-    θ::AbstractParameters   # This must be a mutable composite type.
+struct Model{Parameters}
+    θ::Parameters       # Must be mutable with Parameters <: AbstractParameters.
     d::ExperimentalData
 end
 
 #= 
 It is vital that one's own Parameters type be mutable, e.g.,
-mutable struct MyParameters
-    a::Real
-    b::Real
-end
-along with an associated method
-function Base.:(copy)(θ::MyParameters)::MyParameters
-    ...
-end # copy
+    mutable struct MyParameters <: AbstractParameters
+        a::Real
+        b::Real
+    end
 from which a model is then created via
-mymodel = Model(θ::MyParameters, d::ExperimentalData)
+    mymodel = Model{MyParameters}(θ::MyParameters, d::ExperimentalData)
+To assign or retrieve values as real vectors to/from a model's parameters, call
 =#
 
 function Base.:(get)(m::Model)::Vector{Real}
@@ -115,7 +112,7 @@ end # get
 
 function Base.:(getindex)(m::Model, index::Integer)::Real
     if index < 1 || index > fieldcount(typeof(m.θ))
-        msg = "The index in getindex, i.e., θ = m.θ[index], is out of range."
+        msg = "Index in getindex, i.e., in θ = m.θ[index], is out of range."
         error(msg)
     end
     symbol = fieldname(typeof(m.θ), index)
@@ -139,7 +136,7 @@ end # set!
 
 function setindex!(m::Model, θ::Real, index::Integer)
     if index < 1 || index > fieldcount(typeof(m.θ))
-        msg = "The index in setindex!, i.e., m.θ[index] = θ, is out of range."
+        msg = "Index in setindex!, i.e., in m.θ[index] = θ, is out of range."
         error(msg)
     end
     symbol = fieldname(typeof(m.θ), index)
@@ -156,12 +153,13 @@ determines which model is to be run.
 The returned array for model response has the same dimensions as the array
 m.d.responses, which holds the experimental response to be compared against.
 """
-solve(m::Model) = solve(m.θ, m.d, m)::Vector{Matrix{Real}}
+solve(m::Model) = solve(m.θ::P, m::Model) where {P <: AbstractParameters}
 
 #=
 As a template, consider:
 
-function solve(m.θ::P, m.d::ExperimentalData, m::Model)::Vector{Matrix{Real}} where P <: AbstractParameters
+function solve(θ::P, m::Model)::Vector{Matrix{Real}}
+    # where P <: AbstractParameters
     # This function returns the model's response as a vector of matrices:
     #   [exp] x [nRes[exp] x nPts[exp]]  indexed as  [i][j,k]  where
     #       exp         experiment number with values  exp ∈ [1, nExp]
