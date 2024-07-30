@@ -387,7 +387,7 @@ function advance_to_next_generation!(c::Colony)
 
     # Determine the elite adult for this next generation.
     elite = c.adults[1]
-    for i in 2:population_size
+    for i in 2:c.population_size
         adult = c.adult[i]
         if adult.fitness > c.elite.fitness
             elite = adult
@@ -406,7 +406,7 @@ end # advanceToNextGeneration
 
 function report(c::Colony)::String
     s = "\n"
-    s = string(s, "Statistics for generation ", c.generation)
+    s = string(s, "Statistics for generation ", tostring(c.generation))
     s = string(s, " with a population size of ", c.population_size, ".\n")
     s = string(s, "Optimum fitness and population statistics for fitness:\n")
     fitness = get(c.elite.fitness)
