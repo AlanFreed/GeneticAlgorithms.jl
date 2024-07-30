@@ -350,7 +350,7 @@ end # _VAR
 # Covariance between model and experiment
 
 function _COV(v1::Vector{Real}, v2::Vector{Real})::Real
-    if length(v1) = length(v2)
+    if length(v1) == length(v2)
         N = length(v1)
         sum = 0.0
         for n in 1:N
@@ -367,7 +367,7 @@ end # _COV
 # Objective function
 
 function _objfn(response_model::Vector{Real}, response_experiment::Vector{Real})::Real
-    if length(response_model) = length(response_experiment)
+    if length(response_model) == length(response_experiment)
         N = length(response_experiment)
         response_max = 0.0
         for n in 1:N
