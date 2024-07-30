@@ -289,8 +289,8 @@ function _mate!(c::Colony)
                 break
             end
         end
-
-        child   = conceive(parentA, parentB, c.parameters_constrained, c.probability_mutation, c.probability_crossover)
+        child = conceive(parentA, parentB, c.parameters_constrained, c.probability_mutation, c.probability_crossover)
+        c.children[i] = child
     end
 
     # Ensure their are no clones, i.e., that there are no identical twins.
