@@ -161,12 +161,10 @@ function run(ga::GeneticAlgorithm, verbose::Bool=true)
     seekstart(mystream)
 
     # The first generation.
-    if verbose
-        s = string("For generation ", tostring(ga.colony.generation), " of ", ga.colony.generations_to_convergence, ":\n\n")
-        s = string(s, report(ga.colony))
-        write(mystream, s)
-        flush(mystream)
-    end
+    s = string("For generation ", tostring(ga.colony.generation), " of ", ga.colony.generations_to_convergence, ":\n\n")
+    s = string(s, report(ga.colony))
+    write(mystream, s)
+    flush(mystream)
 
     # Run the genetic algorithm.
     for i in 2:ga.colony.generations_to_convergence-1
@@ -181,7 +179,7 @@ function run(ga::GeneticAlgorithm, verbose::Bool=true)
     end
     println("⋅")
     advance_to_next_generation!(ga.colony)
-    println("The genetic algorithm has finished.")
+    println("The genetic algorithm has finished.\n\n")
     s = string("For generation ", tostring(ga.colony.generation), " of ", ga.colony.generations_to_convergence, ":\n\n")
     s = string(s, report(ga.colony))
     write(mystream, s)

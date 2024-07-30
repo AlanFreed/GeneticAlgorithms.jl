@@ -476,6 +476,6 @@ function report(c::Colony)::String
         s = string(s, _2string(c, parameters_best[i]), " ± ",
             _2string(c, err[i]), "\n")
     end
-    s = string(s, "/n")
+    s = string(s, "\n")
     return s
 end # report
