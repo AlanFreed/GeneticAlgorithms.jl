@@ -371,7 +371,7 @@ function _2string(c::Colony, x::Real)::String
     else
         s = @sprintf "%.6e" x;
     end
-    return s
+    return chomp(s)
 end # _2string
 
 # exported methods
@@ -476,5 +476,6 @@ function report(c::Colony)::String
         s = string(s, _2string(c, parameters_best[i]), " ± ",
             _2string(c, err[i]), "\n")
     end
+    s = string(s, "/n")
     return s
 end # report
