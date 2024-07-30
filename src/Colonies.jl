@@ -175,7 +175,7 @@ struct Colony
         parameters_name = Vector{String}(undef, N)
         for n in 1:N
             symbol = fieldname(typeof(parameters), n)
-            parameters_name[n] = String(symbol)
+            parameters_name[n] = chomp(String(symbol))
         end
 
         # Create the model.
@@ -401,7 +401,6 @@ function advance_to_next_generation!(c::Colony)
 end # advanceToNextGeneration
 
 function report(c::Colony)::String
-    s = "\n"
     s = string(s, "Statistics for generation ", tostring(c.generation))
     s = string(s, " with a population size of ", c.population_size, ".\n")
     s = string(s, "Optimum fitness and population statistics for fitness:\n")
@@ -436,7 +435,7 @@ function report(c::Colony)::String
         s = string(s, "   excess kurtosis ", _2string(c, statKurtosis), "\n")
     end
     s = string(s, "The genome from the most fit creature:\n")
-    s = string(s, "   ", tostring(c.elite.genetics))
+    s = string(s, tostring(c.elite.genetics), "\n")
     s = string(s, "Lists for [parameter_min, parameter_best, parameter_max]:\n")
     parameters_best = phenotypes(c.elite)
     len = length(parameters_best)
@@ -476,6 +475,5 @@ function report(c::Colony)::String
         s = string(s, _2string(c, parameters_best[i]), " ± ",
             _2string(c, err[i]), "\n")
     end
-    s = string(s, "\n")
     return s
 end # report
