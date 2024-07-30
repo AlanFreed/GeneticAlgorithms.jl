@@ -321,7 +321,68 @@ function _mate!(c::Colony)
     return nothing
 end # _mate!
 
+# Statistical functions used to evaluate the fitness of a creature.
+
+# Expectation
+
+function _E(v::Vector{Real})::Real
+    N = length(v)
+    sum = 0.0
+    for n in 1:N
+        sum = sum + v[n]
+    end
+    E = sum / N
+    return E
+end # _E
+
+# Variance
+
+function _VAR(v::Vector{Real})::Real
+    N = length(v)
+    sqsum = 0.0
+    for n in 1:N
+        sqsum = sqsum + v[n]^2
+    end
+    VAR = sqsum / N - _E(v)^2
+    return VAR
+end # _VAR
+
+# Covariance between model and experiment
+
+function _COV(v1::Vector{Real}, v2::Vector{Real})::Real
+    if length(v1) = length(v2)
+        N = length(v1)
+        sum = 0.0
+        for n in 1:N
+            sum = sum + v1[n] * v2[n]
+        end
+        COV = sum / N - _E(v1) * _E(v2)
+    else
+        msg = "Covariance between two vectors requires they be the same length."
+        error(msg)
+    end
+    return COV
+end # _COV
+
+# Objective function
+
+function _objfn(response_model::Vector{Real}, response_experiment::Vector{Real})::Real
+    if length(response_model) = length(response_experiment)
+        N = length(response_experiment)
+        response_max = 0.0
+        for n in 1:N
+            response_max = max(response_max, response_experiment[n]^2)
+        end
+        ϕ = response_max / (_VAR(response_model) + _VAR(response_experiment) - 2_COV(response_model, response_experiment))
+    else
+        msg = "Model and experimental responses must be the same dimension."
+        error(msg)
+    end
+    return ϕ
+end # _objfn
+
 function _evaluate(m::Model)::Real
+    #=
     model_responses = solve(m)
     fitness = 0.0
     for i in 1:m.d.experiments
@@ -337,6 +398,22 @@ function _evaluate(m::Model)::Real
         fitness = fitness + 1.0 / twonorm
     end
     return fitness
+    =#
+    model_responses = solve(m)
+
+    data_points = 0
+    for i in 1:m.d.experiments
+        data_points = data_points + m.d.data_points[i]
+    end
+
+    ϕ = 0.0
+    for i in 1:m.d.experiments
+        for j in 1:m.d.variables_response[i]
+            ϕ = ϕ + (m.d.data_points[i] / data_points) * _objfn(model_responses[i][j,:], m.d.responses[i][j,:])
+        end
+    end
+
+    return ϕ
 end # _evaluate
 
 function _stdDevElite(c::Colony)::Vector{Real}
@@ -442,13 +519,13 @@ function report(c::Colony)::String
     len = length(parameters_best)
     for i in 1:len
         if len < 10
-            s = string(s, i, ": ", c.parameters_name[i], "\n")
+            s = string(s, i, ": ", c.parameters_name[i], " ∈\n")
             s = string(s, "      ")
         else
             if i < 10
-                s = string(s, i, ":  ", c.parameters_name[i], "\n")
+                s = string(s, i, ":  ", c.parameters_name[i], " ∈\n")
             else
-                s = string(s, i, ": ", c.parameters_name[i], "\n")
+                s = string(s, i, ": ", c.parameters_name[i], " ∈\n")
             end
             s = string(s, "       ")
         end
@@ -463,13 +540,13 @@ function report(c::Colony)::String
     err = _stdDevElite(c)
     for i in 1:len
         if len < 10
-            s = string(s, i, ": ", c.parameters_name[i], "\n")
+            s = string(s, i, ": ", c.parameters_name[i], " =\n")
             s = string(s, "      ")
         else
             if i < 10
-                s = string(s, i, ":  ", c.parameters_name[i], "\n")
+                s = string(s, i, ":  ", c.parameters_name[i], " =\n")
             else
-                s = string(s, i, ": ", c.parameters_name[i], "\n")
+                s = string(s, i, ": ", c.parameters_name[i], " =\n")
             end
             s = string(s, "       ")
         end
