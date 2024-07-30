@@ -388,18 +388,14 @@ function advance_to_next_generation!(c::Colony)
     # Determine the elite adult for this next generation.
     elite = c.adults[1]
     for i in 2:c.population_size
-        adult = c.adult[i]
+        adult = c.adults[i]
         if adult.fitness > c.elite.fitness
             elite = adult
         end
     end
     set!(c.elite.fitness, get(elite.fitness))
     for chromosome in 1:c.elite.genetics.chromosomes
-        genotype_c = c.elite.genetics.genotypes[chromosome]
-        genotype_e =   elite.genetics.genotypes[chromosome]
-        for gene in 1:genotype_c.genes
-            setindex!(genotype_c, getindex(genotype_e, gene), gene)
-        end
+        c.elite.genetics.genotypes[chromosome] = elite.genetics.genotypes[chromosome]
     end
     return nothing
 end # advanceToNextGeneration
