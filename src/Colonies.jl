@@ -401,6 +401,7 @@ function advance_to_next_generation!(c::Colony)
 end # advanceToNextGeneration
 
 function report(c::Colony)::String
+    s = ""
     s = string(s, "Statistics for generation ", tostring(c.generation))
     s = string(s, " with a population size of ", c.population_size, ".\n")
     s = string(s, "Optimum fitness and population statistics for fitness:\n")
