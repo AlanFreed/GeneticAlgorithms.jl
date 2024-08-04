@@ -40,6 +40,45 @@ often, the personal taste of the user.  It has been the author's
 experience that GAs work very well for parameter estimations, particularly for
 non-linear models.
 
+# Statistics
+
+The objective functions employed herein are based upon sample statistics pertaining to experimental responses, denoted as **x** = {*x*₁, *x*₂, …, *x*ₙ}, and their corresponding predicted model responses, denoted as **ξ** = {*ξ*₁, *ξ*₂, …, *ξ*ₙ}, where *n* signifies the number of vector entries or datum points obtained from the experiment. These data are normalized by defining **X** = {*X*₁, *X*₂, …, *X*ₙ} = {*x*₁, *x*₂, …, *x*ₙ} / *max*(|**x**|) so that *X*ᵢ ∈ [-1, 1] ∀ *i*  ∈ [1, *n*]. The model responses are also normalized; specifically, **Ξ** = {*Ξ*₁, *Ξ*₂, …, *Ξ*ₙ} = {*ξ*₁, *ξ*₂, …, *ξ*ₙ} / *max*(|**x**|). (**NOTE:** The normalized model response **Ξ** normalizes **ξ** with the experimental value *max*(|**x**|), not with the model's value *max*(|**ξ**|)).
+
+An error can therefore be defined as 
+
+**ϵ** = **X** - **Ξ**.
+
+## Sample statistics
+
+The expectation *E* of a data set **X** is the first moment of its data, viz., 
+
+*E*(**X**) = (1/N) ∑ᵢ₌₁ⁿ *X*ᵢ
+
+The sample variance of this data set is
+
+*VAR*(**X**) = *E*((**X** - *E*(**X**))²) = *E*(**X**²) - (*E*(**X**))² where *E*(**X**²) is the second moment (1/N) ∑ᵢ₌₁ⁿ *X*ᵢ²
+
+while the sample covariance between two data sets is
+
+*COV*(**X**, **Ξ**) = *E*((**X** - *E*(**X**))(**Ξ** - *E*(**Ξ**))) = *E*(**XΞ**) - *E*(**X**) *E*(**Ξ**) where *E*(**XΞ**) is a mixed moment (1/N) ∑ᵢ₌₁ⁿ *X*ᵢ*Ξ*ᵢ
+
+which reduces to the sample variance whenever **Ξ** = **X**.
+
+## Objective functions
+
+A collection of objective functions that have statisical warrent are considered.
+
+1. Minimize expectation for the magnitude of error.
+    1. ϕ₁ = 1 / *E*(|**ϵ**|) = 1 / *E*(|**X** - **Ξ**|)
+2. Minimize expectation for the squared error.
+    1. ϕ₂ = 1 / *E*(**ϵ**²) = 1 / (*E*((**X** - **Ξ**)²) = 1 / (*VAR*(**X**) + *VAR*(**Ξ**) - 2*COV*(**X**, **Ξ**) + (*E*(**X**))² + (*E*(**Ξ**))² - 2*E*(**X**) *E*(**Ξ**))
+3. Minimize variance for the error.
+    1. ϕ₃ = 1 / *VAR*(**ϵ**) = 1 / (*VAR*(**X**) + *VAR*(**Ξ**) - 2*COV*(**X**, **Ξ**) )
+4. Maximize covariance between experiment **X** and model **Ξ**.
+    1. ϕ₄ = *COV*(**X**, **Ξ**)
+
+Genetic algorithms seek to maximize a quality parameter referred to as *fitness*; hence, reciprocal values are used to describe the fitness of an objective function that minimizes.
+
 # A Genetic Algorithm
 
 At the core of this genetic algorithm are haploid genes that can admit two expressions, dominate and recessive. They are represented with a binary value.  At a very low probability of occurrence, a gene may mutate from dominate to recessive, or vice versa.
@@ -94,8 +133,19 @@ model and data, i.e., it does not prove that the model is 'correct'.
     2. Goldberg, D.E., The Design of Innovation: Lessons learned from and for competent genetic algorithms, 2002.  In: Genetic algorithms and evolutionary computation, Vol. 7, Klewer, Boston, 2002.
     3. Schmitt, L.M., "Theory of genetic algorithms", Theoretical Computer Science, Vol. 259 (2001) pp. 1-61.
     4. Schmitt, L.M., "Theory of genetic algorithms II: Models for genetic operators over the string-tensor representation of populations and convergence to global optima for arbitrary fitness function under scaling", Theoretical Computer Science, Vol. 310 (2004) pp. 181-231.
+    5. Sivanandam, S.N. and Deepa, S.N., Introduction to Genetic Algorithms, Springer, Berlin, 2008.
  
 # Version History
+
+## Version 0.1.3
+
+Four fitness types, i.e., objective functions, have been introduced:
+
+    1. Minimize expectation for the magnitude of error.
+    2. Minimize expectation for the squared error.
+    3. Minimize sample variance in the error.
+    4. Maximize sample covariance between experiment and model.
+    
 
 ## Version 0.1.2
 
