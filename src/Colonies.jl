@@ -24,13 +24,14 @@ struct Colony{Parameters} where Parameters <: AbstractParameters
     children                # adults for the next generation
     adults                  # adults from the current generation
     fitness                 # fitness of each adult in the current generation
+    use_fitness             # select which fitness type to use, ∈ [1, 4]
 end
 
 Constructors
 
     The constructor most likely to be called by a user.
 
-    c = Colony(parameters, data, probability_mutation, probability_crossover, probability_immigrant, parameters_alien, parameters_min, parameters_max, parameters_constrained, significant_figures)
+    c = Colony(parameters, data, probability_mutation, probability_crossover, probability_immigrant, parameters_alien, parameters_min, parameters_max, parameters_constrained, significant_figures, use_fitness)
 
     where
 
@@ -64,13 +65,20 @@ Constructors
                                 There is a strong correlation between this value
                                 and how long it takes to get a solution.  Values
                                 of 4 or 5 are common.  They are bound to [1, 7].
+        use_fitness             This selects the objective function to use from
+                                four possible choices with the default set at 3:
+                                    1) minimizes expectation in absolute error
+                                    2) minimizes expectation in squared error
+                                    3) minimizes variance in error
+                                    4) maximizes covariance between experiment
+                                        and model
 
     If parameter parameters_min[i] equals parameter parameters_max[i] for any
     index i, then parameter θ[i] is taken to be fixed.
 
 Methods
 
-advance_to_next_generation!(c)  Advances the colony 'c' to its next generation.
+advance_to_next_generation!(c)  Advances colony 'c' to its next generation.
 
 str = report(c)                 Returns a human-readable report via a string
                                 'str,' which describes health of the current
@@ -96,11 +104,12 @@ struct Colony
     elite::Creature
     children::Vector{Creature}
     adults::Vector{Creature}
-    fitness::Vector{Real}
+    fitness::Vector{Vector{Real}}
+    use_fitness::Integer
 
     # constructor
 
-    function Colony(parameters::AbstractParameters, data::ExperimentalData, probability_mutation::Real, probability_crossover::Real, probability_immigrant::Real, parameters_alien::Vector{Real}, parameters_min::Vector{Real}, parameters_max::Vector{Real}, parameters_constrained::Vector{Tuple{Integer,Integer}}, significant_figures::Integer)
+    function Colony(parameters::AbstractParameters, data::ExperimentalData, probability_mutation::Real, probability_crossover::Real, probability_immigrant::Real, parameters_alien::Vector{Real}, parameters_min::Vector{Real}, parameters_max::Vector{Real}, parameters_constrained::Vector{Tuple{Integer,Integer}}, significant_figures::Integer, use_fitness::Integer = 3)
 
         # bound inputs
 
@@ -158,12 +167,11 @@ struct Colony
             end
         end
 
-        #=
         # Verify that the fields of object parameters are all Real valued.
 
         for n in 1:N
             symbol  = fieldname(typeof(parameters), n)
-            if !isa(fieldtype(typeof(parameters), symbol), Real)
+            if !(fieldtype(typeof(parameters), symbol) isa Real)
                 msg = "All fields in object parameters must belong to Real."
                 error(msg)
             end
@@ -186,14 +194,17 @@ struct Colony
 
         elite = alien(parameters_alien, parameters_min, parameters_max, parameters_constrained, significant_figures)
         set!(model, phenotypes(elite))
-        set!(elite.fitness, _evaluate(model))
+        fitness = _evaluate(model)
+        for i in 1:fitness_types
+            elite.fitness[i] = fitness[i]
+        end
 
         # population_size
 
         # Formula is from D. Goldberg (2002) for estimating population size.
         alphabet = 2    # viz., expressions are: dominant and recessive
         schemata = significant_figures
-        population_size = Int(ceil(schemata * log(alphabet) * alphabet^schemata
+        population_size = Int(ceil(alphabet^schemata * schemata * log(alphabet) 
             + log(elite.genetics.genes)))
 
         # generations
@@ -213,13 +224,16 @@ struct Colony
             adult = procreate(parameters_min, parameters_max, parameters_constrained, significant_figures)
             thread_model = Model(parameters, data)
             set!(thread_model, phenotypes(adult))
-            set!(adult.fitness, _evaluate(thread_model))
+            thread_fitness = _evaluate(thread_model)
+            for j in 1:fitness_types
+                adult.fitness[j] = thread_fitness[j]
+            end
             adults[i] = adult
         end
 
         for i in 2:population_size
             adult = adults[i]
-            if adult.fitness > elite.fitness
+            if adult.fitness[use_fitness] > elite.fitness[use_fitness]
                 elite = adult
             end
         end
@@ -230,18 +244,23 @@ struct Colony
 
         # fitness
 
-        fitness = Vector{Real}(undef, population_size)
+        fitness = Vector{Vector}(undef, population_size)
+
         for i in 1:population_size
             adult = adults[i]
-            fitness[i] = get(adult.fitness)
+            fitness_adult = Vector{Real}(undef, fitness_types)
+            for j in 1:fitness_types
+                fitness_adult[j] = adult.fitness[j]
+            end
+            fitness[i] = fitness_adult
         end
 
-        new(parameters, data, probability_mutation, probability_crossover, probability_immigrant, parameters_name, parameters_min, parameters_max, parameters_constrained, significant_figures, population_size, generations_to_convergence, generation, elite, children, adults, fitness)
+        new(parameters, data, probability_mutation, probability_crossover, probability_immigrant, parameters_name, parameters_min, parameters_max, parameters_constrained, significant_figures, population_size, generations_to_convergence, generation, elite, children, adults, fitness, use_fitness)
     end
 
-    function Colony(parameters::AbstractParameters, data::ExperimentalData, probability_mutation::Real, probability_crossover::Real, probability_immigrant::Real, parameters_name::Vector{String}, parameters_min::Vector{Real}, parameters_max::Vector{Real}, parameters_constrained::Vector{Tuple{Integer,Integer}}, significant_figures::Integer, population_size::Integer, generations_to_convergence::Integer, generation::Counter, elite::Creature, children::Vector{Creature}, adults::Vector{Creature}, fitness::Vector{Real})
+    function Colony(parameters::AbstractParameters, data::ExperimentalData, probability_mutation::Real, probability_crossover::Real, probability_immigrant::Real, parameters_name::Vector{String}, parameters_min::Vector{Real}, parameters_max::Vector{Real}, parameters_constrained::Vector{Tuple{Integer,Integer}}, significant_figures::Integer, population_size::Integer, generations_to_convergence::Integer, generation::Counter, elite::Creature, children::Vector{Creature}, adults::Vector{Creature}, fitness::Vector{Vector{Real}}, use_fitness::Integer = 3)
 
-        new(parameters, data, probability_mutation, probability_crossover, probability_immigrant, parameters_name, parameters_min, parameters_max, parameters_constrained, significant_figures, population_size, generations_to_convergence, generation, elite, children, adults, fitness)
+        new(parameters, data, probability_mutation, probability_crossover, probability_immigrant, parameters_name, parameters_min, parameters_max, parameters_constrained, significant_figures, population_size, generations_to_convergence, generation, elite, children, adults, fitness, use_fitness)
     end
 end # Colony
 
@@ -251,11 +270,16 @@ function _tournamentPlay(c::Colony)::Creature
     combatants  = Int(max(3, c.population_size÷50))
     contestants = Vector{Creature}(undef, combatants)
     if c.probability_immigrant > rand()
+        # Add an immigrant to the population.
         mostfit = procreate(c.parameters_min, c.parameters_max, c.parameters_constrained, c.significant_figures)
         model = Model(c.parameters, c.data)
         set!(model, phenotypes(mostfit))
-        set!(mostfit.fitness, _evaluate(model))
+        fitness = _evaluate(model)
+        for i in 1:fitness_types
+            mostfit.fitness[i] = fitness[i]
+        end
     else
+        # Select a creature for mating.
         for i in 1:combatants
             combatant = rand(1:c.population_size)
             contestants[i] = c.adults[combatant]
@@ -263,7 +287,8 @@ function _tournamentPlay(c::Colony)::Creature
         mostfit = contestants[1]
         for i in 2:combatants
             contestant = contestants[i]
-            if contestant.fitness > mostfit.fitness
+            if (contestant.fitness[c.use_fitness]
+                > mostfit.fitness[c.use_fitness])
                 mostfit = contestant
             end
         end
@@ -274,17 +299,16 @@ end # _tournamentPlay
 function _mate!(c::Colony)
     # Elite creature from current generation lives into the next generation.
     c.children[1] = copy(c.elite)
-    c.fitness[1]  = get(c.elite.fitness)
 
     # Mate the population.
     Threads.@threads for i in 2:c.population_size
         parentA = _tournamentPlay(c)
         parentB = _tournamentPlay(c)
-        count = 1
+        self_conception = 0
         while parentB == parentA
-            count   = count + 1
+            self_conception = self_conception + 1
             parentB = _tournamentPlay(c)
-            if count == 25
+            if self_conception == 25
                 # This is for safety. It should not occur in practice.
                 break
             end
@@ -293,7 +317,7 @@ function _mate!(c::Colony)
         c.children[i] = child
     end
 
-    # Ensure their are no clones, i.e., that there are no identical twins.
+    # Ensure there are no clones, i.e., that there are no identical twins.
     for i in 2:c.population_size
         child = c.children[i]
         for j in 1:i-1
@@ -301,8 +325,8 @@ function _mate!(c::Colony)
                 # Identical twins are not permitted within a generation.
                 parentA = _tournamentPlay(c)
                 parentB = _tournamentPlay(c)
-                child   = conceive(parentA, parentB, c.parameters_constrained, c.probability_mutation, c.probability_crossover)
-                c.children[i] = child
+                new_child = conceive(parentA, parentB, c.parameters_constrained, c.probability_mutation, c.probability_crossover)
+                c.children[i] = new_child
                 break
             end
         end
@@ -313,8 +337,11 @@ function _mate!(c::Colony)
         child = c.children[i]
         model = Model(c.parameters, c.data)
         set!(model, phenotypes(child))
-        set!(child.fitness, _evaluate(model))
-        c.fitness[i]  = get(child.fitness)
+        fitness = _evaluate(model)
+        for j in 1:fitness_types
+            child.fitness[j] = fitness[j]
+            c.fitness[i][j]  = fitness[j]
+        end
         c.children[i] = child
     end
 
@@ -323,97 +350,134 @@ end # _mate!
 
 # Statistical functions used to evaluate the fitness of a creature.
 
-# Expectation
+# Statistical moments
 
-function _E(v::Vector{Real})::Real
+function _first_moment(v::Vector{Real})::Real
     N = length(v)
     sum = 0.0
     for n in 1:N
         sum = sum + v[n]
     end
-    E = sum / N
-    return E
-end # _E
+    moment = sum / N
+    return moment
+end # _first_moment
 
-# Variance
-
-function _VAR(v::Vector{Real})::Real
+function _second_moment(v::Vector{Real})::Real
     N = length(v)
-    sqsum = 0.0
+    sum = 0.0
     for n in 1:N
-        sqsum = sqsum + v[n]^2
+        sum = sum + v[n]^2
     end
-    VAR = sqsum / N - _E(v)^2
-    return VAR
-end # _VAR
+    moment = sum / N
+    return moment
+end # _second_moment
 
-# Covariance between model and experiment
-
-function _COV(v1::Vector{Real}, v2::Vector{Real})::Real
-    if length(v1) == length(v2)
-        N = length(v1)
-        sum = 0.0
-        for n in 1:N
-            sum = sum + v1[n] * v2[n]
-        end
-        COV = sum / N - _E(v1) * _E(v2)
-    else
-        msg = "Covariance between two vectors requires they be the same length."
-        error(msg)
+function _mixed_moment(v1::Vector{Real}, v2::Vector{Real})::Real
+    N = length(v1)
+    sum = 0.0
+    for n in 1:N
+        sum = sum + v1[n] * v2[n]
     end
-    return COV
-end # _COV
+    moment = sum / N
+    return moment
+end # _mixed_moment
 
-# Objective function
+# Sample variance
 
-function _objfn(response_model::Vector{Real}, response_experiment::Vector{Real})::Real
-    if length(response_model) == length(response_experiment)
+function _sample_variance(v::Vector{Real})::Real
+    variance = _second_moment(v) - _first_moment(v)^2
+    return variance
+end # _sample_variance
+
+# Sample covariance
+
+function _sample_covariance(v1::Vector{Real}, v2::Vector{Real})::Real
+    covariance = _mixed_moment(v1, v2) - _first_moment(v1) * _first_moment(v2)
+    return covariance
+end # _sample_covariance
+
+# Objective functions
+
+function _objfn(response_experiment::Vector{Real}, response_model::Vector{Real})::Vector{Real}
+
+    if length(response_experiment) == length(response_model)
         N = length(response_experiment)
-        response_max = 0.0
-        for n in 1:N
-            response_max = max(response_max, response_experiment[n]^2)
-        end
-        ϕ = response_max / (_VAR(response_model) + _VAR(response_experiment) - 2_COV(response_model, response_experiment))
     else
-        msg = "Model and experimental responses must be the same dimension."
+        msg = "Lengths for model and experimental response vectors must equal."
         error(msg)
     end
-    return ϕ
+
+    # Determine the factor of normalization.
+    res_max = 0.0
+    for n in 1:N
+        res_max = max(res_max, abs(response_experiment[n]))
+    end
+
+    # Normalize the incoming vectors.
+    res_exp = Vector{Real}(undef, N)
+    res_mod = Vector{Real}(undef, N)
+    res_err = Vector{Real}(undef, N)
+    for n in 1:N
+        res_exp[n] = response_experiment[n] / res_max   # ∈ [-1, 1]
+        res_mod[n] = response_model[n] / res_max
+        res_err[n] = abs(res_exp[n] - res_mod[n])
+    end
+
+    # Get the various statistics for these normalized vectors.
+    E_exp   = _first_moment(res_exp)
+    E_mod   = _first_moment(res_mod)
+    VAR_exp = _sample_variance(res_exp)
+    VAR_mod = _sample_variance(res_mod)
+    COV     = _sample_covariance(res_exp, res_mod)
+
+    # (minimize) expectation for the magnitude of error
+    ϕ₁ = _first_moment(res_err)
+
+    # Here error is the experimental response minus the model's response.
+
+    # (minimize) expectation for the squared error:
+    # E((res_exp - res_mod)²)
+    ϕ₂ = VAR_exp + VAR_mod - 2COV + E_exp^2 + E_mod^2 -2E_exp * E_mod
+
+    # (minimize) variance in the error:
+    # VAR(res_exp - res_mod) where VAR(X) = E(X²) - (E(X))²
+    ϕ₃ = VAR_exp + VAR_mod - 2COV
+
+    # (maximize) covariance between experiment response and model prediction
+    ϕ₄ = COV
+
+    # Reciprocal values will maximize minimum objective functions.
+    fitness = Vector{Real}(undef, fitness_types)
+    fitness[1] = 1 / ϕ₁
+    fitness[2] = 1 / ϕ₂
+    fitness[3] = 1 / ϕ₃
+    fitness[4] = ϕ₄
+
+    return fitness
 end # _objfn
 
-function _evaluate(m::Model)::Real
-    #=
-    model_responses = solve(m)
-    fitness = 0.0
-    for i in 1:m.d.experiments
-        squared_error = 0.0
-        for j in 1:m.d.variables_response[i]
-            for k in 1:m.d.data_points[i]
-                squared_error = (squared_error
-                    + ((model_responses[i][j,k] - m.d.responses[i][j,k])
-                    / m.d.responses_std[i][j])^2)
-            end
-        end
-        twonorm = sqrt(squared_error)
-        fitness = fitness + 1.0 / twonorm
-    end
-    return fitness
-    =#
+function _evaluate(m::Model)::Vector{Real}
+
     model_responses = solve(m)
 
     data_points = 0
-    for i in 1:m.d.experiments
-        data_points = data_points + m.d.data_points[i]
+    for exp in 1:m.d.experiments
+        data_points = (data_points
+            + m.d.variables_response[exp] * m.d.data_points[exp])
     end
 
-    ϕ = 0.0
+    fitness = Vector{Real}(undef, fitness_types)
     for i in 1:m.d.experiments
         for j in 1:m.d.variables_response[i]
-            ϕ = ϕ + (m.d.data_points[i] / data_points) * _objfn(model_responses[i][j,:], m.d.responses[i][j,:])
+            ϕ = _objfn(m.d.responses[i][j,:], model_responses[i][j,:])
+            ratio = m.d.data_points[i] / data_points
+            for k in 1:fitness_types
+                fitness[k] = fitness[k] + ratio * ϕ[k]
+            end
         end
     end
 
-    return ϕ
+    return fitness
 end # _evaluate
 
 function _stdDevElite(c::Colony)::Vector{Real}
@@ -466,13 +530,16 @@ function advance_to_next_generation!(c::Colony)
     elite = c.adults[1]
     for i in 2:c.population_size
         adult = c.adults[i]
-        if adult.fitness > c.elite.fitness
+        if adult.fitness[c.use_fitness] > elite.fitness[c.use_fitness]
             elite = adult
         end
     end
-    set!(c.elite.fitness, get(elite.fitness))
+    for i in 1:fitness_types
+        c.elite.fitness[i] = elite.fitness[i]
+    end
     for chromosome in 1:c.elite.genetics.chromosomes
-        c.elite.genetics.genotypes[chromosome] = elite.genetics.genotypes[chromosome]
+        (c.elite.genetics.genotypes[chromosome]
+            = elite.genetics.genotypes[chromosome])
     end
     return nothing
 end # advanceToNextGeneration
@@ -481,36 +548,49 @@ function report(c::Colony)::String
     s = ""
     s = string(s, "Statistics for generation ", tostring(c.generation))
     s = string(s, " with a population size of ", c.population_size, ".\n")
-    s = string(s, "Optimum fitness and population statistics for fitness:\n")
-    fitness = get(c.elite.fitness)
+    s = string(s, "Optimum fitness and population statistics for fitness,\n")
+    if c.use_fitness < 4
+        s = string(s, "where fitness minimizes ")
+    else
+        s = string(s, "where fitness maximizes ")
+    end
+    if c.use_fitness == 1
+        s = string(s, "expectation for the magnitude in error, are:\n")
+    elseif c.use_fitness == 2
+        s = string(s, "expectation for the squared error, are:\n")
+    elseif c.use_fitness == 3
+        s = string(s, "sample variance for the error, are:\n")
+    else # c.use_fitness == 4
+        s = string(s, "sample covariance between experiment and model, are:\n")
+    fitness = c.elite.fitness[c.use_fitness]
     if fitness ≥ 0.0
         s = string(s, "   optimum fitness  ", _2string(c, fitness), "\n")
     else
         s = string(s, "   optimum fitness ", _2string(c, fitness), "\n")
     end
-    statMean = mean(c.fitness)
-    if statMean ≥ 0.0
-        s = string(s, "   arithmetic mean  ", _2string(c, statMean), "\n")
+    stat_mean = mean(c.fitness[:][c.use_fitness])
+    if stat_mean ≥ 0.0
+        s = string(s, "   arithmetic mean  ", _2string(c, stat_mean), "\n")
     else
-        s = string(s, "   arithmetic mean ", _2string(c, statMean), "\n")
+        s = string(s, "   arithmetic mean ", _2string(c, stat_mean), "\n")
     end
-    statMedian = median(c.fitness)
-    if statMedian ≥ 0.0
-        s = string(s, "   median           ", _2string(c, statMedian), "\n")
+    stat_median = median(c.fitness[:][c.use_fitness])
+    if stat_median ≥ 0.0
+        s = string(s, "   median           ", _2string(c, stat_median), "\n")
     else
-        s = string(s, "   median          ", _2string(c, statMedian), "\n")
+        s = string(s, "   median          ", _2string(c, stat_median), "\n")
     end
-    statSkewness = skewness(c.fitness)
-    if statSkewness ≥ 0.0
-        s = string(s, "   skewness         ", _2string(c, statSkewness), "\n")
+    stat_skewness = skewness(c.fitness[:][c.use_fitness])
+    if stat_skewness ≥ 0.0
+        s = string(s, "   skewness         ", _2string(c, stat_skewness), "\n")
     else
-        s = string(s, "   skewness        ", _2string(c, statSkewness), "\n")
+        s = string(s, "   skewness        ", _2string(c, stat_skewness), "\n")
     end
-    statKurtosis = kurtosis(c.fitness)
-    if statKurtosis ≥ 0.0
-        s = string(s, "   excess kurtosis  ", _2string(c, statKurtosis), "\n")
+    stat_kurtosis = kurtosis(c.fitness[:]{c.use_fitness})
+    if stat_kurtosis ≥ 0.0
+        s = string(s, "   excess kurtosis  ", _2string(c, stat_kurtosis), "\n")
     else
-        s = string(s, "   excess kurtosis ", _2string(c, statKurtosis), "\n")
+        s = string(s, "   excess kurtosis ", _2string(c, stat_kurtosis), "\n")
     end
     s = string(s, "The genome from the most fit creature:\n")
     s = string(s, tostring(c.elite.genetics), "\n")

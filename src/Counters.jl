@@ -36,7 +36,7 @@ mutable struct Counter
     end
 
     function Counter(count::Integer)
-        new(count)
+        new(copy(count))
     end
 end # Counter
 

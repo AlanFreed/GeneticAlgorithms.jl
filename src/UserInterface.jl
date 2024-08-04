@@ -158,8 +158,8 @@ solve(m::Model) = solve(m.θ, m)
 #=
 As a template, consider:
 
-function solve(θ::P, m::Model)::Vector{Matrix{Real}}
-    # where P <: AbstractParameters
+function GeneticAlgorithms.solve(θ::MyParameters, m::Model)::Vector{Matrix{Real}}
+    # where MyParameters <: AbstractParameters
     # This function returns the model's response as a vector of matrices:
     #   [exp] x [nRes[exp] x nPts[exp]]  indexed as  [i][j,k]  where
     #       exp         experiment number with values  exp ∈ [1, nExp]

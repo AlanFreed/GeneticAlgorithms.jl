@@ -1,6 +1,6 @@
 #=
 Created on Thr 14 Jun 2024
-Updated on Thr 25 Jul 2024
+Updated on Sun 04 Aug 2024
 Translated from python (code dated 09/08/2017) with enhancements for julia.
 =#
 
@@ -109,13 +109,12 @@ export
 
     # constants
     dominant,
-    recessive
+    recessive,
+    fitness_types
 
 include("Expressions.jl")
 
 include("Counters.jl")
-
-include("Variables.jl")
 
 include("Genes.jl")
 

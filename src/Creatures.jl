@@ -1,4 +1,15 @@
 """
+There are four possible measures of fitness, i.e., objective functions, from
+which one can choose, with the default being set at 3 when creating a colony.
+    1) Minimize expectation in magnitude of error.
+    2) Minimize expectation in squared error.
+    3) Minimize variance in error.
+    4) Maximize covariance between experimental response and model prediction.
+Values assigned to the fitness vector are evaluated during the mating process.
+"""
+const fitness_types = 4
+
+"""
 A creature has the genetic material of a genome, plus a means for its origin.
 After a creature (its object) has been created, it needs to have its genetic
 material assigned to it.  This can occur in one of three ways:
@@ -11,9 +22,14 @@ through conception, with a possibility of immigrants entering the population.
 
 A creature has an interface of:
 
-mutable struct Creature
-    fitness::Real       # a measure of quality for the set of parameters
-    genetics::Genome    # the genetic information: an array of chromosomes
+struct Creature
+    fitness::Vector     # Measures of quality for the set of parameters, viz.,
+                        # fitness = [ϕ₁ ϕ₂ ϕ₃ ϕ₄] where:
+                        #    ϕ₁ = 1 / expectation for the magnitude of error,
+                        #    ϕ₂ = 1 / expectation for the squared error,
+                        #    ϕ₃ = 1 / variance in the error,
+                        #    ϕ₄ = the covariance between experiment and model.
+    genetics::Genome    # The genetic information: an array of chromosomes.
 end
 
 Internal constructor
@@ -21,6 +37,8 @@ Internal constructor
     c = Creature(parameters_min, parameters_max, parameters_constrained,
                  significant_figures, probability_mutation,
                  probability_crossover)
+
+where  (a, b) = parameters_constrained[i]  imposes the constraint  θ[a] < θ[b]
 
 External constructors
 
@@ -44,20 +62,24 @@ Methods
     θ = phenotypes(c)   returns an array of the model's parameters 'θ'
 """
 struct Creature
-    fitness::Variable
+    fitness::Vector{Real}
     genetics::Genome
 
     # Internal constructors
 
     function Creature(parameters_min::Vector{Real}, parameters_max::Vector{Real}, significant_figures::Integer)
 
-        fitness  = Variable(-1.0)
+        fitness = Vector{Real}(undef, fitness_types)
+        for i in 1:fitness_types
+            fitness[i] = -1
+        end
+
         genetics = Genome(parameters_min, parameters_max, significant_figures)
 
         new(fitness, genetics)
     end
 
-    function Creature(fitness::Variable, genetics::Genome)
+    function Creature(fitness::Vector{Real}, genetics::Genome)
         new(fitness, genetics)
     end
 end # Creature
@@ -137,8 +159,12 @@ function conceive(parentA::Creature, parentB::Creature, parameters_constrained::
 
     genetics_child = crossover(parentA.genetics, parentB.genetics, probability_mutation, probability_crossover)
 
-    fitness = Variable(-1.0)
-    child   = Creature(fitness, genetics_child)
+    fitness_child = Vector{Real}(undef, fitness_types)
+    for i in 1:fitness_types
+        fitness_child[i] = -1
+    end
+
+    child = Creature(fitness_child, genetics_child)
 
     if length(parameters_constrained) > 0
         reconceive = false
@@ -155,7 +181,7 @@ function conceive(parentA::Creature, parentB::Creature, parameters_constrained::
             reconceive     = false
             reconceptions  = reconceptions + 1
             genetics_child = crossover(parentA.genetics, parentB.genetics, probability_mutation, probability_crossover)
-            child = Creature(fitness, genetics_child)
+            child = Creature(fitness_child, genetics_child)
             parameters_child = phenotypes(child)
             for i in 1:length(parameters_constrained)
                 (pL, pR) = parameters_constrained[i]
@@ -183,12 +209,13 @@ end # conceive
 function Base.:(==)(cL::Creature, cR::Creature)::Bool
     if cL.genetics ≠ cR.genetics
         return false
+    else
+        return true
     end
-    return true
 end # ==
 
 function Base.:≠(cL::Creature, cR::Creature)::Bool
-    if !(cL == cR)
+    if cL.genetics ≠ cR.genetics
         return true
     else
         return false
