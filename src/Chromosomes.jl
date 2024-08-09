@@ -45,23 +45,23 @@ Methods
 """
 struct Chromosome
     # Fields that bound a parameter.
-    parameter_min::Real
-    parameter_max::Real
+    parameter_min::Float64
+    parameter_max::Float64
     # Fields that describe a chromosome.
-    genes::Integer
-    expressions::Integer
+    genes::Int64
+    expressions::Int64
     genotype::Vector{Gene}
 
     # constructor
 
-    function Chromosome(parameter_min::Real, parameter_max::Real, significant_figures::Integer)
+    function Chromosome(parameter_min::Float64, parameter_max::Float64, significant_figures::Int64)
 
         if parameter_min ≈ parameter_max
 
             # Handle the case of a fixed parameter.
             parameter_min = parameter_max
-            genes         = 0
-            expressions   = 0
+            genes         = Int64(0)
+            expressions   = Int64(0)
             genotype      = Vector{Gene}(undef, 0)
 
         else
@@ -74,20 +74,20 @@ struct Chromosome
 
             # Number of decades that span [parameter_min, parameter_max].
             if parameter_min > 0.0
-                logdecades = log10(parameter_max/parameter_min)
+                log_decades = log10(parameter_max/parameter_min)
             elseif parameter_max < 0.0
-                logdecades = log10(parameter_min/parameter_max)
+                log_decades = log10(parameter_min/parameter_max)
             elseif parameter_min ≈ 0.0
-                logdecades = log10(parameter_max)
+                log_decades = log10(parameter_max)
             elseif parameter_max ≈ 0.0
-                logdecades = log10(-parameter_min)
+                log_decades = log10(-parameter_min)
             else # parameter_min < 0.0 and parameter_max > 0.0
-                logdecades = log10(-parameter_min*parameter_max)
+                log_decades = log10(-parameter_min*parameter_max)
             end
-            if logdecades > 0.0
-                decades = Int(ceil(logdecades))
+            if log_decades > 0.0
+                decades = Int(ceil(log_decades))
             else
-                decades = abs(Int(floor(logdecades)))
+                decades = Int(abs(floor(log_decades)))
             end
             if decades < 1
                 decades = 1
@@ -114,18 +114,18 @@ struct Chromosome
             end
 
             # Number of genes and the number of possible gene expressions.
-            genes = genes_per_decade * decades
+            genes = Int64(genes_per_decade * decades)
             if genes > 63
-                genes = 63
+                genes = Int64(63)
             end
             if genes < 63
-                expressions = 2^genes - 1
+                expressions = Int64(2^genes - 1)
             else
                 expressions = typemax(Int64)
             end
 
             # This constructor creates a random genotype
-            genotype  = Vector{Gene}(undef, genes)
+            genotype = Vector{Gene}(undef, genes)
             if genes > 0
                 # Use the following temporary variables.
                 binary    = Vector{Bool}(undef, genes)
@@ -161,12 +161,21 @@ struct Chromosome
             end
         end
 
-        new(parameter_min, parameter_max, genes, expressions, genotype)
+        new(parameter_min, parameter_max, genes, expressions, genotype)::Chromosome
     end
 
-    function Chromosome(parameter_min::Real, parameter_max::Real, genes::Integer, expressions::Integer, genotype::Vector{Gene})
-        
-        new(parameter_min, parameter_max, genes, expressions, genotype)
+    function Chromosome(parameter_min::Real, parameter_max::Real, significant_figures::Integer)
+
+        p_min  = convert(Float64, parameter_min)
+        p_max  = convert(Float64, parameter_max)
+        sigfig = convert(Int64, significant_figures)
+
+        return Chromosome(p_min, p_max, sigfig)
+    end
+
+    function Chromosome(parameter_min::Float64, parameter_max::Float64, genes::Int64, expressions::Int64, genotype::Vector{Gene})
+
+        new(parameter_min, parameter_max, genes, expressions, genotype)::Chromosome
     end
 end # Chromosome
 
@@ -197,7 +206,7 @@ end # ≠
 
 # methods
 
-function Base.:(getindex)(c::Chromosome, index::Integer)::Gene
+function Base.:(getindex)(c::Chromosome, index::Int)::Gene
     if c.genes == 0
         return nothing
     elseif index ≥ 1 && index ≤ c.genes
@@ -209,7 +218,7 @@ function Base.:(getindex)(c::Chromosome, index::Integer)::Gene
     return copy(gene)
 end # getindex
 
-function Base.:(setindex!)(c::Chromosome, gene::Gene, index::Integer)
+function Base.:(setindex!)(c::Chromosome, gene::Gene, index::Int)
     if c.genes == 0
         return nothing
     elseif index ≥ 1 && index ≤ c.genes
@@ -233,17 +242,19 @@ function Base.:(copy)(c::Chromosome)::Chromosome
     return Chromosome(parameter_min, parameter_max, genes, expressions, genotype)
 end # copy
 
-function tostring(c::Chromosome)::String
-    str = ""
+function toBinaryString(c::Chromosome)::String
+    s = ""
     for i in 1:c.genes
-        str = string(str, tostring(c.genotype[i]))
+        gene = c.genotype[i]
+        s = string(s, toBinaryString(gene))
     end
-    return str
-end # tostring
+    return s
+end # toBinaryString
 
-function mutate!(c::Chromosome, probability_mutation::Real)
+function mutate!(c::Chromosome, probability_mutation::Float64)
     for i in 1:c.genes
-        mutate!(c.genotype[i], probability_mutation)
+        gene = c.genotype[i]
+        mutate!(gene, probability_mutation)
     end
     return nothing
 end # mutate!
@@ -251,12 +262,13 @@ end # mutate!
 """
 Two chromosomes can reproduce creating an offspring, which is what procedure
 crossover mimics.  It accepts two parent chromosomes along with probabilities of
-occurrence for mutation and crossover (a splitting of the chromosome between a
-random pair of neighboring genes).  The outcome is a child of the parents.
-There is a small chance that the child will be a clone of one of its parents--a
-chance that is dictated by the assigned probabilities.
+occurrence for mutation (a gene swapping its expression) and crossover (a
+splitting of the chromosome between a random pair of neighboring genes).  The
+outcome is a child of the parents.  There is a small chance that the child will
+be a clone of one of its parents--a chance that is dictated by the assigned
+probabilities.
 """
-function crossover(parentA::Chromosome, parentB::Chromosome, probability_mutation::Real, probability_crossover::Real)::Chromosome
+function crossover(parentA::Chromosome, parentB::Chromosome, probability_mutation::Float64, probability_crossover::Float64)::Chromosome
 
     if probability_crossover < 0.0 || probability_crossover ≥ 1.0
         msg = "A probability of crossover must belong to unit interval [0, 1)."
@@ -312,7 +324,8 @@ function crossover(parentA::Chromosome, parentB::Chromosome, probability_mutatio
 end # crossover
 
 #=
-The decode/encode map between a real phenotype and its haploid representation.
+The decode/encode map between a real phenotype and its haploid genotype
+representation.
 
 The algorithm for converting between binary and gray codes assumes the most
 significant bit (MSB) is at the [Low] position of the code, while the least
@@ -334,10 +347,10 @@ function _gray2binary(gray::Vector{Bool})::Vector{Bool}
     return binary
 end # _gray2binary
 
-function _binary2integer(binary::Vector{Bool})::Integer
+function _binary2integer(binary::Vector{Bool})::Int64
     bits    = length(binary)
-    integer = 0
-    power   = 1
+    integer = Int64(0)
+    power   = Int64(1)
     for i in bits:-1:1
         if binary[i] == dominant
             integer = integer + power
@@ -347,7 +360,7 @@ function _binary2integer(binary::Vector{Bool})::Integer
     return integer
 end # _binary2integer
 
-function _integer2phenotype(c::Chromosome, integer::Integer)::Real
+function _integer2phenotype(c::Chromosome, integer::Int64)::Float64
     phenotype = (c.parameter_min + (integer / c.expressions)
         * (c.parameter_max - c.parameter_min))
     if phenotype < c.parameter_min
@@ -359,13 +372,13 @@ function _integer2phenotype(c::Chromosome, integer::Integer)::Real
     return phenotype
 end # _integer2phenotype
 
-function decode(c::Chromosome)::Real
+function decode(c::Chromosome)::Float64
     if c.genes == 0
         phenotype = copy(c.parameter_min)
     else
         gray = Vector{Bool}(undef, c.genes)
         for i in 1:c.genes
-            if isdominant(c.genotype[i])
+            if isDominant(c.genotype[i])
                 gray[i] = dominant
             else
                 gray[i] = recessive
@@ -380,19 +393,16 @@ end # decode
 
 # Methods to encode a parameter.
 
-function _phenotype2integer(c::Chromosome, phenotype::Real)::Integer
+function _phenotype2integer(c::Chromosome, phenotype::Float64)::Int64
     fraction = (phenotype - c.parameter_min) / (c.parameter_max - c.parameter_min)
-    integer  = Int(round(fraction * c.expressions))
+    integer  = Int64(round(fraction * c.expressions))
     if integer < 0
-        integer = 0
-    end
-    if integer > typemax(Int64)
-        integer = typemax(Int64)
+        integer = Int64(0)
     end
     return integer
 end # _phenotype2integer
 
-function _integer2binary(c::Chromosome, integer::Integer)::Vector{Bool}
+function _integer2binary(c::Chromosome, integer::Int64)::Vector{Bool}
     binary    = Vector{Bool}(undef, c.genes)
     atinteger = integer
     gene      = c.genes
@@ -422,9 +432,9 @@ function _binary2gray(binary::Vector{Bool})::Vector{Bool}
     return gray
 end # _binary2gray
 
-function encode!(c::Chromosome, phenotype::Real)
+function encode!(c::Chromosome, phenotype::Float64)
     if c.genes == 0
-        # do nothing
+        return nothing
     elseif phenotype ≥ c.parameter_min && phenotype ≤ c.parameter_max
         integer = _phenotype2integer(c, phenotype)
         binary  = _integer2binary(c, integer)
@@ -442,3 +452,58 @@ function encode!(c::Chromosome, phenotype::Real)
     end
     return nothing
 end # encode
+
+# Methods for storing and retrieving a Chromosome to and from a file.
+
+StructTypes.StructType(::Type{Chromosome}) = StructTypes.Struct()
+
+"""
+Method:\n
+    toFile(c::GeneticAlgorithms.Chromosome, json_stream::IOStream)\n
+Writes data structure `c` to the IOStream `json_stream.`\n
+For example, consider the code fragment:\n
+    json_stream = PhysicalFields.openJSONWriter(<my_dir_path>, <my_file_name>)\n
+    ...\n
+    GeneticAlgorithm.toFile(c::Chromosome, json_stream::IOStream)\n
+    ...\n
+    PhysicalFields.closeJSONStream(json_stream::IOStream)\n
+where <my_dir_path> is the path to your working directory wherein the file
+<my_file_name> that is to be written to either exists or will be created, and
+which must have a .json extension.
+"""
+function toFile(c::Chromosome, json_stream::IOStream)
+    if isopen(json_stream)
+        JSON3.write(json_stream, c)
+        write(json_stream, '\n')
+    else
+        msg = "The supplied JSON stream is not open."
+        error(msg)
+    end
+    flush(json_stream)
+    return nothing
+end
+
+"""
+Method:\n
+    fromFile(c::GeneticAlgorithms.Chromosome, json_stream::IOStream)\n
+Reads a Chromosome from the IOStream `json_stream.`\n
+For example, consider the code fragment:\n
+    json_stream = PhysicalFields.openJSONReader(<my_dir_path>, <my_file_name>)\n
+    ...\n
+    c = GeneticAlgorithms.fromFile(GeneticAlgorithms.Chromosome, json_stream)\n
+    ...\n
+    PhysicalFields.closeJSONStream(json_stream)\n
+that returns `c,` which is an object of type GeneticAlgorithms.Chromosome. Here
+<my_dir_path> is the path to your working directory wherein the file 
+<my_file_name> that is to be read from must exist, and which is to have a
+.json extension.
+"""
+function fromFile(::Type{Chromosome}, json_stream::IOStream)::Chromosome
+    if isopen(json_stream)
+        c = JSON3.read(readline(json_stream), Chromosome)
+    else
+        msg = "The supplied JSON stream is not open."
+        error(msg)
+    end
+    return c
+end

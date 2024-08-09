@@ -1,6 +1,6 @@
 #=
 Created on Thr 14 Jun 2024
-Updated on Sun 04 Aug 2024
+Updated on Wed 07 Aug 2024
 Translated from python (code dated 09/08/2017) with enhancements for julia.
 =#
 
@@ -20,10 +20,25 @@ known as tournament play, where the most fit contestant from a random selection
 of contestants is chosen for mating.  Typically, each successive generation is
 more fit than its predecessor, i.e., the colony's quality improves with time.
 
-To install this package, download the following package from its URL address:
+To install this package, download the following packages from their URL address:
 
 using Pkg
+Pkg.add(url = "https://github.com/AlanFreed/PhysicalFields.jl")
 Pkg.add(url = "https://github.com/AlanFreed/GeneticAlgorithms.jl")
+
+JSON files, as implemented by JSON3.jl in Julia, handle the core types:
+    Object, Array, String, Number, Bool and Null
+where a Number is either a 64-bit integer of a 64-bit floating point number;
+hence, all integer fields and all real fields must be described via 64 bits.
+A JSON3.Object is an immutable Dict type, while a JSON3.Array is an immutable
+Vector type. Command copy(JSON3.Object) will return a mutable Dict object,
+while command copy(JSON3.Array) will return a mutable Vector object.
+
+The following GeneticAlgorithm types can be read-from & written-to a json file.
+    Gene, Chromosome, Genome, Creature, ExperimentalData, Colony and
+    GeneticAlgorithm.
+Users must make their MyParameters <: AbstractParameters JSON3 compatible to be
+able to read-from and write-to a file.  See the examples on how to do this.
 
 The data structure for genetic algorithm has an interface of
 
@@ -49,8 +64,11 @@ and procedure
 module GeneticAlgorithms
 
 using
+    JSON3,
+    PhysicalFields,
     Statistics,
-    StatsBase
+    StatsBase,
+    StructTypes
 
 import
     Printf: @sprintf
@@ -87,34 +105,35 @@ export
     # arithmetic binary
     +, -, *, ÷, %, /, ^,
 
-    # methods
-    copy,
-    get,
-    getindex,
-    set!,
-    setindex!,
-    tostring,
-
-    isdominant,
-    isrecessive,
-    mutate!,
-    decode,
-    encode!,
-    crossover,
-    phenotypes,
+    # higher-level methods
     solve,
     advance_to_next_generation!,
     report,
     run,
 
+    # lower-level methods
+    copy,
+    get,
+    getindex,
+    set!,
+    setindex!,
+    toString,
+    toBinaryString,
+    toFile,
+    fromFile,
+
+    isDominant,
+    isRecessive,
+    mutate!,
+    decode,
+    encode!,
+    crossover,
+    phenotypes,
+
     # constants
     dominant,
     recessive,
     fitness_types
-
-include("Expressions.jl")
-
-include("Counters.jl")
 
 include("Genes.jl")
 
@@ -136,7 +155,7 @@ struct GeneticAlgorithm
     # constructor
 
     function GeneticAlgorithm(colony::Colony)
-        new(colony)
+        new(colony)::GeneticAlgorithm
     end
 end # GeneticAlgorithm
 

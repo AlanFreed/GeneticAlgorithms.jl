@@ -1,15 +1,15 @@
 """
 struct ExperimentalData
-    experiments::Integer                    # kinds/types of experimental data
-    variables_control::Vector{Integer}      # control  variables per experiment
-    variables_response::Vector{Integer}     # response variables per experiment
-    data_points::Vector{Integer}            # experimental data  per experiment
-    controls::Vector{Matrix{Real}}          # controlled data:
-                                            # [exp] x [nCtl[exp] x nPts[exp]]
-    responses::Vector{Matrix{Real}}         # response data:
-                                            # [exp] x [nRes[exp] x nPts[exp]]
-    responses_std::Vector{Vector{Real}}     # standard deviation for responses
-                                            # [exp] x [nRes[exp]]
+    experiments::Int64                      # kinds/types of experimental data
+    variables_control::Vector{Int64}        # control  variables per experiment
+    variables_response::Vector{Int64}       # response variables per experiment
+    data_points::Vector{Int64}              # experimental data  per experiment
+    controls::Vector{Matrix{Float64}}       # controlled data:
+                                                # [exp]x[nCtl[exp] x nPts[exp]]
+    responses::Vector{Matrix{Float64}}      # response data:
+                                                # [exp]x[nRes[exp] x nPts[exp]]
+    responses_std::Vector{Vector{Float64}}  # standard deviation for responses
+                                                # [exp]x[nRes[exp]]
 end
 
 Arrays variables_control, variables_response and data_points index as [i], where
@@ -21,20 +21,20 @@ Array responses_std indexes as [i][j], where i ∈ [1, experiments] and where
     j ∈ [1, variables_response[i]].
 """
 struct ExperimentalData
-    experiments::Integer                    # kinds of experimental data
-    variables_control::Vector{Integer}      # control  variables per experiment
-    variables_response::Vector{Integer}     # response variables per experiment
-    data_points::Vector{Integer}            # experimental data  per experiment
-    controls::Vector{Matrix{Real}}          # controlled data:
-                                            # [exp] x [nCtl[exp] x nPts[exp]]
-    responses::Vector{Matrix{Real}}         # response data:
-                                            # [exp] x [nRes[exp] x nPts[exp]]
-    responses_std::Vector{Vector{Real}}     # standard deviation for responses
-                                            # [exp] x [nRes[exp]]
+    experiments::Int64                      # kinds of experimental data
+    variables_control::Vector{Int64}        # control  variables per experiment
+    variables_response::Vector{Int64}       # response variables per experiment
+    data_points::Vector{Int64}              # experimental data  per experiment
+    controls::Vector{Matrix{Float64}}       # controlled data:
+                                                # [exp]x[nCtl[exp] x nPts[exp]]
+    responses::Vector{Matrix{Float64}}      # response data:
+                                                # [exp]x[nRes[exp] x nPts[exp]]
+    responses_std::Vector{Vector{Float64}}  # standard deviation for responses
+                                                # [exp]x[nRes[exp]]
 
     # constructor
 
-    function ExperimentalData(experiments::Integer, variables_control::Vector{Integer}, variables_response::Vector{Integer}, data_points::Vector{Integer}, controls::Vector{Matrix{Real}}, responses::Vector{Matrix{Real}})
+    function ExperimentalData(experiments::Int64, variables_control::Vector{Int64}, variables_response::Vector{Int64}, data_points::Vector{Int64}, controls::Vector{Matrix{Float64}}, responses::Vector{Matrix{Float64}})
 
         # verify inputs
 
@@ -59,9 +59,9 @@ struct ExperimentalData
 
         # Create and populate the vector for standard deviations in response.
 
-        responses_std = Vector{Vector{Real}}(undef, experiments)
+        responses_std = Vector{Vector{Float64}}(undef, experiments)
         for exp = 1:experiments
-            responses_std[exp] = Vector{Real}(undef, variables_response[exp])
+            responses_std[exp] = Vector{Float64}(undef, variables_response[exp])
             for res = 1:variables_response[exp]
                 responses_std[exp][res] = std(responses[exp][res, :])
             end
@@ -70,11 +70,113 @@ struct ExperimentalData
         new(experiments, variables_control, variables_response, data_points, controls, responses, responses_std)
     end
 
-    function ExperimentalData(experiments::Integer, variables_control::Vector{Integer}, variables_response::Vector{Integer}, data_points::Vector{Integer}, controls::Vector{Matrix{Real}}, responses::Vector{Matrix{Real}}, responses_std::Vector{Vector{Real}})
+    function ExperimentalData(experiments::Integer, variables_control::Vector{Integer}, variables_response::Vector{Integer}, data_points::Vector{Integer}, controls::Vector{Matrix{Real}}, responses::Vector{Matrix{Real}})
 
-        new(experiments, variables_control, variables_response, data_points, controls, responses, responses_std)
+        if (length(variables_control)     ≠ experiments
+            || length(variables_response) ≠ experiments
+            || length(data_points)        ≠ experiments
+            || length(controls)           ≠ experiments
+            || length(responses)          ≠ experiments)
+            msg = "Vector lengths must equal the number of experiments."
+            throw(DimensionMismatch, msg)
+        end
+
+        exp = convert(Int64, experiments)
+        v_con = Vector{Int64}(undef, exp)
+        v_res = Vector{Int64}(undef, exp)
+        datPt = Vector{Int64}(undef, exp)
+        for i in 1:exp
+            v_con[i] = convert(Int64, variables_control[i])
+            v_res[i] = convert(Int64, variables_response[i])
+            datPt[i] = convert(Int64, data_points)
+        end
+
+        ctrl = Vector{Matrix}(undef, exp)
+        for i in 1:exp
+            matrix = Matrix{Float64}(undef, v_con[i], datPt[i])
+            for j in 1:v_con[i]
+                for k in 1:datPt[i]
+                    matrix[j,k] = convert(Float64, controls[i][j,k])
+                end
+            end
+            ctrl[i] = matrix
+        end
+
+        resp = Vector{Matrix}(undef, exp)
+        for i in 1:exp
+            matrix = Matrix{Float64}(undef, v_res[i], datPt[i])
+            for j in 1:v_res[i]
+                for k in 1:datPt[i]
+                    matrix[j,k] = convert(Float64, responses[i][j,k])
+                end
+            end
+            resp[i] = matrix
+        end
+
+        return ExperimentalData(exp, v_con, v_res, datPt, ctrl, resp)
+    end
+
+    function ExperimentalData(experiments::Int64, variables_control::Vector{Int64}, variables_response::Vector{Int64}, data_points::Vector{Int64}, controls::Vector{Matrix{Float64}}, responses::Vector{Matrix{Float64}}, responses_std::Vector{Vector{Float64}})
+
+        new(exp, v_con, v_res, datPt, controls, responses, responses_std)::ExperimentalData
+        end
     end
 end # ExperimentalData
+
+# Methods for storing and retrieving ExperimentalData to and from a file.
+
+StructTypes.StructType(::Type{ExperimentalData}) = StructTypes.Struct()
+
+"""
+Method:\n
+    toFile(c::GeneticAlgorithms.ExperimentalData, json_stream::IOStream)\n
+Writes data structure `c` to the IOStream `json_stream.`\n
+For example, consider the code fragment:\n
+    json_stream = PhysicalFields.openJSONWriter(<my_dir_path>, <my_file_name>)\n
+    ...\n
+    GeneticAlgorithm.toFile(d::ExperimentalData, json_stream::IOStream)\n
+    ...\n
+    PhysicalFields.closeJSONStream(json_stream::IOStream)\n
+where <my_dir_path> is the path to your working directory wherein the file
+<my_file_name> that is to be written to either exists or will be created, and
+which must have a .json extension.
+"""
+function toFile(d::ExperimentalData, json_stream::IOStream)
+    if isopen(json_stream)
+        JSON3.write(json_stream, d)
+        write(json_stream, '\n')
+    else
+        msg = "The supplied JSON stream is not open."
+        error(msg)
+    end
+    flush(json_stream)
+    return nothing
+end
+
+"""
+Method:\n
+    fromFile(c::GeneticAlgorithms.ExperimentalData, json_stream::IOStream)\n
+Reads a Chromosome from the IOStream `json_stream.`\n
+For example, consider the code fragment:\n
+    json_stream = PhysicalFields.openJSONReader(<my_dir_path>, <my_file_name>)\n
+    ...\n
+    d = GeneticAlgorithms.fromFile(GeneticAlgorithms.ExperimentalData, json_stream)\n
+    ...\n
+    PhysicalFields.closeJSONStream(json_stream)\n
+that returns `d,` which is an object of type GeneticAlgorithms.ExperimentalData. Here
+<my_dir_path> is the path to your working directory wherein the file 
+<my_file_name> that is to be read from must exist, and which is to have a
+.json extension.
+"""
+function fromFile(::Type{ExperimentalData}, json_stream::IOStream)::ExperimentalData
+    if isopen(json_stream)
+        c = JSON3.read(readline(json_stream), ExperimentalData)
+    else
+        msg = "The supplied JSON stream is not open."
+        error(msg)
+    end
+    return c
+end
 
 """
 AbstractParameters: a parent type for all Parameter types.
@@ -100,27 +202,27 @@ from which a model is then created via
 To assign or retrieve values as real vectors to/from a model's parameters, call
 =#
 
-function Base.:(get)(m::Model)::Vector{Real}
+function Base.:(get)(m::Model)::Vector{Float64}
     N = fieldcount(typeof(m.θ))
-    θ = Vector{Real}(undef, N)
+    θ = Vector{Float64}(undef, N)
     for n in 1:N
         symbol = fieldname(typeof(m.θ), n)
-        θ[n]   = getfield(m.θ, symbol)
+        θ[n]   = convert(Float64, getfield(m.θ, symbol))
     end
     return θ
 end # get
 
-function Base.:(getindex)(m::Model, index::Integer)::Real
+function Base.:(getindex)(m::Model, index::Int)::Float64
     if index < 1 || index > fieldcount(typeof(m.θ))
         msg = "Index in getindex, i.e., in θ = m.θ[index], is out of range."
-        error(msg)
+        throw(DimensionMismatch(msg))
     end
     symbol = fieldname(typeof(m.θ), index)
-    θ = getfield(m.θ, symbol)
+    θ = convert(Float64, getfield(m.θ, symbol))
     return θ
 end # getindex
 
-function set!(m::Model, θ::Vector{Real})
+function set!(m::Model, θ::Vector{Float64})
     N = fieldcount(typeof(m.θ))
     if length(θ) == N
         for n in 1:N
@@ -134,10 +236,10 @@ function set!(m::Model, θ::Vector{Real})
     return nothing
 end # set!
 
-function setindex!(m::Model, θ::Real, index::Integer)
+function setindex!(m::Model, θ::Float64, index::Int)
     if index < 1 || index > fieldcount(typeof(m.θ))
         msg = "Index in setindex!, i.e., in m.θ[index] = θ, is out of range."
-        error(msg)
+        throw(DimensionMismatch(msg))
     end
     symbol = fieldname(typeof(m.θ), index)
     setfield!(m.θ, symbol, θ)
@@ -158,28 +260,28 @@ solve(m::Model) = solve(m.θ, m)
 #=
 As a template, consider:
 
-function GeneticAlgorithms.solve(θ::MyParameters, m::Model)::Vector{Matrix{Real}}
+function GeneticAlgorithms.solve(θ::MyParameters, m::Model)::Vector{Matrix{Float64}}
     # where MyParameters <: AbstractParameters
     # This function returns the model's response as a vector of matrices:
-    #   [exp] x [nRes[exp] x nPts[exp]]  indexed as  [i][j,k]  where
-    #       exp         experiment number with values  exp ∈ [1, nExp]
-    #       nRes[exp]   number of  responses  for experiment exp
-    #       nPts[exp]   number of data points for experiment exp
+    #     [exp]x[nRes[exp] x nPts[exp]]  indexed as  [i][j,k]  where
+    #         exp         experiment number with values  exp ∈ [1, nExp]
+    #         nRes[exp]   number of  responses  for experiment exp
+    #         nPts[exp]   number of data points for experiment exp
 
-    # Create this array.
+    # Create the array to be returned.
 
-    responses_model = Vector{Matrix{Real}}(undef, m.d.experiments)
+    responses_model = Vector{Matrix{Float64}}(undef, m.d.experiments)
     for exp in 1:m.d.experiments
         rows = m.d.variables_response[exp]
         cols = m.d.data_points[exp]
-        response_matrix = Matrix{Real}(undef, rows, cols)
+        response_matrix = Matrix{Float64}(undef, rows, cols)
         responses_model[exp] = response_matrix
     end
 
     # Solve your model using the parameters θ, subject to its m.d.controls.
     # This model can be a function, a differential equation, an integral
-    # equation, or whatever else the user may choose to implement.  Be aware
-    # that here lies the greatest expense of running a genetic algorithm.
+    # equation, or whatever else the user may choose to implement. Be aware that
+    # here most likely lies the greatest expense of running a genetic algorithm.
 
     # ...
     for i in 1:m.d.experiments
@@ -200,7 +302,7 @@ end # solve
 =#
 
 #=
-The following was taken from the url address: https://discourse.julialang.org/t/composition-and-inheritance-the-julian-way/11231/135
+The following was taken from url address: https://discourse.julialang.org/t/composition-and-inheritance-the-julian-way/11231/135
 
 Here's an example of how multiple dispatch interacts with inheritance of fields
 and behaviors using composition.  Object has some fields and behaviors of its

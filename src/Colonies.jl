@@ -4,9 +4,9 @@ that evolves from generation to generation, leading toward an optimum condition.
 
 A colony has an interface of:
 
-struct Colony{Parameters} where Parameters <: AbstractParameters
-    parameters              # model parameters: object from AbstractParameters
-    data                    # experimental data that model is to be fit against
+struct Colony
+    parameters              # model parameters: a subtype to AbstractParameters
+    data                    # experimental data the model is to be fit against
     # Fields pertaining to the creatures of a colony.
     probability_mutation    # probability of single gene mutating at creation
     probability_crossover   # probability of a child sharing its parents genes
@@ -36,7 +36,7 @@ Constructors
     where
 
         parameters              An object holding the model's parameters as a
-                                𝑚𝑢𝑡𝑎𝑏𝑙𝑒 composite type whose parent type is
+                                𝑚𝑢𝑡𝑎𝑏𝑙𝑒 composite type whose supertype is
                                 AbstractParameters.  What is important here is
                                 the object, not the values held by the object.
         data                    Experimental data that the model is to be fit
@@ -54,7 +54,7 @@ Constructors
                                 introduce one immigrant per generation or so.
         parameters_alien        If the user has a best guess for θ, then this is
                                 where these parameters are input.  If the user
-                                doesn't, then send: θ = Vector{Real}(undef,0).
+                                doesn't, send: θ = Vector{Float64}(undef,0).
         parameters_min          Lower bounds for the parameters θ being sought.
         parameters_max          Upper bounds for the parameters θ being sought.
         parameters_constrained  Tuples of indices (left, right) that impose an
@@ -80,65 +80,65 @@ Methods
 
 advance_to_next_generation!(c)  Advances colony 'c' to its next generation.
 
-str = report(c)                 Returns a human-readable report via a string
-                                'str,' which describes health of the current
-                                generation and its statistics.
+text = report(c)                Returns a human-readable report via a string
+                                'text,' which describes health of the current
+                                generation via its statistics.
 """
 struct Colony
-    parameters::AbstractParameters
+    parameters<:AbstractParameters
     data::ExperimentalData
     # Fields pertaining to the creatures of a colony.
-    probability_mutation::Real
-    probability_crossover::Real
-    probability_immigrant::Real
+    probability_mutation::Float64
+    probability_crossover::Float64
+    probability_immigrant::Float64
     parameters_name::Vector{String}
-    parameters_min::Vector{Real}
-    parameters_max::Vector{Real}
-    parameters_constrained::Vector{Tuple{Integer,Integer}}
-    significant_figures::Integer
+    parameters_min::Vector{Float64}
+    parameters_max::Vector{Float64}
+    parameters_constrained::Vector{Tuple{Int64,Int64}}
+    significant_figures::Int64
     # Fields pertaining to the colony itself.
-    population_size::Integer
-    generations_to_convergence::Integer
+    population_size::Int64
+    generations_to_convergence::Int64
     # Mutable fields pertaining to the colony itself.
-    generation::Counter
+    generation::PhysicalFields.MInteger
     elite::Creature
     children::Vector{Creature}
     adults::Vector{Creature}
-    fitness::Vector{Vector{Real}}
-    use_fitness::Integer
+    fitness::PhysicalFields.MMatrix
+    use_fitness::Int64
 
     # constructor
 
-    function Colony(parameters::AbstractParameters, data::ExperimentalData, probability_mutation::Real, probability_crossover::Real, probability_immigrant::Real, parameters_alien::Vector{Real}, parameters_min::Vector{Real}, parameters_max::Vector{Real}, parameters_constrained::Vector{Tuple{Integer,Integer}}, significant_figures::Integer, use_fitness::Integer = 3)
+    function Colony(parameters<:AbstractParameters, data::ExperimentalData, probability_mutation::Float64, probability_crossover::Float64, probability_immigrant::Float64, parameters_alien::Vector{Float64}, parameters_min::Vector{Float64}, parameters_max::Vector{Float64}, parameters_constrained::Vector{Tuple{Int64,Int64}}, significant_figures::Int64, use_fitness::Int64 = 3)
 
         # bound inputs
 
         if significant_figures < 1
-            significant_figures = 1
+            significant_figures = convert(Int64, 1)
         end
         if significant_figures > 7
-            significant_figures = 7
+            significant_figures = convert(Int64, 7)
         end
 
         if probability_mutation < 1.0e-6
-            probability_mutation = 1.0e-6
+            probability_mutation = convert(Float64, 1.0e-6)
         end
         if probability_mutation > 0.999999
-            probability_mutation = 0.999999
+            probability_mutation = convert(Float64, 0.999999)
         end
 
         if probability_crossover < 1.0e-6
-            probability_crossover = 1.0e-6
+            probability_crossover = convert(Float64, 1.0e-6)
         end
         if probability_crossover > 0.999999
-            probability_crossover = 0.999999
+            probability_crossover = convert(Float64, 0.999999)
         end
 
         if probability_immigrant < 1.0e-6
-            probability_immigrant = 1.0e-6
+            probability_immigrant = convert(Float64, 1.0e-6)
         end
         if probability_immigrant > 0.999999
-            probability_immigrant = 0.999999
+            probability_immigrant = convert(Float64, 0.999999)
         end
 
         # Verify dimensions.
@@ -170,9 +170,9 @@ struct Colony
         # Verify that the fields of object parameters are all Real valued.
 
         for n in 1:N
-            symbol  = fieldname(typeof(parameters), n)
-            if !(fieldtype(typeof(parameters), symbol) isa Real)
-                msg = "All fields in object parameters must belong to Real."
+            symbol = fieldname(typeof(parameters), n)
+            if !(fieldtype(typeof(parameters), symbol) isa Float64)
+                msg = "All parameter fields must be instances of type Float64."
                 error(msg)
             end
         end
@@ -204,16 +204,17 @@ struct Colony
         # Formula is from D. Goldberg (2002) for estimating population size.
         alphabet = 2    # viz., expressions are: dominant and recessive
         schemata = significant_figures
-        population_size = Int(ceil(alphabet^schemata * schemata * log(alphabet) 
-            + log(elite.genetics.genes)))
+        population_size = Int64(
+            ceil(alphabet^schemata * schemata * log(alphabet)
+                + log(elite.genetics.genes)))
 
         # generations
 
-        generation = Counter(1)
+        generation = PhysicalFields.MInteger(1)
 
         # Formula is from D. Goldberg (2002) for estimating convergence.
         combatants = Int(max(3, population_size÷50))
-        generations_to_convergence = Int(ceil(sqrt(elite.genetics.genes)
+        generations_to_convergence = Int64(ceil(sqrt(elite.genetics.genes)
             * log(population_size - combatants)))
 
         # adults
@@ -244,23 +245,21 @@ struct Colony
 
         # fitness
 
-        fitness = Vector{Vector}(undef, population_size)
+        fitness = PhysicalFields.MVector}(fitness_types, population_size)
 
-        for i in 1:population_size
-            adult = adults[i]
-            fitness_adult = Vector{Real}(undef, fitness_types)
-            for j in 1:fitness_types
-                fitness_adult[j] = adult.fitness[j]
+        for j in 1:population_size
+            adult = adults[j]
+            for i in 1:fitness_types
+                fitness[i,j] = adult.fitness[i]
             end
-            fitness[i] = fitness_adult
         end
 
-        new(parameters, data, probability_mutation, probability_crossover, probability_immigrant, parameters_name, parameters_min, parameters_max, parameters_constrained, significant_figures, population_size, generations_to_convergence, generation, elite, children, adults, fitness, use_fitness)
+        new(parameters, data, probability_mutation, probability_crossover, probability_immigrant, parameters_name, parameters_min, parameters_max, parameters_constrained, significant_figures, population_size, generations_to_convergence, generation, elite, children, adults, fitness, use_fitness)::Colony
     end
 
-    function Colony(parameters::AbstractParameters, data::ExperimentalData, probability_mutation::Real, probability_crossover::Real, probability_immigrant::Real, parameters_name::Vector{String}, parameters_min::Vector{Real}, parameters_max::Vector{Real}, parameters_constrained::Vector{Tuple{Integer,Integer}}, significant_figures::Integer, population_size::Integer, generations_to_convergence::Integer, generation::Counter, elite::Creature, children::Vector{Creature}, adults::Vector{Creature}, fitness::Vector{Vector{Real}}, use_fitness::Integer = 3)
+    function Colony(parameters<:AbstractParameters, data::ExperimentalData, probability_mutation::Float64, probability_crossover::Float64, probability_immigrant::Float64, parameters_name::Vector{String}, parameters_min::Vector{Float64}, parameters_max::Vector{Float64}, parameters_constrained::Vector{Tuple{Int64,Int64}}, significant_figures::Int64, population_size::Int64, generations_to_convergence::Int64, generation::PhysicalFields.MInteger, elite::Creature, children::Vector{Creature}, adults::Vector{Creature}, fitness::PhysicalFields.MMatrix, use_fitness::Int64 = 3)
 
-        new(parameters, data, probability_mutation, probability_crossover, probability_immigrant, parameters_name, parameters_min, parameters_max, parameters_constrained, significant_figures, population_size, generations_to_convergence, generation, elite, children, adults, fitness, use_fitness)
+        new(parameters, data, probability_mutation, probability_crossover, probability_immigrant, parameters_name, parameters_min, parameters_max, parameters_constrained, significant_figures, population_size, generations_to_convergence, generation, elite, children, adults, fitness, use_fitness)::Colony
     end
 end # Colony
 
@@ -307,11 +306,11 @@ function _mate!(c::Colony)
         self_conception = 0
         while parentB == parentA
             self_conception = self_conception + 1
-            parentB = _tournamentPlay(c)
             if self_conception == 25
                 # This is for safety. It should not occur in practice.
                 break
             end
+            parentB = _tournamentPlay(c)
         end
         child = conceive(parentA, parentB, c.parameters_constrained, c.probability_mutation, c.probability_crossover)
         c.children[i] = child
@@ -333,16 +332,16 @@ function _mate!(c::Colony)
     end
 
     # Determine the fitness for each child born into the colony.
-    Threads.@threads for i in 2:c.population_size
-        child = c.children[i]
+    Threads.@threads for j in 2:c.population_size
+        child = c.children[j]
         model = Model(c.parameters, c.data)
         set!(model, phenotypes(child))
         fitness = _evaluate(model)
-        for j in 1:fitness_types
-            child.fitness[j] = fitness[j]
-            c.fitness[i][j]  = fitness[j]
+        for i in 1:fitness_types
+            child.fitness[i] = fitness[i]
+            c.fitness[i,j]   = fitness[i]
         end
-        c.children[i] = child
+        c.children[j] = child
     end
 
     return nothing
@@ -352,7 +351,7 @@ end # _mate!
 
 # Statistical moments
 
-function _first_moment(v::Vector{Real})::Real
+function _first_moment(v::Vector{Float64})::Float64
     N = length(v)
     sum = 0.0
     for n in 1:N
@@ -362,7 +361,7 @@ function _first_moment(v::Vector{Real})::Real
     return moment
 end # _first_moment
 
-function _second_moment(v::Vector{Real})::Real
+function _second_moment(v::Vector{Float64})::Float64
     N = length(v)
     sum = 0.0
     for n in 1:N
@@ -372,7 +371,7 @@ function _second_moment(v::Vector{Real})::Real
     return moment
 end # _second_moment
 
-function _mixed_moment(v1::Vector{Real}, v2::Vector{Real})::Real
+function _mixed_moment(v1::Vector{Float64}, v2::Vector{Float64})::Float64
     N = length(v1)
     sum = 0.0
     for n in 1:N
@@ -384,21 +383,21 @@ end # _mixed_moment
 
 # Sample variance
 
-function _sample_variance(v::Vector{Real})::Real
+function _sample_variance(v::Vector{Float64})::Float64
     variance = _second_moment(v) - _first_moment(v)^2
     return variance
 end # _sample_variance
 
 # Sample covariance
 
-function _sample_covariance(v1::Vector{Real}, v2::Vector{Real})::Real
+function _sample_covariance(v1::Vector{Float64}, v2::Vector{Float64})::Float64
     covariance = _mixed_moment(v1, v2) - _first_moment(v1) * _first_moment(v2)
     return covariance
 end # _sample_covariance
 
 # Objective functions
 
-function _objfn(response_experiment::Vector{Real}, response_model::Vector{Real})::Vector{Real}
+function _objfn(response_experiment::Vector{Float64}, response_model::Vector{Float64})::Vector{Float64}
 
     if length(response_experiment) == length(response_model)
         N = length(response_experiment)
@@ -408,15 +407,15 @@ function _objfn(response_experiment::Vector{Real}, response_model::Vector{Real})
     end
 
     # Determine the factor of normalization.
-    res_max = 0.0
+    res_max = Float64(0.0)
     for n in 1:N
         res_max = max(res_max, abs(response_experiment[n]))
     end
 
     # Normalize the incoming vectors.
-    res_exp = Vector{Real}(undef, N)
-    res_mod = Vector{Real}(undef, N)
-    res_err = Vector{Real}(undef, N)
+    res_exp = Vector{Float64}(undef, N)
+    res_mod = Vector{Float64}(undef, N)
+    res_err = Vector{Float64}(undef, N)
     for n in 1:N
         res_exp[n] = response_experiment[n] / res_max   # ∈ [-1, 1]
         res_mod[n] = response_model[n] / res_max
@@ -447,7 +446,7 @@ function _objfn(response_experiment::Vector{Real}, response_model::Vector{Real})
     ϕ₄ = COV
 
     # Reciprocal values will maximize minimum objective functions.
-    fitness = Vector{Real}(undef, fitness_types)
+    fitness = Vector{Float64}(undef, fitness_types)
     fitness[1] = 1 / ϕ₁
     fitness[2] = 1 / ϕ₂
     fitness[3] = 1 / ϕ₃
@@ -456,7 +455,7 @@ function _objfn(response_experiment::Vector{Real}, response_model::Vector{Real})
     return fitness
 end # _objfn
 
-function _evaluate(m::Model)::Vector{Real}
+function _evaluate(m::Model)::Vector{Float64}
 
     model_responses = solve(m)
 
@@ -466,7 +465,7 @@ function _evaluate(m::Model)::Vector{Real}
             + m.d.variables_response[exp] * m.d.data_points[exp])
     end
 
-    fitness = Vector{Real}(undef, fitness_types)
+    fitness = zeros(Float64, fitness_types)
     for i in 1:m.d.experiments
         for j in 1:m.d.variables_response[i]
             ϕ = _objfn(m.d.responses[i][j,:], model_responses[i][j,:])
@@ -480,11 +479,11 @@ function _evaluate(m::Model)::Vector{Real}
     return fitness
 end # _evaluate
 
-function _stdDevElite(c::Colony)::Vector{Real}
+function _stdDevElite(c::Colony)::Vector{Float64}
     parameters_elite = phenotypes(c.elite)
     len = length(parameters_elite)
-    sde = Vector{Real}(undef, len)
-    sum = zeros(Real, len)
+    sde = Vector{Float64}(undef, len)
+    sum = zeros(Float64, len)
     for i in 1:c.population_size
         adult = c.adults[i]
         parameters_adult = phenotypes(adult)
@@ -498,7 +497,7 @@ function _stdDevElite(c::Colony)::Vector{Real}
     return sde
 end # _stdDevElite
 
-function _2string(c::Colony, x::Real)::String
+function toString(c::Colony, x::Float64)::String
     if c.significant_figures ≤ 2
         s = @sprintf "%.1e" x;
     elseif c.significant_figures == 3
@@ -546,7 +545,7 @@ end # advanceToNextGeneration
 
 function report(c::Colony)::String
     s = ""
-    s = string(s, "Statistics for generation ", tostring(c.generation))
+    s = string(s, "Statistics for generation ", PhysicalFields.toString(c.generation))
     s = string(s, " with a population size of ", c.population_size, ".\n")
     s = string(s, "Optimum fitness and population statistics for fitness,\n")
     if c.use_fitness < 4
@@ -564,33 +563,37 @@ function report(c::Colony)::String
         s = string(s, "sample covariance between experiment and model, are:\n")
     fitness = c.elite.fitness[c.use_fitness]
     if fitness ≥ 0.0
-        s = string(s, "   optimum fitness  ", _2string(c, fitness), "\n")
+        s = string(s, "   optimum fitness  ", toString(c, fitness), "\n")
     else
-        s = string(s, "   optimum fitness ", _2string(c, fitness), "\n")
+        s = string(s, "   optimum fitness ", toString(c, fitness), "\n")
     end
-    stat_mean = mean(c.fitness[:][c.use_fitness])
+    fitness_population = Vector{Float64}(undef, c.population_size)
+    for j in 1:population_size
+        fitness_population[j] = c.fitness[c.use_fitness, j]
+    end
+    stat_mean = mean(fitness_population)
     if stat_mean ≥ 0.0
-        s = string(s, "   arithmetic mean  ", _2string(c, stat_mean), "\n")
+        s = string(s, "   arithmetic mean  ", toString(c, stat_mean), "\n")
     else
-        s = string(s, "   arithmetic mean ", _2string(c, stat_mean), "\n")
+        s = string(s, "   arithmetic mean ", toString(c, stat_mean), "\n")
     end
-    stat_median = median(c.fitness[:][c.use_fitness])
+    stat_median = median(fitness_population)
     if stat_median ≥ 0.0
-        s = string(s, "   median           ", _2string(c, stat_median), "\n")
+        s = string(s, "   median           ", toStringg(c, stat_median), "\n")
     else
-        s = string(s, "   median          ", _2string(c, stat_median), "\n")
+        s = string(s, "   median          ", toString(c, stat_median), "\n")
     end
-    stat_skewness = skewness(c.fitness[:][c.use_fitness])
+    stat_skewness = skewness(fitness_population)
     if stat_skewness ≥ 0.0
-        s = string(s, "   skewness         ", _2string(c, stat_skewness), "\n")
+        s = string(s, "   skewness         ", toString(c, stat_skewness), "\n")
     else
-        s = string(s, "   skewness        ", _2string(c, stat_skewness), "\n")
+        s = string(s, "   skewness        ", toString(c, stat_skewness), "\n")
     end
-    stat_kurtosis = kurtosis(c.fitness[:]{c.use_fitness})
+    stat_kurtosis = kurtosis(fitness_population)
     if stat_kurtosis ≥ 0.0
-        s = string(s, "   excess kurtosis  ", _2string(c, stat_kurtosis), "\n")
+        s = string(s, "   excess kurtosis  ", toString(c, stat_kurtosis), "\n")
     else
-        s = string(s, "   excess kurtosis ", _2string(c, stat_kurtosis), "\n")
+        s = string(s, "   excess kurtosis ", toString(c, stat_kurtosis), "\n")
     end
     s = string(s, "The genome from the most fit creature:\n")
     s = string(s, tostring(c.elite.genetics), "\n")
@@ -609,9 +612,9 @@ function report(c::Colony)::String
             end
             s = string(s, "       ")
         end
-        s = string(s, "[", _2string(c, c.parameters_min[i]), ", ",
-            _2string(c, parameters_best[i]), ", ",
-            _2string(c, c.parameters_max[i]), "]\n")
+        s = string(s, "[", toString(c, c.parameters_min[i]), ", ",
+            toString(c, parameters_best[i]), ", ",
+            toString(c, c.parameters_max[i]), "]\n")
     end
     s = string(s, "Values for best parameter ± error, where an RMSE ")
     s = string(s, "is computed wrt best values.\n")
@@ -630,9 +633,64 @@ function report(c::Colony)::String
             end
             s = string(s, "       ")
         end
-        s = string(s, _2string(c, parameters_best[i]), " ± ",
-            _2string(c, err[i]), "\n")
+        s = string(s, toString(c, parameters_best[i]), " ± ",
+            toString(c, err[i]), "\n")
     end
     s = string(s, "\n")
     return s
 end # report
+
+# Methods for storing and retrieving a Colony to and from a file.
+
+StructTypes.StructType(::Type{Colony}) = StructTypes.Struct()
+
+"""
+Method:\n
+    toFile(c::GeneticAlgorithms.Colony, json_stream::IOStream)\n
+Writes data structure `c` to the IOStream `json_stream.`\n
+For example, consider the code fragment:\n
+    json_stream = PhysicalFields.openJSONWriter(<my_dir_path>, <my_file_name>)\n
+    ...\n
+    GeneticAlgorithm.toFile(c::Colony, json_stream::IOStream)\n
+    ...\n
+    PhysicalFields.closeJSONStream(json_stream::IOStream)\n
+where <my_dir_path> is the path to your working directory wherein the file
+<my_file_name> that is to be written to either exists or will be created, and
+which must have a .json extension.
+"""
+function toFile(c::Colony, json_stream::IOStream)
+    if isopen(json_stream)
+        JSON3.write(json_stream, c)
+        write(json_stream, '\n')
+    else
+        msg = "The supplied JSON stream is not open."
+        error(msg)
+    end
+    flush(json_stream)
+    return nothing
+end
+
+"""
+Method:\n
+    fromFile(c::GeneticAlgorithms.Colony, json_stream::IOStream)\n
+Reads a Colony from the IOStream `json_stream.`\n
+For example, consider the code fragment:\n
+    json_stream = PhysicalFields.openJSONReader(<my_dir_path>, <my_file_name>)\n
+    ...\n
+    c = GeneticAlgorithms.fromFile(GeneticAlgorithms.Colony, json_stream)\n
+    ...\n
+    PhysicalFields.closeJSONStream(json_stream)\n
+that returns `c,` which is an object of type GeneticAlgorithms.Colony. Here
+<my_dir_path> is the path to your working directory wherein the file 
+<my_file_name> that is to be read from must exist, and which is to have a
+.json extension.
+"""
+function fromFile(::Type{Colony}, json_stream::IOStream)::Colony
+    if isopen(json_stream)
+        c = JSON3.read(readline(json_stream), Colony)
+    else
+        msg = "The supplied JSON stream is not open."
+        error(msg)
+    end
+    return c
+end

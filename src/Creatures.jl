@@ -15,7 +15,7 @@ After a creature (its object) has been created, it needs to have its genetic
 material assigned to it.  This can occur in one of three ways:
     1) procreation (i.e., random),
     2) alien       (i.e., divinely assigned) or
-    3) conceived   (i.e., coming from its parents).
+    3) conceived   (i.e., evolving from its parents).
 The first generation of a colony is procreated with the possible exception that
 their is an alien (an Adam) assignment.  After that, all creatures are created
 through conception, with a possibility of immigrants entering the population.
@@ -23,7 +23,7 @@ through conception, with a possibility of immigrants entering the population.
 A creature has an interface of:
 
 struct Creature
-    fitness::Vector     # Measures of quality for the set of parameters, viz.,
+    fitness::MVector    # Measures of quality for the set of parameters, viz.,
                         # fitness = [ϕ₁ ϕ₂ ϕ₃ ϕ₄] where:
                         #    ϕ₁ = 1 / expectation for the magnitude of error,
                         #    ϕ₂ = 1 / expectation for the squared error,
@@ -57,36 +57,62 @@ Operators
 
 Methods
 
-    d = copy(c)         returns a copy 'd' of creature 'c'
-    s = tostring(c)     returns a string 's' describing creature 'c'
-    θ = phenotypes(c)   returns an array of the model's parameters 'θ'
+    d = copy(c)             returns a copy 'd' of creature 'c'
+    s = toBinaryString(c)   returns a string 's' describing creature 'c'
+    θ = phenotypes(c)       returns an array of the model's parameters 'θ'
 """
 struct Creature
-    fitness::Vector{Real}
+    fitness::PhysicalFields.MVector     # A mutable vector of Float64 elements.
     genetics::Genome
 
     # Internal constructors
 
-    function Creature(parameters_min::Vector{Real}, parameters_max::Vector{Real}, significant_figures::Integer)
+    function Creature(parameters_min::Vector{Float64}, parameters_max::Vector{Float64}, significant_figures::Int64)
 
-        fitness = Vector{Real}(undef, fitness_types)
+        fitness = PhysicalFields.MVector(fitness_types)
         for i in 1:fitness_types
-            fitness[i] = -1
+            fitness[i] = convert(Float64, -1)   # -1 implies not yet assigned
         end
 
         genetics = Genome(parameters_min, parameters_max, significant_figures)
 
-        new(fitness, genetics)
+        new(fitness, genetics)::Creature
     end
 
-    function Creature(fitness::Vector{Real}, genetics::Genome)
-        new(fitness, genetics)
+    function Creature(parameters_min::Vector{Real}, parameters_max::Vector{Real}, significant_figures::Integer)
+
+        if length(parameters_min) ≠ length(parameters_max)
+            msg = "Vectors parameters_min and parameters_max must have the same length."
+            throw(DimensionMismatch, msg)
+        end
+
+        parameters = length(parameters_min)
+        p_min = Vector{Float64}(undef, parameters)
+        p_max = Vector{Float64}(undef, parameters)
+        for i in 1:parameters
+            p_min[i] = convert(Float64, parameters_min[i])
+            p_max[i] = convert(Float64, parameters_max[i])
+        end
+        sigfig = convert(Int64, significant_figures)
+
+        return Creature(p_min, p_max, sigfig)
+    end
+
+    function Creature(fitness::MVector, genetics::Genome)
+
+        if length(fitness) ≠ fitness_types
+            msg = "Argument fitness must have a length of "
+            msg = string(msg, fitness_types, ".")
+            error(msg)
+        end
+
+        new(fitness, genetics)::Creature
     end
 end # Creature
 
 # external constructors
 
-function procreate(parameters_min::Vector{Real}, parameters_max::Vector{Real}, parameters_constrained::Vector{Tuple{Integer,Integer}}, significant_figures::Integer)::Creature
+function procreate(parameters_min::Vector{Float64}, parameters_max::Vector{Float64}, parameters_constrained::Vector{Tuple{Int64,Int64}}, significant_figures::Int64)::Creature
 
     creature = Creature(parameters_min, parameters_max, significant_figures)
 
@@ -104,21 +130,21 @@ function procreate(parameters_min::Vector{Real}, parameters_max::Vector{Real}, p
         while recreate
             recreate    = false
             recreations = recreations + 1
-            creature    = Creature(parameters_min, parameters_max, significant_figures)
+            if recreations == 25
+                # This is a safety valve.  It should not occur.
+                msg = "In 25 attempts, parameters θ[i] obeying "
+                msg = string(msg, "constraint θ[", pL, "]")
+                msg = string(msg, " < θ[", pR, "]\n were not gotten")
+                msg = string(msg, " through creature procreation.")
+                error(msg)
+            end
+            creature = Creature(parameters_min, parameters_max, significant_figures)
             parameters_creature = phenotypes(creature)
             for i in 1:length(parameters_constrained)
                 (pL, pR) = parameters_constrained[i]
                 if parameters_creature[pL] > parameters_creature[pR]
                     recreate = true
                     break
-                end
-                if recreations == 25
-                    # This is a safety valve.  It should not occur.
-                    msg = "In 25 attempts, parameters θ[i] obeying "
-                    msg = string(msg, "constraint θ[", pL, "]")
-                    msg = string(msg, " < θ[", pR, "]\n were not gotten")
-                    msg = string(msg, " through creature procreation.")
-                    error(msg)
                 end
             end
         end
@@ -127,7 +153,7 @@ function procreate(parameters_min::Vector{Real}, parameters_max::Vector{Real}, p
     return creature
 end # procreate
 
-function alien(parameters_alien::Vector{Real}, parameters_min::Vector{Real}, parameters_max::Vector{Real}, parameters_constrained::Vector{Tuple{Integer,Integer}}, significant_figures::Integer)::Creature
+function alien(parameters_alien::Vector{Float64}, parameters_min::Vector{Float64}, parameters_max::Vector{Float64}, parameters_constrained::Vector{Tuple{Int64,Int64}}, significant_figures::Int64)::Creature
 
     if length(parameters_alien) == 0
         creature = procreate(parameters_min, parameters_max, parameters_constrained, significant_figures)
@@ -155,13 +181,13 @@ function alien(parameters_alien::Vector{Real}, parameters_min::Vector{Real}, par
     return creature
 end # alien
 
-function conceive(parentA::Creature, parentB::Creature, parameters_constrained::Vector{Tuple{Integer,Integer}}, probability_mutation::Real, probability_crossover::Real)::Creature
+function conceive(parentA::Creature, parentB::Creature, parameters_constrained::Vector{Tuple{Int64,Int64}}, probability_mutation::Float64, probability_crossover::Float64)::Creature
 
     genetics_child = crossover(parentA.genetics, parentB.genetics, probability_mutation, probability_crossover)
 
-    fitness_child = Vector{Real}(undef, fitness_types)
+    fitness_child = PhysicalFields.MVector(fitness_types)
     for i in 1:fitness_types
-        fitness_child[i] = -1
+        fitness_child[i] = convert(Float64, -1) # -1 implies not yet assigned
     end
 
     child = Creature(fitness_child, genetics_child)
@@ -180,6 +206,14 @@ function conceive(parentA::Creature, parentB::Creature, parameters_constrained::
         while reconceive
             reconceive     = false
             reconceptions  = reconceptions + 1
+            if reconceptions == 25
+                # This is a safety valve.  It should not occur.
+                msg = "In 25 attempts, parameters θ[i] obeying "
+                msg = string(msg, "constraint θ[", pL, "]")
+                msg = string(msg, " < θ[", pR, "]\n were not gotten")
+                msg = string(msg, " through creature conception.")
+                error(msg)
+            end
             genetics_child = crossover(parentA.genetics, parentB.genetics, probability_mutation, probability_crossover)
             child = Creature(fitness_child, genetics_child)
             parameters_child = phenotypes(child)
@@ -188,14 +222,6 @@ function conceive(parentA::Creature, parentB::Creature, parameters_constrained::
                 if parameters_child[pL] > parameters_child[pR]
                     reconceive = true
                     break
-                end
-                if reconceptions == 25
-                    # This is a safety valve.  It should not occur.
-                    msg = "In 25 attempts, parameters θ[i] obeying "
-                    msg = string(msg, "constraint θ[", pL, "]")
-                    msg = string(msg, " < θ[", pR, "]\n were not gotten")
-                    msg = string(msg, " through creature conception.")
-                    error(msg)
                 end
             end
         end
@@ -225,19 +251,74 @@ end # ≠
 # methods
 
 function Base.:(copy)(c::Creature)::Creature
-    fitness  = copy(c.fitness)
+    fitness  = PhysicalFields.copy(c.fitness)
     genetics = copy(c.genetics)
     return Creature(fitness, genetics)
 end # copy
 
-function tostring(c::Creature)::String
-    return tostring(c.genetics)
-end # tostring
+function toBinaryString(c::Creature)::String
+    return toBinaryString(c.genetics)
+end # toBinaryString
 
-function phenotypes(c::Creature)::Vector{Real}
-    θ = Vector{Real}(undef, c.genetics.chromosomes)
+function phenotypes(c::Creature)::Vector{Float64}
+    θ = Vector{Float64}(undef, c.genetics.chromosomes)
     for i in 1:c.genetics.chromosomes
         θ[i] = decode(c.genetics.genotypes[i])
     end
     return θ
 end # phenotypes
+
+# Methods for storing and retrieving a Creature to and from a file.
+
+StructTypes.StructType(::Type{Creature}) = StructTypes.Struct()
+
+"""
+Method:\n
+    toFile(c::GeneticAlgorithms.Creature, json_stream::IOStream)\n
+Writes data structure `c` to the IOStream `json_stream.`\n
+For example, consider the code fragment:\n
+    json_stream = PhysicalFields.openJSONWriter(<my_dir_path>, <my_file_name>)\n
+    ...\n
+    GeneticAlgorithm.toFile(c::Creature, json_stream::IOStream)\n
+    ...\n
+    PhysicalFields.closeJSONStream(json_stream::IOStream)\n
+where <my_dir_path> is the path to your working directory wherein the file
+<my_file_name> that is to be written to either exists or will be created, and
+which must have a .json extension.
+"""
+function toFile(c::Creature, json_stream::IOStream)
+    if isopen(json_stream)
+        JSON3.write(json_stream, c)
+        write(json_stream, '\n')
+    else
+        msg = "The supplied JSON stream is not open."
+        error(msg)
+    end
+    flush(json_stream)
+    return nothing
+end
+
+"""
+Method:\n
+    fromFile(c::GeneticAlgorithms.Creature, json_stream::IOStream)\n
+Reads a Chromosome from the IOStream `json_stream.`\n
+For example, consider the code fragment:\n
+    json_stream = PhysicalFields.openJSONReader(<my_dir_path>, <my_file_name>)\n
+    ...\n
+    c = GeneticAlgorithms.fromFile(GeneticAlgorithms.Creature, json_stream)\n
+    ...\n
+    PhysicalFields.closeJSONStream(json_stream)\n
+that returns `c,` which is an object of type GeneticAlgorithms.Creature. Here
+<my_dir_path> is the path to your working directory wherein the file 
+<my_file_name> that is to be read from must exist, and which is to have a
+.json extension.
+"""
+function fromFile(::Type{Creature}, json_stream::IOStream)::Creature
+    if isopen(json_stream)
+        c = JSON3.read(readline(json_stream), Creature)
+    else
+        msg = "The supplied JSON stream is not open."
+        error(msg)
+    end
+    return c
+end
