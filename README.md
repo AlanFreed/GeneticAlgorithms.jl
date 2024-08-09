@@ -21,7 +21,7 @@ for reproduction according to their fitness, the cross-fertilization of
 genetic material from parents to produce offspring, and a random chance of a
 mutation occurring in an off-spring's genetic code.  A new generation
 replaces the existing one, and the reproduction cycle starts all over again.
-This process is repeated to convergence.
+This process is repeated to convergence, in a probabalistic sense.
 
 This implementation of a genetic algorithm draws
 heavily on the algorithms and Pascal code of Goldberg [1,2].  His books focus on what he calls a
@@ -33,7 +33,7 @@ GAs are but one of many optimization techniques that exist.  There is a
 theorem in the optimization literature called the "no free lunch"
 theorem.  It states that the overall performance of any optimization
 algorithm, when evaluated over the set of all possible optimization
-problems, is no different than any other optimization technique.  An
+problems, is no better than any other optimization technique.  An
 apparent advantage of one
 algorithm over another resides strictly with its application and, quite
 often, the personal taste of the user.  It has been the author's
@@ -56,13 +56,13 @@ The expectation *E* of a data set **X** is the first moment of its data, viz.,
 
 The sample variance of this data set is
 
-*VAR*(**X**) = *E*((**X** - *E*(**X**))²) = *E*(**X**²) - (*E*(**X**))² where *E*(**X**²) is the second moment (1/N) ∑ᵢ₌₁ⁿ *X*ᵢ²
+*VAR*(**X**) = *E*((**X** - *E*(**X**))²) = *E*(**X**²) - (*E*(**X**))² where *E*(**X**²) is the second moment, i.e., (1/N) ∑ᵢ₌₁ⁿ *X*ᵢ²
 
 while the sample covariance between two data sets is
 
-*COV*(**X**, **Ξ**) = *E*((**X** - *E*(**X**))(**Ξ** - *E*(**Ξ**))) = *E*(**XΞ**) - *E*(**X**) *E*(**Ξ**) where *E*(**XΞ**) is a mixed moment (1/N) ∑ᵢ₌₁ⁿ *X*ᵢ*Ξ*ᵢ
+*COV*(**X**, **Ξ**) = *E*((**X** - *E*(**X**))(**Ξ** - *E*(**Ξ**))) = *E*(**XΞ**) - *E*(**X**) *E*(**Ξ**) where *E*(**XΞ**) is the mixed moment (1/N) ∑ᵢ₌₁ⁿ *X*ᵢ*Ξ*ᵢ
 
-which reduces to the sample variance whenever **Ξ** = **X**.
+which approaches to the sample variance as **Ξ** → **X**.
 
 ## Objective functions
 
@@ -73,11 +73,11 @@ A collection of objective functions that have statisical warrent are considered.
 2. Minimize expectation for the squared error.
     1. ϕ₂ = 1 / *E*(**ϵ**²) = 1 / (*E*((**X** - **Ξ**)²) = 1 / (*VAR*(**X**) + *VAR*(**Ξ**) - 2*COV*(**X**, **Ξ**) + (*E*(**X**))² + (*E*(**Ξ**))² - 2*E*(**X**) *E*(**Ξ**))
 3. Minimize variance for the error.
-    1. ϕ₃ = 1 / *VAR*(**ϵ**) = 1 / (*VAR*(**X**) + *VAR*(**Ξ**) - 2*COV*(**X**, **Ξ**) )
+    1. ϕ₃ = 1 / *VAR*(**ϵ**) = 1 / *VAR*(**X** - **Ξ**) = 1 / (*VAR*(**X**) + *VAR*(**Ξ**) - 2*COV*(**X**, **Ξ**) )
 4. Maximize covariance between experiment **X** and model **Ξ**.
     1. ϕ₄ = *COV*(**X**, **Ξ**)
 
-Genetic algorithms seek to maximize a quality parameter referred to as *fitness*; hence, reciprocal values are used to describe the fitness of an objective function that minimizes.
+GAs seek to maximize a quality parameter referred to as *fitness*.  Hence, reciprocal values are used to describe the fitness of an objective function that minimizes, which is the case for the first three objective functions listed above.
 
 # A Genetic Algorithm
 
@@ -87,29 +87,80 @@ A chromosome is an array of genes assembled as a Gray binary number.  Gray numbe
 
 A genome is a collection of chromosomes, one for each model parameter being sought.  It contains the genetic information of a creature.
 
-A creature is comprised of a genome and a fitness that associates with it.  Fitness is taken to be a root mean squared error between model predictions
-and experimental outcomes, acquired over a collection of experiments. These errors are normalized by the standard deviation in the experimental response, which allows data between different types of experiments to be 
+A creature is comprised of a genome and a fitness that associates with it.  The fitness selected for use may be any one of the four options discussed above, viz.,
+1) Minimize expectation for the magnitude of error,
+2) Minimize expectation for the squared error,
+3) Minimize sample variance for the error,
+and 4) Maximize the sample covariance between experimental responses and model predictions. These data sets are normalized against the maximum experimental response observed over a data set. This allows data between different types of experiments that result in different response variables to be 
 used for parameterization in a meaningful way.
 
 A colony is a population of creatures, usually numbering in the hundreds.  To evolve a colony from one generation into the next, creatures from the existing generation are picked at random for mate selection via tournament play.  From two tournaments, a pair of parent creatures get selected for mating with the outcome being a child creature that will move onto the next generation.  Only the elite creature from an existing population moves onto the next generation.  All other creatures perish at the moment when a new population of children from the current generation become the adults of the next generation.  Mating involves a crossover event with a high probability of occurrence between like pairs of chromosomes from two parents.  During such an event, a pair of chromosomes are split and their genetic information swapped (i.e., a crossover event occurs) which is a probabilistic outcome.  The end result is that a child's chromosome strands are comprised of gene segments from both parents.  
 
-The original generation is procreated.  Every gene is assigned an expression randomly with 50-50 odds in that generation.  This provides a dispersed population over the window of admissible parametric values, i.e., a Monte Carlo sampling.  To aid in maintaining a diverse population, a procreated immigrant or two may get introduced into a population at each generation at a low probability of occurrence.  Mutation also aids in maintaining diversity.  No clones are allowed in this implementation of a genetic algorithm.  Instead of evolving a population of creatures to an existence where all creatures are clones of one another, which is often done in genetic algorithms, this implementation of a genetic algorithm determines its convergence criteria and population size according to algorithms derived by Goldberg [2] from probability theory.
+The original generation is procreated.  Every gene is assigned an expression randomly with 50-50 odds in that generation.  This provides a dispersed population over the window of admissible parametric values, i.e., a Monte Carlo sampling.  To aid in maintaining a diverse population, a procreated immigrant or two may get introduced into a population at the creation of each generation at a low probability of occurrence.  Mutation also aids in maintaining diversity.  No clones are allowed in this implementation of a genetic algorithm.  Instead of evolving a population of creatures to an existence where all creatures are clones of one another, which is often done in GAs, this implementation of a GA determines its convergence criteria and population size according to algorithms derived by Goldberg [2] from probability theory.
 
-It bears repeating a phrase that commonly appears: "Correlation
-does not imply causation."  In other words, good correlation must not be used to infer or suggest the existence of a causal relationship between a
-model and data, i.e., it does not prove that the model is 'correct'.
+It bears repeating a phrase that commonly appears in the literature: "Correlation
+does not imply causation."  In other words, a good correlation must not be used to infer or suggest the existence of a causal relationship between a
+model and data. I.e., good correlation does not (cannot) prove a model is 'correct'; however, bad correlation can implicate a model as being 'incorrect'.
 
 ## Mutable types
 
+In order for a gene to mutate requires that its expression (a boolean value) be mutable. Also, to advance a population from one generation to the next requires a counter (an integer) that is mutable, too.
+
 ### Expressions
+
+An expression holds the value of a gene, viz., it being either dominant (*true*) or recessive (*false*), which are exported as constants by the code.
+```
+const dominant  = true    # Gene expression whenever a gene is dominant.
+const recessive = false   # Gene expression whenever a gene is recessive.
+```
+The expression of a gene is handled via a mutable type, i.e.,
+```
+mutable struct Expression
+    expression::Bool
+end
+```
+with constructors
+```
+function Expression()
+```
+which assigns a gene expression at random with 50-50 odds, or by
+```
+function Expression(expression::Bool)
+```
+which assigns the boolean value of `expression` to its field.
+
+Operators `==` and `≠` are overloaded to enable binary comparisons to be made between two like objects, including constants `dominant` and `recessive.`
+
+There is a basic set of methods, too, viz.,
+```
+function Base.:(get)(e::Expression)::Bool
+function set!(e::Expression, expression::Bool)
+function Base.:(copy)(e::Expression)::Expression
+function tostring(e::Expression)::String
+```
+which take advantage of the Multiple Dispatch feature of the Julia language, along with type tests
+```
+function isdominant(e::Expression)::Bool
+function isrecessive(e::Expression)::Bool
+```
 
 ### Counters
 
-### Variables
+Counters are mutable objects, viz., integers, that are to appear in an otherwise unmutalbe data structure. In this GA they are used to specify the current generation of a population of creatures. Specifically, a counter is an instance of type
+```
+mutable struct Counter{T <: Integer}
+    count::T
+end
+```
 
 ## Genetic types
 
 ### Genes
+
+A gene is an information bit in a memory bank that
+belongs to the overall cache of biological memory
+that resides within a living organism, often referred
+to in the GA literature as a *creature*.
 
 ### Chromosomes
 
