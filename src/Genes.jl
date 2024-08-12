@@ -201,6 +201,12 @@ function mutate!(g::Gene, probability_mutation::Float64)
     return nothing
 end # mutate!
 
+function mutate!(g::Gene, probability_mutation::Real)
+    probability = convert(Float64, probability_mutation)
+    mutate!(g, probability)
+    return nothing
+end
+
 # Methods for storing and retrieving a Gene to and from a file.
 
 StructTypes.StructType(::Type{Gene}) = StructTypes.Struct()

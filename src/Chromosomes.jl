@@ -12,6 +12,7 @@ A chromosome has an interface of:
 struct Chromosome
     parameter_min   # minimum value that a chromosome can represent
     parameter_max   # maximum value that a chromosome can represent
+    parameter_units # physical units of the parameter
     genes           # number of genes that comprise a chromosome
     expressions     # number of gene expressions a chromosome can represent
     genotype        # genetic material, i.e., genes, comprising a chromosome
@@ -21,10 +22,12 @@ A parameter will be considered fixed if its parameter_min ≈ parameter_max.
 
 Constructor
 
-    c = Chromosome(parameter_min, parameter_max, significant_figures)
+    c = Chromosome(parameter_min, parameter_max, parameter_units,
+                   significant_figures)
 
         parameter_min           least value a parameter can take on
         parameter_max           greatest value a parameter can take on
+        parameter_units         physical units of the parameter
         significant_figures     seek parameter with significant figure accuracy
 
 Operators
@@ -36,7 +39,7 @@ Methods
     g = getindex(c, i)      return gene 'g' from chromosome 'c' at index 'i'
     setindex!(c, g, i)      assign gene 'g' to chromosome 'c' at index 'i'
     d = copy(c)             return a copy 'd' of chromosome 'c'
-    s = tostring(c)         return a string 's' describing chromosome 'c'
+    s = toBinaryString(c)   return a string 's' describing chromosome 'c'
     θ = decode(c)           return a phenotype (the parameter 'θ') held by 'c'
     encode!(c, θ)           assign a phenotype 'θ' to chromosome 'c'
     mutate!(c, pM)          random flip of gene expressions at probability 'pM'
@@ -47,6 +50,7 @@ struct Chromosome
     # Fields that bound a parameter.
     parameter_min::Float64
     parameter_max::Float64
+    parameter_units::PhysicalFields.PhysicalUnits
     # Fields that describe a chromosome.
     genes::Int64
     expressions::Int64
@@ -54,7 +58,7 @@ struct Chromosome
 
     # constructor
 
-    function Chromosome(parameter_min::Float64, parameter_max::Float64, significant_figures::Int64)
+    function Chromosome(parameter_min::Float64, parameter_max::Float64, parameter_units::PhysicalFields.PhysicalUnits, significant_figures::Int64)
 
         if parameter_min ≈ parameter_max
 
@@ -161,28 +165,28 @@ struct Chromosome
             end
         end
 
-        new(parameter_min, parameter_max, genes, expressions, genotype)::Chromosome
+        new(parameter_min, parameter_max, parameter_units, genes, expressions, genotype)::Chromosome
     end
 
-    function Chromosome(parameter_min::Real, parameter_max::Real, significant_figures::Integer)
+    function Chromosome(parameter_min::Real, parameter_max::Real, parameter_units::PhysicalFields.PhysicalUnits, significant_figures::Integer)
 
         p_min  = convert(Float64, parameter_min)
         p_max  = convert(Float64, parameter_max)
         sigfig = convert(Int64, significant_figures)
 
-        return Chromosome(p_min, p_max, sigfig)
+        return Chromosome(p_min, p_max, parameter_units, sigfig)
     end
 
-    function Chromosome(parameter_min::Float64, parameter_max::Float64, genes::Int64, expressions::Int64, genotype::Vector{Gene})
+    function Chromosome(parameter_min::Float64, parameter_max::Float64, parameter_units::PhysicalFields.PhysicalUnits, genes::Int64, expressions::Int64, genotype::Vector{Gene})
 
-        new(parameter_min, parameter_max, genes, expressions, genotype)::Chromosome
+        new(parameter_min, parameter_max, parameter_units, genes, expressions, genotype)::Chromosome
     end
 end # Chromosome
 
 # operators
 
 function Base.:(==)(cL::Chromosome, cR::Chromosome)::Bool
-    if cL.genes ≠ cR.genes
+    if cL.parameter_units ≠ cR.parameter_units || cL.genes ≠ cR.genes
         return false
     end
     if cL.genes == 0 && cL.parameter_min ≈ cR.parameter_min
@@ -231,15 +235,16 @@ function Base.:(setindex!)(c::Chromosome, gene::Gene, index::Int)
 end # setindex!
 
 function Base.:(copy)(c::Chromosome)::Chromosome
-    parameter_min = copy(c.parameter_min)
-    parameter_max = copy(c.parameter_max)
-    genes         = copy(c.genes)
-    expressions   = copy(c.expressions)
-    genotype      = Vector{Gene}(undef, genes)
+    parameter_min   = copy(c.parameter_min)
+    parameter_max   = copy(c.parameter_max)
+    parameter_units = PhysicalFields.copy(c.parameter_units)
+    genes           = copy(c.genes)
+    expressions     = copy(c.expressions)
+    genotype        = Vector{Gene}(undef, genes)
     for i in 1:genes
         genotype[i] = copy(c.genotype[i])
     end
-    return Chromosome(parameter_min, parameter_max, genes, expressions, genotype)
+    return Chromosome(parameter_min, parameter_max, parameter_units, genes, expressions, genotype)
 end # copy
 
 function toBinaryString(c::Chromosome)::String
@@ -255,6 +260,15 @@ function mutate!(c::Chromosome, probability_mutation::Float64)
     for i in 1:c.genes
         gene = c.genotype[i]
         mutate!(gene, probability_mutation)
+    end
+    return nothing
+end # mutate!
+
+function mutate!(c::Chromosome, probability_mutation::Real)
+    probability = convert(Float64, probability_mutation)
+    for i in 1:c.genes
+        gene = c.genotype[i]
+        mutate!(gene, probability)
     end
     return nothing
 end # mutate!
@@ -323,6 +337,13 @@ function crossover(parentA::Chromosome, parentB::Chromosome, probability_mutatio
     return child
 end # crossover
 
+function crossover(parentA::Chromosome, parentB::Chromosome, probability_mutation::Real, probability_crossover::Real)::Chromosome
+    probability_m = convert(Float64, probability_mutation)
+    probability_c = convert(Float64, probability_crossover)
+    child = crossover(parentA, parentB, probability_m, probabilty_c)
+    return child
+end # crossover
+
 #=
 The decode/encode map between a real phenotype and its haploid genotype
 representation.
@@ -349,15 +370,15 @@ end # _gray2binary
 
 function _binary2integer(binary::Vector{Bool})::Int64
     bits    = length(binary)
-    integer = Int64(0)
-    power   = Int64(1)
+    integer = 0
+    power   = 1
     for i in bits:-1:1
         if binary[i] == dominant
             integer = integer + power
         end
         power = 2power
     end
-    return integer
+    return convert(Int64, integer)
 end # _binary2integer
 
 function _integer2phenotype(c::Chromosome, integer::Int64)::Float64
@@ -369,10 +390,10 @@ function _integer2phenotype(c::Chromosome, integer::Int64)::Float64
     if phenotype > c.parameter_max
         phenotype = c.parameter_max
     end
-    return phenotype
+    return convert(Float64, phenotype)
 end # _integer2phenotype
 
-function decode(c::Chromosome)::Float64
+function decode(c::Chromosome)::PhysicalFields.PhysicalScalar
     if c.genes == 0
         phenotype = copy(c.parameter_min)
     else
@@ -388,18 +409,19 @@ function decode(c::Chromosome)::Float64
         integer   = _binary2integer(binary)
         phenotype = _integer2phenotype(c, integer)
     end
-    return phenotype
+    scalar = PhysicalFields.PhysicalScalar(phenotype, c.physical_units)
+    return scalar
 end # decode
 
 # Methods to encode a parameter.
 
 function _phenotype2integer(c::Chromosome, phenotype::Float64)::Int64
     fraction = (phenotype - c.parameter_min) / (c.parameter_max - c.parameter_min)
-    integer  = Int64(round(fraction * c.expressions))
+    integer  = Int(round(fraction * c.expressions))
     if integer < 0
-        integer = Int64(0)
+        integer = 0
     end
-    return integer
+    return convert(Int64, integer)
 end # _phenotype2integer
 
 function _integer2binary(c::Chromosome, integer::Int64)::Vector{Bool}
@@ -432,10 +454,19 @@ function _binary2gray(binary::Vector{Bool})::Vector{Bool}
     return gray
 end # _binary2gray
 
-function encode!(c::Chromosome, phenotype::Float64)
+function encode!(c::Chromosome, scalar::PhysicalFields.PhysicalScalar)
+    # verify input
+    if c.parameter_units ≠ scalar.units
+        msg = "The scalar's units are not equal to the chromosome's units."
+        error(msg)
+    end
+
     if c.genes == 0
         return nothing
-    elseif phenotype ≥ c.parameter_min && phenotype ≤ c.parameter_max
+    end
+
+    phenotype = convert(Float64, PhysicalFields.get(scalar))
+    if phenotype ≥ c.parameter_min && phenotype ≤ c.parameter_max
         integer = _phenotype2integer(c, phenotype)
         binary  = _integer2binary(c, integer)
         gray    = _binary2gray(binary)
@@ -447,7 +478,7 @@ function encode!(c::Chromosome, phenotype::Float64)
             end
         end
     else
-        msg = "The phenotype must lie within [c.parameter_min, c.parameter_max]."
+        msg = "The scalar must lie within [c.parameter_min, c.parameter_max]."
         error(msg)
     end
     return nothing
