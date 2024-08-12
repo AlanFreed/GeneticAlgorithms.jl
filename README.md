@@ -5,7 +5,8 @@ This module originated from courses in numerical methods that the author (Alan F
 To use this module, you will need to add the following repository to your project:
 
 ```
-using Pkg
+using Pkgf
+Pkg.add(url = "https://github.com/AlanFreed/PhysicalFields.jl")
 Pkg.add(url = "https://github.com/AlanFreed/GeneticAlgorithms.jl")
 ```
 
