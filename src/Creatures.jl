@@ -274,21 +274,21 @@ StructTypes.StructType(::Type{Creature}) = StructTypes.Struct()
 
 """
 Method:\n
-    toFile(c::GeneticAlgorithms.Creature, json_stream::IOStream)\n
-Writes data structure `c` to the IOStream `json_stream.`\n
+    toFile(creature::GeneticAlgorithms.Creature, json_stream::IOStream)\n
+writes a data structure `creature` to the IOStream `json_stream.`\n
 For example, consider the code fragment:\n
-    json_stream = PhysicalFields.openJSONWriter(<my_dir_path>, <my_file_name>)\n
+    json_stream = PhysicalFields.openJSONWriter(<my_dir_path>::String, <my_file_name>::String)\n
     ...\n
-    GeneticAlgorithm.toFile(c::Creature, json_stream::IOStream)\n
+    GeneticAlgorithms.toFile(creature::GeneticAlgorithms.Creature, json_stream::IOStream)\n
     ...\n
     PhysicalFields.closeJSONStream(json_stream::IOStream)\n
-where <my_dir_path> is the path to your working directory wherein the file
-<my_file_name> that is to be written to either exists or will be created, and
-which must have a .json extension.
+where <my_dir_path> is the path to your working directory wherein the file\n
+<my_file_name> that is to be written to either exists or will be created,\n
+and which must have a .json extension.
 """
-function toFile(c::Creature, json_stream::IOStream)
+function toFile(creature::Creature, json_stream::IOStream)
     if isopen(json_stream)
-        JSON3.write(json_stream, c)
+        JSON3.write(json_stream, creature)
         write(json_stream, '\n')
     else
         msg = "The supplied JSON stream is not open."
@@ -301,24 +301,24 @@ end
 """
 Method:\n
     fromFile(c::GeneticAlgorithms.Creature, json_stream::IOStream)\n
-Reads a Chromosome from the IOStream `json_stream.`\n
+reads an instance of type Creature from the IOStream `json_stream.`\n
 For example, consider the code fragment:\n
-    json_stream = PhysicalFields.openJSONReader(<my_dir_path>, <my_file_name>)\n
+    json_stream = PhysicalFields.openJSONReader(<my_dir_path>::String, <my_file_name>::String)\n
     ...\n
-    c = GeneticAlgorithms.fromFile(GeneticAlgorithms.Creature, json_stream)\n
+    creature = GeneticAlgorithms.fromFile(::GeneticAlgorithms.Creature, json_stream::IOStream)\n
     ...\n
-    PhysicalFields.closeJSONStream(json_stream)\n
-that returns `c,` which is an object of type GeneticAlgorithms.Creature. Here
-<my_dir_path> is the path to your working directory wherein the file 
-<my_file_name> that is to be read from must exist, and which is to have a
+    PhysicalFields.closeJSONStream(json_stream::IOStream)\n
+which returns a `creature,` an object of type GeneticAlgorithms.Creature.\n
+Here <my_dir_path> is the path to your working directory wherein the file\n
+to be read from, i.e., <my_file_name>, must exist, and which is to have a\n
 .json extension.
 """
 function fromFile(::Type{Creature}, json_stream::IOStream)::Creature
     if isopen(json_stream)
-        c = JSON3.read(readline(json_stream), Creature)
+        creature = JSON3.read(readline(json_stream), Creature)
     else
         msg = "The supplied JSON stream is not open."
         error(msg)
     end
-    return c
+    return creature
 end

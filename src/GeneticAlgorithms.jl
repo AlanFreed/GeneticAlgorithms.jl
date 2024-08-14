@@ -1,11 +1,11 @@
 #=
 Created on Thr 14 Jun 2024
-Updated on Sat 10 Aug 2024
+Updated on Wed 14 Aug 2024
 Translated from python (code dated 09/08/2017) with enhancements for julia.
 =#
 
 """
-This julia module is a translation of a python module written for the author's
+This Julia module is a translation of a python module written for the author's
 course on numerical methods at TAMU, which was a translation of a pascal module,
 which was a translation of the author's original genetic algorithm written in
 zonnon that the author first used to illustrate to his students at SVSU the art
@@ -54,7 +54,7 @@ and procedure
 
     run(ga, verbose)
 
-    Function 'run' runs a solver for genetic algorithm 'ga' whose population
+    Function 'run' calls a solver for genetic algorithm 'ga' whose population
     size and number of generations to advance through are determined internally.
     A report is written to file for the user to read.  If 'verbose' is true,
     the default, then a page in this report is written for each generation of
@@ -159,7 +159,62 @@ struct GeneticAlgorithm
     end
 end # GeneticAlgorithm
 
-# Method
+# Methods for storing and retrieving a GeneticAlgorithm to and from a file.
+
+StructTypes.StructType(::Type{GeneticAlgorithm}) = StructTypes.Struct()
+
+"""
+Method:\n
+    toFile(ga::GeneticAlgorithms.GeneticAlgorithm, json_stream::IOStream)\n
+writes a data structure `ga` to the IOStream `json_stream.`\n
+For example, consider the code fragment:\n
+    json_stream = PhysicalFields.openJSONWriter(<my_dir_path>::String, <my_file_name>::String)\n
+    ...\n
+    GeneticAlgorithms.toFile(ga::GeneticAlgorithms.GeneticAlgorithm, json_stream::IOStream)\n
+    ...\n
+    PhysicalFields.closeJSONStream(json_stream::IOStream)\n
+where <my_dir_path> is the path to your working directory wherein the file\n
+<my_file_name> that is to be written to either exists or will be created,\n
+and which must have a .json extension.
+"""
+function toFile(ga::GeneticAlgorithm, json_stream::IOStream)
+    if isopen(json_stream)
+        JSON3.write(json_stream, ga)
+        write(json_stream, '\n')
+    else
+        msg = "The supplied JSON stream is not open."
+        error(msg)
+    end
+    flush(json_stream)
+    return nothing
+end
+
+"""
+Method:\n
+    fromFile(::GeneticAlgorithms.GeneticAlgorithm, json_stream::IOStream)\n
+reads an instance of type GeneticAlgorithm from the IOStream `json_stream.`\n
+For example, consider the code fragment:\n
+    json_stream = PhysicalFields.openJSONReader(<my_dir_path>::String, <my_file_name>::String)\n
+    ...\n
+    ga = GeneticAlgorithms.fromFile(::GeneticAlgorithms.GeneticAlgorithm, json_stream::IOStream)\n
+    ...\n
+    PhysicalFields.closeJSONStream(json_stream::IOStream)\n
+which returns a `ga,` an object of type GeneticAlgorithms.GeneticAlgorithm.\n
+Here <my_dir_path> is the path to your working directory wherein the file\n
+to be read from, i.e., <my_file_name>, must exist, and which is to have a\n
+.json extension.
+"""
+function fromFile(::Type{GeneticAlgorithm}, json_stream::IOStream)::GeneticAlgorithm
+    if isopen(json_stream)
+        ga = JSON3.read(readline(json_stream), GeneticAlgorithm)
+    else
+        msg = "The supplied JSON stream is not open."
+        error(msg)
+    end
+    return ga
+end
+
+# Script for execution.
 
 function run(ga::GeneticAlgorithm, verbose::Bool=true)
     println("Each ⋅ represents one generation advanced out of ", ga.colony.generations_to_convergence, " generations total.")

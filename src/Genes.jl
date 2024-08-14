@@ -1,38 +1,87 @@
 # Admissible gene expressions include:
 
+"""
+```julia
+const dominant
+```
+This constant is used to designate a dominant gene expression, e.g.,\
+in the constructor\
+```julia
+my_dominant_gene = Gene(dominant)
+```
+"""
 const dominant  = true    # Gene expression whenever a gene is dominant.
+
+"""
+```julia
+const recessive
+```
+This constant is used to designate a recessive gene expression, e.g.,\
+in the constructor\
+```julia
+my_recessive_gene = Gene(recessive)
+```
+"""
 const recessive = false   # Gene expression whenever a gene is recessive.
 
 """
-Genes are the lowest level containers of genetic information.  Here they are
-considered to contain haploid gene expressions, i.e., dominant (assigned true)
-and recessive (assigned false).
-
-A gene is a type whose datum is a gene expression.
-
+Genes are the lowest level containers of genetic information.  Here haploid\
+genes are considered, which have two expressions: dominant (assigned true) and\
+recessive (assigned false).\\
+The author considered diploid genes (which have three expressions: dominant,\
+recessive, and dominant-recessive) early in his work with genetic algorithms,\
+but found there to be no advantage over using the simpler haploid gene.\\
+A gene is a type whose datum is a gene expression.\
+```julia
 struct Gene
     expression::PhysicalFields.MBoolean
 end
+```
+where the expression is a mutable boolean, i.e., it can be changed/mutated.\\
 
-Constructors
+Constructors\
+```julia
+gene = Gene()  # Creates a `gene` with a random expression.
+```
+```julia
+gene = Gene(dominant)  # Creates a `gene` with a dominant expression.
+```
+```julia
+gene = Gene(recessive)  # Creates a `gene` with a recessive expression.
+```
+\\
+Operators\
 
-    g = Gene()                  creates a gene 'g' with a random expression
-    g = Gene(dominant)          creates a gene 'g' with dominant expression
-    g = Gene(recessive)         creates a gene 'g' with recessive expression
+`==` and `≠`\\
 
-Operators
+Methods\
 
-    ==, ≠
-
-Methods
-
-    e = get(g)                  returns expression 'e' held by gene 'g'
-    set!(g, expression)         assigns a gene `expression` to g.expression
-    c = copy(g)                 returns a copy 'c' of gene 'g'
-    s = toBinaryString(g)       returns a string representation 's' of gene 'g'
-    b = isDominant(g)           returns true if g.expression == dominant
-    b = isRecessive(g)          returns true if g.expression == recessive
-    mutate!(g, probability)     random flip in gene expression at 'probability'
+```julia
+e = get(g)  # Returns expression `e` held by gene `g.`
+```
+```julia
+set!(g, expression)  # Assigns gene `expression` to field `g.expression.`
+```
+```julia
+c = copy(g)  # Returns a copy `c` of gene `g.`
+```
+```julia
+s = toBinaryString(g)  # Returns a string representation `s` for gene `g.`
+```
+```julia
+b = isDominant(g)  # Returns `b = true` if `g.expression == dominant.`
+```
+```julia
+b = isRecessive(g)  # Returns `b = true` if `g.expression == recessive.`
+```
+```julia
+mutate!(g, probability)  # A random flip in `g.expression` at a `probability.`
+```
+```julia
+toFile(g, json_stream)  # Writes gene `g` to a JSON file.
+```
+```julia
+g = fromFile(::Gene, json_stream)  # Reads gene `g` from a JSON file.
 """
 struct Gene
     expression::PhysicalFields.MBoolean
@@ -183,8 +232,8 @@ function isRecessive(g::Gene)::Bool
 end # isRecessive
 
 """
-mutate! addresses the occurrence of a gene's expression changing from dominant
-to recessive, or vice versa, with a chance of change at probability_mutation.
+mutate! addresses the occurrence of a gene expression changing from dominant\
+to recessive, or vice versa, with a chance of change at `probability_mutation.`
 """
 function mutate!(g::Gene, probability_mutation::Float64)
     if probability_mutation < 0.0 || probability_mutation ≥ 1.0
@@ -212,22 +261,25 @@ end
 StructTypes.StructType(::Type{Gene}) = StructTypes.Struct()
 
 """
-Method:\n
-    toFile(g::GeneticAlgorithms.Gene, json_stream::IOStream)\n
-Writes data structure `g` to the IOStream `json_stream.`\n
-For example, consider the code fragment:\n
-    json_stream = PhysicalFields.openJSONWriter(<my_dir_path>, <my_file_name>)\n
-    ...\n
-    GeneticAlgorithm.toFile(g::Gene, json_stream::IOStream)\n
-    ...\n
-    PhysicalFields.closeJSONStream(json_stream::IOStream)\n
-where <my_dir_path> is the path to your working directory wherein the file
-<my_file_name> that is to be written to either exists or will be created, and
-which must have a .json extension.
+```julia
+toFile(gene::GeneticAlgorithms.Gene, json_stream::IOStream)
+```
+writes a data structure `gene` to the IOStream `json_stream.`\\
+For example, consider the code fragment:
+```julia
+json_stream = PhysicalFields.openJSONWriter(<my_dir_path>::String, <my_file_name>::String)\
+...\
+GeneticAlgorithms.toFile(gene::GeneticAlgorithms.Gene, json_stream::IOStream)\
+...\
+PhysicalFields.closeJSONStream(json_stream::IOStream)
+```
+where `<my_dir_path>` is the path to your working directory wherein the file\
+`<my_file_name>` that is to be written to either exists or will be created,\
+and which must have a .json extension.
 """
-function toFile(g::Gene, json_stream::IOStream)
+function toFile(gene::Gene, json_stream::IOStream)
     if isopen(json_stream)
-        JSON3.write(json_stream, g)
+        JSON3.write(json_stream, gene)
         write(json_stream, '\n')
     else
         msg = "The supplied JSON stream is not open."
@@ -238,26 +290,29 @@ function toFile(g::Gene, json_stream::IOStream)
 end
 
 """
-Method:\n
-    fromFile(g::GeneticAlgorithms.Gene, json_stream::IOStream)\n
-Reads a Gene from the IOStream `json_stream.`\n
-For example, consider the code fragment:\n
-    json_stream = PhysicalFields.openJSONReader(<my_dir_path>, <my_file_name>)\n
-    ...\n
-    g = GeneticAlgorithms.fromFile(GeneticAlgorithms.Gene, json_stream)\n
-    ...\n
-    PhysicalFields.closeJSONStream(json_stream)\n
-that returns `g,` which is an object of type GeneticAlgorithms.Gene. Here
-<my_dir_path> is the path to your working directory wherein the file 
-<my_file_name> that is to be read from must exist, and which is to have a
+```julia
+gene = fromFile(::GeneticAlgorithms.Gene, json_stream::IOStream)
+```
+reads an instance of type `Gene` from the IOStream `json_stream.`\
+For example, consider the code fragment:
+```julia
+json_stream = PhysicalFields.openJSONReader(<my_dir_path>::String, <my_file_name>::String)\
+...\
+gene = GeneticAlgorithms.fromFile(::GeneticAlgorithms.Gene, json_stream::IOStream)\
+...\
+PhysicalFields.closeJSONStream(json_stream::IOStream)
+```
+which returns a `gene,` an object of type `GeneticAlgorithms.Gene.`\
+Here `<my_dir_path>` is the path to your working directory wherein the file\
+to be read from, i.e., `<my_file_name>,` must exist, and which is to have a\
 .json extension.
 """
 function fromFile(::Type{Gene}, json_stream::IOStream)::Gene
     if isopen(json_stream)
-        g = JSON3.read(readline(json_stream), Gene)
+        gene = JSON3.read(readline(json_stream), Gene)
     else
         msg = "The supplied JSON stream is not open."
         error(msg)
     end
-    return g
+    return gene
 end
