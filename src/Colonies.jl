@@ -85,7 +85,7 @@ text = report(c)                Returns a human-readable report via a string
                                 generation via its statistics.
 """
 struct Colony
-    parameters<:AbstractParameters
+    parameters::AbstractParameters
     data::ExperimentalData
     # Fields pertaining to the creatures of a colony.
     probability_mutation::Float64
@@ -109,7 +109,7 @@ struct Colony
 
     # constructor
 
-    function Colony(parameters<:AbstractParameters, data::ExperimentalData, probability_mutation::Float64, probability_crossover::Float64, probability_immigrant::Float64, parameters_alien::Vector{Float64}, parameters_min::Vector{Float64}, parameters_max::Vector{Float64}, parameters_constrained::Vector{Tuple{Int64,Int64}}, significant_figures::Int64, use_fitness::Int64 = 3)
+    function Colony(parameters::AbstractParameters, data::ExperimentalData, probability_mutation::Float64, probability_crossover::Float64, probability_immigrant::Float64, parameters_alien::Vector{Float64}, parameters_min::Vector{Float64}, parameters_max::Vector{Float64}, parameters_constrained::Vector{Tuple{Int64,Int64}}, significant_figures::Int64, use_fitness::Int64 = 3)
 
         # bound inputs
 
@@ -176,7 +176,6 @@ struct Colony
                 error(msg)
             end
         end
-        =#
 
         # Get parameter names from the fields of object parameters.
 
@@ -245,7 +244,7 @@ struct Colony
 
         # fitness
 
-        fitness = PhysicalFields.MVector}(fitness_types, population_size)
+        fitness = PhysicalFields.MVector(fitness_types, population_size)
 
         for j in 1:population_size
             adult = adults[j]
@@ -257,12 +256,13 @@ struct Colony
         new(parameters, data, probability_mutation, probability_crossover, probability_immigrant, parameters_name, parameters_min, parameters_max, parameters_constrained, significant_figures, population_size, generations_to_convergence, generation, elite, children, adults, fitness, use_fitness)::Colony
     end
 
-    function Colony(parameters<:AbstractParameters, data::ExperimentalData, probability_mutation::Float64, probability_crossover::Float64, probability_immigrant::Float64, parameters_name::Vector{String}, parameters_min::Vector{Float64}, parameters_max::Vector{Float64}, parameters_constrained::Vector{Tuple{Int64,Int64}}, significant_figures::Int64, population_size::Int64, generations_to_convergence::Int64, generation::PhysicalFields.MInteger, elite::Creature, children::Vector{Creature}, adults::Vector{Creature}, fitness::PhysicalFields.MMatrix, use_fitness::Int64 = 3)
+    function Colony(parameters::AbstractParameters, data::ExperimentalData, probability_mutation::Float64, probability_crossover::Float64, probability_immigrant::Float64, parameters_name::Vector{String}, parameters_min::Vector{Float64}, parameters_max::Vector{Float64}, parameters_constrained::Vector{Tuple{Int64,Int64}}, significant_figures::Int64, population_size::Int64, generations_to_convergence::Int64, generation::PhysicalFields.MInteger, elite::Creature, children::Vector{Creature}, adults::Vector{Creature}, fitness::PhysicalFields.MMatrix, use_fitness::Int64 = 3)
 
         new(parameters, data, probability_mutation, probability_crossover, probability_immigrant, parameters_name, parameters_min, parameters_max, parameters_constrained, significant_figures, population_size, generations_to_convergence, generation, elite, children, adults, fitness, use_fitness)::Colony
     end
 end # Colony
 
+#=
 # internal methods
 
 function _tournamentPlay(c::Colony)::Creature
@@ -694,3 +694,5 @@ function fromFile(::Type{Colony}, json_stream::IOStream)::Colony
     end
     return colony
 end
+
+=#

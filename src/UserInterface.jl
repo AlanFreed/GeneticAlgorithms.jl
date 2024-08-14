@@ -119,7 +119,6 @@ struct ExperimentalData
     function ExperimentalData(experiments::Int64, variables_control::Vector{Int64}, variables_response::Vector{Int64}, data_points::Vector{Int64}, controls::Vector{Matrix{Float64}}, responses::Vector{Matrix{Float64}}, responses_std::Vector{Vector{Float64}})
 
         new(exp, v_con, v_res, datPt, controls, responses, responses_std)::ExperimentalData
-        end
     end
 end # ExperimentalData
 

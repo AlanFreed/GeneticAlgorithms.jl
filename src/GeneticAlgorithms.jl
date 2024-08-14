@@ -66,6 +66,7 @@ module GeneticAlgorithms
 using
     JSON3,
     PhysicalFields,
+    Printf,
     Statistics,
     StatsBase,
     StructTypes

@@ -1,86 +1,91 @@
 # Admissible gene expressions include:
 
 """
-```julia
+```
 const dominant
 ```
-This constant is used to designate a dominant gene expression, e.g.,\
-in the constructor\
-```julia
+
+This constant is used to designate a dominant gene expression, e.g., in the constructor
+
+```
 my_dominant_gene = Gene(dominant)
 ```
+
 """
 const dominant  = true    # Gene expression whenever a gene is dominant.
 
 """
-```julia
+```
 const recessive
 ```
-This constant is used to designate a recessive gene expression, e.g.,\
-in the constructor\
-```julia
+
+This constant is used to designate a recessive gene expression, e.g., in the constructor
+
+```
 my_recessive_gene = Gene(recessive)
 ```
+
 """
 const recessive = false   # Gene expression whenever a gene is recessive.
 
 """
-Genes are the lowest level containers of genetic information.  Here haploid\
-genes are considered, which have two expressions: dominant (assigned true) and\
-recessive (assigned false).\\
-The author considered diploid genes (which have three expressions: dominant,\
-recessive, and dominant-recessive) early in his work with genetic algorithms,\
-but found there to be no advantage over using the simpler haploid gene.\\
-A gene is a type whose datum is a gene expression.\
-```julia
+Genes are the lowest level containers of genetic information in a genetic algorithm.  Here haploid genes are considered, which have two expressions: dominant (assigned true) and recessive (assigned false).
+
+The author considered diploid genes (which have three expressions: dominant, recessive, and dominant-recessive) early in his work with genetic algorithms, but found there to be no real advantage over using the simpler haploid gene.
+
+A gene is a type whose datum is a gene expression.
+
+```
 struct Gene
     expression::PhysicalFields.MBoolean
 end
 ```
-where the expression is a mutable boolean, i.e., it can be changed/mutated.\\
 
-Constructors\
-```julia
+where the expression is a mutable boolean, i.e., it can be changed/mutated.
+
+Constructors
+
+```
 gene = Gene()  # Creates a `gene` with a random expression.
 ```
-```julia
+```
 gene = Gene(dominant)  # Creates a `gene` with a dominant expression.
 ```
-```julia
+```
 gene = Gene(recessive)  # Creates a `gene` with a recessive expression.
 ```
-\\
-Operators\
 
-`==` and `≠`\\
+Operators
 
-Methods\
+`==` and `≠`
 
-```julia
+Methods
+
+```
 e = get(g)  # Returns expression `e` held by gene `g.`
 ```
-```julia
+```
 set!(g, expression)  # Assigns gene `expression` to field `g.expression.`
 ```
-```julia
+```
 c = copy(g)  # Returns a copy `c` of gene `g.`
 ```
-```julia
+```
 s = toBinaryString(g)  # Returns a string representation `s` for gene `g.`
 ```
-```julia
+```
 b = isDominant(g)  # Returns `b = true` if `g.expression == dominant.`
 ```
-```julia
+```
 b = isRecessive(g)  # Returns `b = true` if `g.expression == recessive.`
 ```
-```julia
+```
 mutate!(g, probability)  # A random flip in `g.expression` at a `probability.`
 ```
-```julia
+```
 toFile(g, json_stream)  # Writes gene `g` to a JSON file.
 ```
-```julia
+```
 g = fromFile(::Gene, json_stream)  # Reads gene `g` from a JSON file.
 """
 struct Gene
