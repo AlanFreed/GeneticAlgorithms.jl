@@ -41,19 +41,24 @@ struct Gene
 end
 ```
 
-where the expression is a mutable boolean, i.e., it can be changed/mutated.
+where the `expression` is a mutable boolean, i.e., it can be changed/mutated.
 
 Constructors
 
 ```
-gene = Gene()  # Creates a gene with a random expression.
+gene = Gene()
 ```
+> Creates a `gene` with a random expression.
+
 ```
-gene = Gene(dominant)  # Creates a gene with a dominant expression.
+gene = Gene(dominant)
 ```
+> Creates a `gene` with a `dominant` expression.
+
 ```
-gene = Gene(recessive)  # Creates a gene with a recessive expression.
+gene = Gene(recessive)
 ```
+> Creates a `gene` with a `recessive` expression.
 
 Operators
 
@@ -64,74 +69,77 @@ Methods
 ```
 e = get(g)
 ```
-Returns the expression `e` held by gene `g`.
+> Returns the expression `e` held by gene `g`.
 
 ```
 set!(g, expression)
 ```
-Assigns a gene `expression` to the field `g.expression`.
+> Assigns a gene `expression` to the field `g.expression`.
 
 ```
 c = copy(g)
 ```
-Returns a copy `c` of gene `g`.
+> Returns a copy `c` of gene `g`.
 
 ```
 s = toBinaryString(g)
 ```
-Returns a string representation `s` for gene `g` as either a "0" (recessive) or a "1" (dominant).
+> Returns a string representation `s` for gene `g` as either a "0" (recessive) or a "1" (dominant).
 
 ```
 b = isDominant(g)
 ```
-Returns `b = true` if `g.expression == dominant`.
+> Returns `b = true` if `g.expression == dominant`.
 
 ```
 b = isRecessive(g)
 ```
-Returns `b = true` if `g.expression == recessive`.
+> Returns `b = true` if `g.expression == recessive`.
 
 ```
 mutate!(g, probability)
 ```
-Performs a random flip in the field `g.expression` at a specified `probability`, i.e., from `dominant` to `recessive`, or vice versa.
+> Performs a random flip in the field `g.expression` at a specified `probability`, i.e., from `dominant` to `recessive`, or vice versa.
 
 Persistence
 
 ```
-toFile(g, json_stream)  # Writes gene g to a JSON file.
+toFile(g, json_stream)
 ```
+> Writes a gene `g` to a JSON file `json_stream`.
+
 ```
-g = fromFile(::Gene, json_stream)  # Reads gene g from a JSON file.
+g = fromFile(::Gene, json_stream)
 ```
+> Reads a gene `g` from a JSON file `json_stream`.
 
 Consider the following code fragments:
 
 1) To open a file.
 
 ```
-json_stream = PhysicalFields.openJSONWriter(<my_dir_path>::String, <my_file_name>::String)
+json_stream = PhysicalFields.openJSONWriter(<my_dir_path>, <my_file_name.json>)
 ```
-This opens a `json_stream` for `<my_file_name.json>` located in `<my_dir_path>`.
+> This opens a `json_stream` for `<my_file_name.json>` located in `<my_dir_path>`.
 
 2) To write to a file.
 
 ```
-GeneticAlgorithms.toFile(gene::Gene, json_stream::IOStream)
+toFile(gene, json_stream)
 ```
-This writes a `gene` to the `json_stream`.
+> This writes a `gene` to the `json_stream`.
 
 3) To read from a file.
 
 ```
-gene = GeneticAlgorithms.fromFile(::Gene, json_stream::IOStream)
+gene = GeneticAlgorithms.fromFile(::Gene, json_stream)
 ```
-This reads in a `gene` from the `json_stream`.
+> This reads in a `gene` of type `Gene` from the `json_stream`.
 
 4) And to close a file.
 
 ```
-PhysicalFields.closeJSONStream(json_stream::IOStream)
+PhysicalFields.closeJSONStream(json_stream)
 ```
 This flushes the buffer and closes the `json_stream`.
 """
