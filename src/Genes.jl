@@ -4,13 +4,10 @@
 ```
 const dominant
 ```
-
 This constant is used to designate a dominant gene expression, e.g., in the constructor
-
 ```
 my_dominant_gene = Gene(dominant)
 ```
-
 """
 const dominant  = true    # Gene expression whenever a gene is dominant.
 
@@ -18,32 +15,28 @@ const dominant  = true    # Gene expression whenever a gene is dominant.
 ```
 const recessive
 ```
-
 This constant is used to designate a recessive gene expression, e.g., in the constructor
-
 ```
 my_recessive_gene = Gene(recessive)
 ```
-
 """
 const recessive = false   # Gene expression whenever a gene is recessive.
 
 """
-Genes are the lowest level containers of genetic information in a genetic algorithm.  Here haploid genes are considered, which have two expressions: dominant (assigned true) and recessive (assigned false).
+Genes are the lowest level containers of genetic information in a genetic
+algorithm.  Here haploid genes are considered, which have two expressions:
+dominant (assigned `true`) and recessive (assigned `false`).
 
-The author considered diploid genes (which have three expressions: dominant, recessive, and dominant-recessive) early in his work with genetic algorithms, but found there to be no real advantage over using the simpler haploid gene.
-
-A gene is a type whose datum is a gene expression.
+# Gene
 
 ```
 struct Gene
     expression::PhysicalFields.MBoolean
 end
 ```
+> where the `expression` is a mutable boolean, i.e., it can be changed/mutated.
 
-where the `expression` is a mutable boolean, i.e., it can be changed/mutated.
-
-Constructors
+## Constructors
 
 ```
 gene = Gene()
@@ -60,67 +53,70 @@ gene = Gene(recessive)
 ```
 > Creates a `gene` with a `recessive` expression.
 
-Operators
+## Operators
 
 `==` and `≠`
 
-Methods
+## Methods
 
 ```
-e = get(g)
+e = get(g::Gene)::Bool
 ```
 > Returns the expression `e` held by gene `g`.
 
 ```
-set!(g, expression)
+set!(g::Gene, expression::Bool)
 ```
 > Assigns a gene `expression` to the field `g.expression`.
 
 ```
-c = copy(g)
+c = copy(g::Gene)::Gene
 ```
 > Returns a copy `c` of gene `g`.
 
 ```
-s = toBinaryString(g)
+s = toBinaryString(g::Gene)::String
 ```
-> Returns a string representation `s` for gene `g` as either a "0" (recessive) or a "1" (dominant).
+> Returns a string representation `s` for gene `g` as either a "0" (recessive)
+or a "1" (dominant).
 
 ```
-b = isDominant(g)
+b = isDominant(g::Gene)::Bool
 ```
 > Returns `b = true` if `g.expression == dominant`.
 
 ```
-b = isRecessive(g)
+b = isRecessive(g::Gene)::Bool
 ```
 > Returns `b = true` if `g.expression == recessive`.
 
 ```
-mutate!(g, probability)
+mutate!(g::Gene, probability::Real)
 ```
-> Performs a random flip in the field `g.expression` at a specified `probability`, i.e., from `dominant` to `recessive`, or vice versa.
+> Performs a random flip in the field `g.expression` at a specified
+`probability`, i.e., from `dominant` to `recessive`, or vice versa.
 
-Persistence
-
-```
-toFile(g, json_stream)
-```
-> Writes a gene `g` to a JSON file `json_stream`.
+### Persistence
 
 ```
-g = fromFile(::Gene, json_stream)
+toFile(g::Gene, json_stream::IOStream)
 ```
-> Reads a gene `g` from a JSON file `json_stream`.
+> Writes a gene `g` to the JSON file attached to `json_stream`.
 
-Consider the following code fragments:
+```
+g = fromFile(::Gene, json_stream::IOStream)::Gene
+```
+> Reads a gene `g` of type `Gene` from the JSON file attached to `json_stream`.
+
+#### Consider the following code fragments:
 
 1) To open a file.
 
 ```
 json_stream = PhysicalFields.openJSONWriter(<my_dir_path>, <my_file_name.json>)
 ```
-> This opens a `json_stream` for `<my_file_name.json>` located in `<my_dir_path>`.
+> This opens a `json_stream` for the file `<my_file_name.json>` located in
+directory `<my_dir_path>`.
 
 2) To write to a file.
 
@@ -141,7 +137,7 @@ gene = GeneticAlgorithms.fromFile(::Gene, json_stream)
 ```
 PhysicalFields.closeJSONStream(json_stream)
 ```
-This flushes the buffer and closes the `json_stream`.
+> This flushes the buffer and closes the `json_stream`.
 """
 struct Gene
     expression::PhysicalFields.MBoolean

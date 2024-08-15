@@ -2,13 +2,17 @@
 A genome is a genetic container of chromosomes.  Here is where all the genetic
 information exists that makes up a creature.
 
-A genome has an interface of:
+# Genome
 
+```
 struct Genome
-    genes           # number of genes that comprise a genome
-    chromosomes     # number of chromosomes that comprise a genome
-    genotypes       # array of chromosomes, i.e., its genome
+    genes::Int64           # number of genes that comprise a genome
+    chromosomes::Int64     # number of chromosomes that comprise a genome
+    genotypes::Vector{Chromosome}
+           # array of chromosomes, i.e., its genome
 end
+```
+> where
 
 Constructor
 
@@ -206,7 +210,13 @@ function crossover(parentA::Genome, parentB::Genome, probability_mutation::Float
     return child
 end # crossover
 
-function decode(g::Genome)::Vector{Float64}
+function crossover(parentA::Genome, parentB::Genome, probability_mutation::Real, probability_crossover::Real)::Genome
+    prob_m = convert(Float64, probability_mutation)
+    prob_x = convert(Float64, probability_crossover)
+    return crossover(parentA, parentB, prob_m, prob_x)
+end # crossover
+
+function decode(g::Genome)::Vector{PhysicalFields.PhysicalScalars}
     phenotypes = Vector{Float64}(undef, g.chromosomes)
     for i in 1:g.chromosomes
         chromosome = g.genotypes[i]
@@ -215,7 +225,7 @@ function decode(g::Genome)::Vector{Float64}
     return phenotypes
 end # decode
 
-function encode!(g::Genome, phenotypes::Vector{Float64})
+function encode!(g::Genome, phenotypes::Vector{PhysicalFields.PhysicalScalars})
     if g.chromosomes ≠ length(phenotypes)
         msg = "Number of chromosomes must equal number of phenotypes."
         throw(DimensionMismatch, msg)
@@ -232,23 +242,6 @@ end # encode!
 
 StructTypes.StructType(::Type{Genome}) = StructTypes.Struct()
 
-"""
-```
-toFile(genome::GeneticAlgorithms.Genome, json_stream::IOStream)
-```
-writes a data structure `genome` to the IOStream `json_stream.`\n
-For example, consider the code fragment:
-```
-json_stream = PhysicalFields.openJSONWriter(<my_dir_path>::String, <my_file_name>::String)\n
-...\n
-GeneticAlgorithms.toFile(genome::GeneticAlgorithms.Genome, json_stream::IOStream)\n
-...\n
-PhysicalFields.closeJSONStream(json_stream::IOStream)
-```
-where `<my_dir_path>` is the path to your working directory wherein the file\n
-`<my_file_name>` that is to be written to either exists or will be created,\n
-and which must have a .json extension.
-"""
 function toFile(genome::Genome, json_stream::IOStream)
     if isopen(json_stream)
         JSON3.write(json_stream, genome)
@@ -261,22 +254,6 @@ function toFile(genome::Genome, json_stream::IOStream)
     return nothing
 end
 
-"""
-```
-fromFile(genome::GeneticAlgorithms.Genome, json_stream::IOStream)
-```
-reads an instance of type `Genome` from the IOStream `json_stream.`\n
-For example, consider the code fragment:\n
-    json_stream = PhysicalFields.openJSONReader(<my_dir_path>::String, <my_file_name>::String)\n
-    ...\n
-    genome = GeneticAlgorithms.fromFile(::GeneticAlgorithms.Genome, json_stream::IOStream)\n
-    ...\n
-    PhysicalFields.closeJSONStream(json_stream::IOStream)\n
-which returns a `genome,` an object of type `GeneticAlgorithms.Genome.`\n
-Here `<my_dir_path>` is the path to your working directory wherein the file\n
-to be read from, i.e., `<my_file_name>,` must exist, and which is to have a\n
-.json extension.
-"""
 function fromFile(::Type{Genome}, json_stream::IOStream)::Genome
     if isopen(json_stream)
         genome = JSON3.read(readline(json_stream), Genome)

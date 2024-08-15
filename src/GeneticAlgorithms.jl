@@ -5,61 +5,31 @@ Translated from python (code dated 09/08/2017) with enhancements for julia.
 =#
 
 """
-This Julia module is a translation of a python module written for the author's
-course on numerical methods at TAMU, which was a translation of a pascal module,
-which was a translation of the author's original genetic algorithm written in
-zonnon that the author first used to illustrate to his students at SVSU the art
-of writing object-oriented code, for which genetic algorithms are well suited.
+This Julia module implementing a genetic algorithm is the translation (with refinements and enhancements) of a Python code written by the author for teaching numerical methods to his students at TAMU.  This, in turn, was a translation from a Pascal code that, in turn, was a translation of the author's original GA written in the experimental Zonnon programming language.  The author used this Zonnon code to illustrate the art of writing object-oriented code to his students at SVSU, for which genetic algorithms are well suited.
 
-From a biologic interpretation, the genetic algorithm implemented here is a
-colony of creatures that advances their quality of life (fitness) from one
-generation to the next.  Class 'GeneticAlgorithm,' defined at the end of this
-file, is a colony or collection of creatures whose population is sustained from
-one generation to the next.  Mating between creatures occurs through a process
-known as tournament play, where the most fit contestant from a random selection
-of contestants is chosen for mating.  Typically, each successive generation is
-more fit than its predecessor, i.e., the colony's quality improves with time.
+From a biologic interpretation, the genetic algorithm implemented here is a colony of creatures that advances their quality of life (fitness) from one generation to the next.  Class `GeneticAlgorithm` is a colony or collection of creatures whose population is sustained from one generation to the next.  Mating between creatures occurs through a process known as tournament play, where the most fit contestant from a random selection of contestants is chosen for mating.  Typically, each successive generation is more fit than its predecessor, i.e., the colony's quality improves with each new generation.
 
 To install this package, download the following packages from their URL address:
 
+```
 using Pkg
 Pkg.add(url = "https://github.com/AlanFreed/PhysicalFields.jl")
 Pkg.add(url = "https://github.com/AlanFreed/GeneticAlgorithms.jl")
+```
 
 JSON files, as implemented by JSON3.jl in Julia, handle the core types:
-    Object, Array, String, Number, Bool and Null
-where a Number is either a 64-bit integer of a 64-bit floating point number;
-hence, all integer fields and all real fields must be described via 64 bits.
-A JSON3.Object is an immutable Dict type, while a JSON3.Array is an immutable
-Vector type. Command copy(JSON3.Object) will return a mutable Dict object,
-while command copy(JSON3.Array) will return a mutable Vector object.
 
-The following GeneticAlgorithm types can be read-from & written-to a json file.
-    Gene, Chromosome, Genome, Creature, ExperimentalData, Colony and
-    GeneticAlgorithm.
-Users must make their MyParameters <: AbstractParameters JSON3 compatible to be
-able to read-from and write-to a file.  See the examples on how to do this.
+> `Object`, `Array`, `String`, `Number`, `Bool` and `Null`
 
-The data structure for genetic algorithm has an interface of
+where a `Number` is either a 64-bit integer of a 64-bit floating point number; hence, all integer fields and all real fields must be described via 64 binary bits.  A `JSON3.Object` is an immutable `Dict` type, while a `JSON3.Array` is an immutable `Vector` type. Command `copy(JSON3.Object)` will return a mutable `Dict` object, while command `copy(JSON3.Array)` will return a mutable `Vector` object.
 
-struct GeneticAlgorithm
-    c::Colony
-end
+The following `GeneticAlgorithm` types can be read-from and written-to a *json* file.
 
-with constructor
+> `Gene`, `Chromosome`, `Genome`, `Creature`, `Colony`, `ExperimentalData`, and `GeneticAlgorithm`.
 
-    ga = GeneticAlgorithm(colony)
+Users must make their *MyParameters <: AbstractParameters* struct JSON3 compatible in order to be able to read-from and write-to a file.  See the examples on how to do this.
 
-and procedure
-
-    run(ga, verbose)
-
-    Function 'run' calls a solver for genetic algorithm 'ga' whose population
-    size and number of generations to advance through are determined internally.
-    A report is written to file for the user to read.  If 'verbose' is true,
-    the default, then a page in this report is written for each generation of
-    the colony; otherwise, the report only contains information pertaining to
-    the final generation.
+Documentation is available for the module `GeneticAlgorithms` (you are reading it), for the exported types (`Gene`, `Chromosome`, `Genome`, `Creature`, `Colony`, `ExperimentalData`, `Model`, `AbstractParameters` and `GeneticAlgorithm`, for the exported functions `solve` and `run`, and for the exported constants `dominant`, `recessive` and `fitness_types`.  Documentation for the exported methods is provided in their type's documentation.
 """
 module GeneticAlgorithms
 
@@ -150,6 +120,29 @@ include("Colonies.jl")
 
 # The genetic algorithm.
 
+"""
+The data structure for a GA has an interface of
+
+```
+struct GeneticAlgorithm
+    c::Colony
+end
+```
+
+with constructor
+
+```
+ga = GeneticAlgorithm(colony)
+```
+
+and function
+
+```
+run(ga, verbose)
+```
+
+Function `run` calls a solver for genetic algorithm `ga` whose population size and number of generations to advance through are determined internally.  A report is written to file for the user to read.  If `verbose` is `true`, the default, then a page in this report is written for each generation of the colony; otherwise, the report only contains information pertaining to the final generation.
+"""
 struct GeneticAlgorithm
     colony::Colony
 

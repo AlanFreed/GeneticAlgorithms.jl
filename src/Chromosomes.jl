@@ -7,44 +7,123 @@ parametric values change over the generations.
 
 Chromosomes are where genetics and optimization meet.
 
-A chromosome has an interface of:
+# Chromosome
 
+```
 struct Chromosome
-    parameter_min   # minimum value that a chromosome can represent
-    parameter_max   # maximum value that a chromosome can represent
-    parameter_units # physical units of the parameter
-    genes           # number of genes that comprise a chromosome
-    expressions     # number of gene expressions a chromosome can represent
-    genotype        # genetic material, i.e., genes, comprising a chromosome
+    parameter_min::Float64
+    parameter_max::Float64
+    parameter_units::PhysicalFields.PhysicalUnits
+    genes::Int64
+    expressions::Int64
+    genotype::Vector{Gene}
 end
+```
+> where
+1) `parameter_min` specifies the minimum value that the phenotype of a chromosome can represent.
+2) `parameter_max` specifies the maximum value that the phenotype of a chromosome can represent.
+3) `parameter_units` designates the physical units of the parameter.
+4) `genes` specifies the number of genes that comprise a chromosome.
+5) `expressions` specifies the number of gene expressions a chromosome can represent. 
+6) `genotype` provides the genetic material, i.e., genes, comprising a chromosome.
 
-A parameter will be considered fixed if its parameter_min ≈ parameter_max.
+A parameter will be considered fixed if its `parameter_min ≈ parameter_max`.
 
-Constructor
+## Constructor
 
-    c = Chromosome(parameter_min, parameter_max, parameter_units,
-                   significant_figures)
+```
+    c = Chromosome(parameter_min::Real, parameter_max::Real, parameter_units::PhysicalFields.PhysicalUnits, significant_figures::Integer)
+```
+> where `parameter_min`, `parameter_max` and `parameter_units` are described above, while `significant_figures` specifies the number of significant figures of accuracy sought in a solution for the model's parameters.
 
-        parameter_min           least value a parameter can take on
-        parameter_max           greatest value a parameter can take on
-        parameter_units         physical units of the parameter
-        significant_figures     seek parameter with significant figure accuracy
+## Operators
 
-Operators
+`==` and `≠`
 
-    ==, ≠
+## Methods
 
-Methods
+```
+g = getindex(c::Chromosome, i::Int)::Gene
+```
+> Returns gene `g` from chromosome `c` at index `i`.
 
-    g = getindex(c, i)      return gene 'g' from chromosome 'c' at index 'i'
-    setindex!(c, g, i)      assign gene 'g' to chromosome 'c' at index 'i'
-    d = copy(c)             return a copy 'd' of chromosome 'c'
-    s = toBinaryString(c)   return a string 's' describing chromosome 'c'
-    θ = decode(c)           return a phenotype (the parameter 'θ') held by 'c'
-    encode!(c, θ)           assign a phenotype 'θ' to chromosome 'c'
-    mutate!(c, pM)          random flip of gene expressions at probability 'pM'
-    crossover(A, B, pM, pX) crossover between chromosomes 'A' and 'B' at
-                            probabilities of mutation 'pM' and crossover 'pX'
+```
+setindex!(c::Chromosome, g::Gene, i::Int)
+```
+> Assigns gene `g` to chromosome `c` at index `i`.
+
+```
+cc = copy(c::Chromosome)::Chromosome
+```
+> Returns a copy `cc` of chromosome `c`.
+
+```
+s = toBinaryString(c::Chromosome)::String
+```
+> Returns a string `s` describing chromosome `c` in a binary format.
+
+```
+θ = decode(c::Chromosome)::PhysicalFields.PhysicalScalar
+```
+> Returns a phenotype (the parameter `θ`, which is a physical scalar) held by chromosome `c`.
+
+```
+encode!(c::Chromosome, θ::PhysicalFields.PhysicalScalar)
+```
+> Assigns a phenotype  (the parameter `θ`, which is a physical scalar) to chromosome `c`.
+
+```
+mutate!(c::Chromosome, pM::Real)
+```
+> Performs a random flip in gene expression (i.e., `dominant` to `recessive` or vice versa) at a specified probability for mutation of `pM`.
+
+```
+crossover(A::Chromosome, B::Chromosome, pM::Real, pX::Real)::Chromosome
+```
+> Performs a crossover or conception between two chromosomes for parents `A` and `B` with a possibility of individual gene mutations of `pM` at a probability for crossover (gene splitting) of `pX`.  The result is a *child* chromosome that is returned.
+
+### Persistence
+
+```
+toFile(c::Chromosome, json_stream::IOStream)
+```
+> Writes a chromosome `c` to the JSON file attached to `json_stream`.
+
+```
+c = fromFile(::Chromosome, json_stream::IOStream)::Chromosome
+```
+> Reads a chromosome `c` of type `Chromosome` from the JSON file attached to `json_stream`.
+
+#### Consider the following code fragments:
+
+1) To open a file.
+
+```
+json_stream = PhysicalFields.openJSONWriter(<my_dir_path>, <my_file_name.json>)
+```
+> This opens a `json_stream` for the file `<my_file_name.json>` located in
+directory `<my_dir_path>`.
+
+2) To write to a file.
+
+```
+toFile(chromosome, json_stream)
+```
+> This writes a `chromosome` to the `json_stream`.
+
+3) To read from a file.
+
+```
+chromosome = GeneticAlgorithms.fromFile(::Chromosome, json_stream)
+```
+> This reads in a `chromosome` of type `Chromosome` from the `json_stream`.
+
+4) And to close a file.
+
+```
+PhysicalFields.closeJSONStream(json_stream)
+```
+> This flushes the buffer and closes the `json_stream`.
 """
 struct Chromosome
     # Fields that bound a parameter.
@@ -488,23 +567,6 @@ end # encode
 
 StructTypes.StructType(::Type{Chromosome}) = StructTypes.Struct()
 
-"""
-```
-toFile(chromosome::GeneticAlgorithms.Chromosome, json_stream::IOStream)
-```
-writes a data structure `chromosome` to the IOStream `json_stream.`\n
-For example, consider the code fragment:
-```
-json_stream = PhysicalFields.openJSONWriter(<my_dir_path>::String, <my_file_name>::String)\n
-...\n
-GeneticAlgorithms.toFile(chromosome::GeneticAlgorithms.Chromosome, json_stream::IOStream)\n
-...\n
-PhysicalFields.closeJSONStream(json_stream::IOStream)
-```
-where `<my_dir_path>` is the path to your working directory wherein the file\n
-`<my_file_name>` that is to be written to either exists or will be created,\n
-and which must have a .json extension.
-"""
 function toFile(chromosome::Chromosome, json_stream::IOStream)
     if isopen(json_stream)
         JSON3.write(json_stream, chromosome)
@@ -517,24 +579,6 @@ function toFile(chromosome::Chromosome, json_stream::IOStream)
     return nothing
 end
 
-"""
-```
-chromosome = fromFile(::GeneticAlgorithms.Chromosome, json_stream::IOStream)
-```
-reads an instance of type `Chromosome` from the IOStream `json_stream.`\n
-For example, consider the code fragment:
-```
-json_stream = PhysicalFields.openJSONReader(<my_dir_path>::String, <my_file_name>::String)\n
-...\n
-chromosome = GeneticAlgorithms.fromFile(::GeneticAlgorithms.Chromosome, json_stream::IOStream)\n
-...\n
-PhysicalFields.closeJSONStream(json_stream::IOStream)\n
-```
-which returns a `chromosome,` an object of type `GeneticAlgorithms.Chromosome.`\n
-Here `<my_dir_path>` is the path to your working directory wherein the file\n
-to be read from, i.e., `<my_file_name>,` must exist, and which is to have a\n
-.json extension.
-"""
 function fromFile(::Type{Chromosome}, json_stream::IOStream)::Chromosome
     if isopen(json_stream)
         chromosome = JSON3.read(readline(json_stream), Chromosome)
