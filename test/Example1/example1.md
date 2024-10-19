@@ -36,6 +36,88 @@ The time required to run this optimization problem was on the order of a few sec
 
 # Report
 
+## Graph
+
+A graphical view of the fitted model is shown below.
+![localImage](./GA_example1.png)
+A fitting of model parameters for example 1, with the fit parameters being:
+
+a = 1.00030, b = 0.74755 and E = 0.50882 kg/(m⋅s²).
+
+## A Typical Report (translated to markdown)
+
+For generation 1 of 52:
+
+Fitness statistics for generation 1 with a population size of 116:
+
+    optimum fitness  2.21132E+01,
+    median           4.66315,
+    arithmetic mean  5.73607,
+    std deviation    4.26777,
+    skewness         1.33068,
+    excess kurtosis  1.95835.
+
+The genome from the most fit creature:
+
+1. 1111110011111010110000100101011111100000
+2. 0101100111001100000110001011100000011011
+3. 0101011010111101011101110010010101000101
+
+Lists for [parameter_min, parameter_best, parameter_max]:
+
+1. a ∈ [0.10000, 1.02244, 1.50000] 
+2. b ∈ [0.10000, 0.70447, 1.50000] 
+3. E ∈ [0.10000, 0.65145, 1.50000] kg/(m⋅s²)
+
+Values for best parameter ± error, where a RMSE was computed wrt best values. Data were the parameters from all 116 adults living in generation 1.
+
+1. a = 1.02244 ± 0.31562
+2. b = 0.70447 ± 0.33823
+3. E = 0.65145 ± 0.44040 kg/(m⋅s²)
+
+For generation 52 of 52:
+
+Fitness statistics for generation 52 with a population size of 116:
+
+    optimum fitness  8.79553E+01,
+    median           8.78021E+01,
+    arithmetic mean  7.78090E+01, 
+    std deviation    2.50535E+01,
+    skewness        -2.29031,
+    excess kurtosis  3.49048. 
+
+To aid in assessing goodness of fit, a suite of correlation coefficients
+between experimental response and model prediction are provided.
+
+    Pearson's linear correlation coefficient:
+      r = 0.99849,
+    Spearman's monotonic correlation coefficient:
+      ρ = 1.00000,
+    Kendall's monotonic correlation coefficient:
+      τ = 1.00000,
+    and Chatterjee's nonlinear correlation coefficient:
+      ξ = 0.85714.
+
+The genome from the most fit creature:
+
+1. 1111011011110000000100110001101101110010
+2. 0100110101011100101111110101001101010010
+3. 0110111110100001111100101101010011001000
+
+Lists for [parameter_min, parameter_best, parameter_max]:
+
+1. a ∈ [0.10000, 1.00030, 1.50000] 
+2. b ∈ [0.10000, 0.74755, 1.50000] 
+3. E ∈ [0.10000, 0.50882, 1.50000] kg/(m⋅s²)
+
+Values for best parameter ± error, where a RMSE was computed wrt best values. Data were the parameters from all 116 adults living in generation 52.
+
+1. a = 1.00030 ± 0.04458
+2. b = 0.74755 ± 0.02383
+3. E = 0.50882 ± 0.08596 kg/(m⋅s²)
+
+**NOTE**: This solution space has multiple local minima, any of which the solver may converge on, so you will likely want to run the genetic algorithm several times to find the *best* one. Increasing the number of significant figures ought to help, too.  This is a probabilistic algorithm, so successive runs will most likely lead to different answers; answers that distribute about the actual solution.
+
 # Reference
 
 1) Freed, A.D. and Einstein, D.R., "Viscoelastic model for lung
