@@ -1,40 +1,54 @@
 """
-A chromosome is a genetic container of genes.  In this implementation of a
-genetic algorithm, each chromosome represents a parameter (an unknown value in
-some model to be parameterized).  Genetic processes (mutation and crossover)
-adjust these chromosomes via evolution, and therefore, their associated
-parametric values change over the generations.
+A chromosome is a genetic container of genes. In this implementation of a genetic algorithm, each chromosome represents a parameter (an unknown scalar in some model to be parameterized). Genetic processes (mutation and crossover) adjust these chromosomes through evolutionary processes, and therefore, their associated parametric values change over the generations. Chromosomes are gray binary representations for a model's parameters θ.
 
 Chromosomes are where genetics and optimization meet.
 
+To simplify this help, we use the alias
+```julia
+import
+    PhysicalFields as PF
+```
+
 # Chromosome
 
-```
+```julia
 struct Chromosome
-    parameter_min::Float64
-    parameter_max::Float64
-    parameter_units::PhysicalFields.PhysicalUnits
-    genes::Int64
+    parameter_min::PF.PhysicalScalar
+    parameter_max::PF.PhysicalScalar
+    genes::Int
     expressions::Int64
     genotype::Vector{Gene}
 end
 ```
-> where
-1) `parameter_min` specifies the minimum value that the phenotype of a chromosome can represent.
-2) `parameter_max` specifies the maximum value that the phenotype of a chromosome can represent.
-3) `parameter_units` designates the physical units of the parameter.
-4) `genes` specifies the number of genes that comprise a chromosome.
-5) `expressions` specifies the number of gene expressions a chromosome can represent. 
-6) `genotype` provides the genetic material, i.e., genes, comprising a chromosome.
+where
+1. *parameter_min* specifies the minimum scalar value that the phenotype (value of the parameter) can represent, i.e., θₘᵢₙ.
+2. *parameter_max* specifies the maximum scalar value that the phenotype can represent, i.e., θₘₐₓ.
+3. *genes* specifies the number of genes that comprise a chromosome.
+4. *expressions* specifies the number of gene expressions a chromosome can represent.
+5. *genotype* provides the genetic material, viz., the genes comprising a chromosome.
 
 A parameter will be considered fixed if its `parameter_min ≈ parameter_max`.
 
 ## Constructor
 
+The constructor most likely to be called by the user is
+```julia
+chromosome = Chromosome(parameter_min::PF.PhysicalScalar,
+                        parameter_max::PF.PhysicalScalar,
+                        significant_figures::Int)
 ```
-    c = Chromosome(parameter_min::Real, parameter_max::Real, parameter_units::PhysicalFields.PhysicalUnits, significant_figures::Integer)
+> where `parameter_min` and `parameter_max` are described above, while `significant_figures` specifies the number of digits in accuracy sought by a solution for the model's parameters.
+
+The general constructor called, e.g., by JSON3 is
+```julia
+chromosome = Chromosome(parameter_min::PF.PhysicalScalar, 
+                        parameter_max::PF.PhysicalScalar,
+                        genes::Int, 
+                        expressions::Int64, 
+                        genotype::Vector{Gene})
 ```
-> where `parameter_min`, `parameter_max` and `parameter_units` are described above, while `significant_figures` specifies the number of significant figures of accuracy sought in a solution for the model's parameters.
+
+> **NOTE**: if `parameter_min ≈ parameter_max` then the phenotype being represented by this chromosome will be taken to be constant, fixed to the value of this collapsed range.
 
 ## Operators
 
@@ -42,130 +56,116 @@ A parameter will be considered fixed if its `parameter_min ≈ parameter_max`.
 
 ## Methods
 
+```julia
+gene = getindex(chromosome::Chromosome, index::Int)
 ```
-g = getindex(c::Chromosome, i::Int)::Gene
-```
-> Returns gene `g` from chromosome `c` at index `i`.
+> returns a gene from a chromosome located at an index, or `gene = chromosome[index]`.
 
+```julia
+setindex!(chromosome::Chromosome, gene::Gene, index::Int)
 ```
-setindex!(c::Chromosome, g::Gene, i::Int)
-```
-> Assigns gene `g` to chromosome `c` at index `i`.
+> assigns a gene to a chromosome  located at an index, or `chromosome[index] = gene`.
 
+```julia
+cc = copy(c::Chromosome)
 ```
-cc = copy(c::Chromosome)::Chromosome
-```
-> Returns a copy `cc` of chromosome `c`.
+> returns a copy cc of a chromosome.
 
+```julia
+str = toBinaryString(chromosome::Chromosome)
 ```
-s = toBinaryString(c::Chromosome)::String
-```
-> Returns a string `s` describing chromosome `c` in a binary format.
+> returns a string str that describes a chromosome written in a binary format.
 
+```julia
+str = toString(chromosome::Chromosome)
 ```
-θ = decode(c::Chromosome)::PhysicalFields.PhysicalScalar
-```
-> Returns a phenotype (the parameter `θ`, which is a physical scalar) held by chromosome `c`.
+> returns a string str for the phenotype represented by a chromosome. 
 
+```julia
+mutate!(chromosome::Chromosome, probability_mutation::Float64)
 ```
-encode!(c::Chromosome, θ::PhysicalFields.PhysicalScalar)
-```
-> Assigns a phenotype  (the parameter `θ`, which is a physical scalar) to chromosome `c`.
+> performs a random flip in gene expression (i.e., dominant to recessive or vice versa) at a specified probability for mutation applied to each gene in a chromosome.
 
+```julia
+C = crossover(A::Chromosome, B::Chromosome, probability_mutation::Float64, probability_crossover::Float64)
 ```
-mutate!(c::Chromosome, pM::Real)
-```
-> Performs a random flip in gene expression (i.e., `dominant` to `recessive` or vice versa) at a specified probability for mutation of `pM`.
+> performs a crossover at conception between two chromosomes coming from parents A and B with possibilities for individual gene mutation and crossover (chromosome splitting). The result is a child chromosome C.
 
+```julia
+θ = decode(chromosome::Chromosome)
 ```
-crossover(A::Chromosome, B::Chromosome, pM::Real, pX::Real)::Chromosome
+> returns a phenotype (the parameter θ, which is a PF.PhysicalScalar) held in the gene expression of a chromosome.
+
+```julia
+encode!(chromosome::Chromosome, θ::PF.PhysicalScalar)
 ```
-> Performs a crossover or conception between two chromosomes for parents `A` and `B` with a possibility of individual gene mutations of `pM` at a probability for crossover (gene splitting) of `pX`.  The result is a *child* chromosome that is returned.
+> assigns a phenotype θ (value of a parameter) to a chromosome.
 
 ### Persistence
 
+To open or close an IOStream attached to a JSON file, call
+```julia
+json_stream = PF.openJSONWriter(<my_dir_path>, <my_file_name.json>)
 ```
-toFile(c::Chromosome, json_stream::IOStream)
+> which opens a `json_strea`m of type *IOStream* for a file `<my_file_name.json>` located in directory `<my_dir_path>`, both of which are strings, while
+```julia
+PF.closeJSONStream(json_stream)
 ```
-> Writes a chromosome `c` to the JSON file attached to `json_stream`.
+> flushes the buffer and closes this json_stream.
 
-```
-c = fromFile(::Chromosome, json_stream::IOStream)::Chromosome
-```
-> Reads a chromosome `c` of type `Chromosome` from the JSON file attached to `json_stream`.
-
-#### Consider the following code fragments:
-
-1) To open a file.
-
-```
-json_stream = PhysicalFields.openJSONWriter(<my_dir_path>, <my_file_name.json>)
-```
-> This opens a `json_stream` for the file `<my_file_name.json>` located in
-directory `<my_dir_path>`.
-
-2) To write to a file.
-
-```
+To write or read an instance of type *Chromosome* to or from a JSON file, call
+```julia
 toFile(chromosome, json_stream)
 ```
-> This writes a `chromosome` to the `json_stream`.
-
-3) To read from a file.
-
+> which writes a chromosome of type *Chromosome* to the JSON file attached to a `json_stream` of type *IOStream*, while
+```julia
+chromosome = fromFile(Chromosome, json_stream)
 ```
-chromosome = GeneticAlgorithms.fromFile(::Chromosome, json_stream)
-```
-> This reads in a `chromosome` of type `Chromosome` from the `json_stream`.
-
-4) And to close a file.
-
-```
-PhysicalFields.closeJSONStream(json_stream)
-```
-> This flushes the buffer and closes the `json_stream`.
+> reads a chromosome of type *Chromosome* from the JSON file attached to `json_stream`.
 """
 struct Chromosome
-    # Fields that bound a parameter.
-    parameter_min::Float64
-    parameter_max::Float64
-    parameter_units::PhysicalFields.PhysicalUnits
+    # Fields that describe a parameter.
+    parameter_min::PF.PhysicalScalar
+    parameter_max::PF.PhysicalScalar
     # Fields that describe a chromosome.
-    genes::Int64
+    genes::Int
     expressions::Int64
     genotype::Vector{Gene}
 
     # constructor
 
-    function Chromosome(parameter_min::Float64, parameter_max::Float64, parameter_units::PhysicalFields.PhysicalUnits, significant_figures::Int64)
-
+    function Chromosome(parameter_min::PF.PhysicalScalar, 
+                        parameter_max::PF.PhysicalScalar,
+                        significant_figures::Int)
+        if parameter_min.units ≠ parameter_max.units
+            error("A parameter's bounds must have the same physical units.")
+        end
+        
         if parameter_min ≈ parameter_max
-
             # Handle the case of a fixed parameter.
             parameter_min = parameter_max
-            genes         = Int64(0)
-            expressions   = Int64(0)
+            genes         = 0
+            expressions   = Int64(1)
             genotype      = Vector{Gene}(undef, 0)
-
         else
-
             # Verify the input.
             if parameter_min > parameter_max
-                msg = "Cannot create a chromosome unless parameter_max ≥ parameter_min."
+                msg = "Cannot create a chromosome unless parameter_max "
+                msg = string(msg, "≥ parameter_min.")
                 error(msg)
             end
 
             # Number of decades that span [parameter_min, parameter_max].
-            if parameter_min > 0.0
-                log_decades = log10(parameter_max/parameter_min)
-            elseif parameter_max < 0.0
-                log_decades = log10(parameter_min/parameter_max)
-            elseif parameter_min ≈ 0.0
-                log_decades = log10(parameter_max)
-            elseif parameter_max ≈ 0.0
-                log_decades = log10(-parameter_min)
+            if parameter_min.value > 0.0
+                log_decades = log10(parameter_max.value/parameter_min.value)
+            elseif parameter_max.value < 0.0
+                log_decades = log10(parameter_min.value/parameter_max.value)
+            elseif parameter_min.value ≈ 0.0
+                log_decades = log10(parameter_max.value)
+            elseif parameter_max.value ≈ 0.0
+                log_decades = log10(-parameter_min.value)
             else # parameter_min < 0.0 and parameter_max > 0.0
-                log_decades = log10(-parameter_min*parameter_max)
+                log_decades = log10(-parameter_min.value*parameter_max.value)
             end
             if log_decades > 0.0
                 decades = Int(ceil(log_decades))
@@ -197,13 +197,11 @@ struct Chromosome
             end
 
             # Number of genes and the number of possible gene expressions.
-            genes = Int64(genes_per_decade * decades)
-            if genes > 63
-                genes = Int64(63)
-            end
+            genes = genes_per_decade * decades
             if genes < 63
                 expressions = Int64(2^genes - 1)
             else
+                genes = 63
                 expressions = typemax(Int64)
             end
 
@@ -244,128 +242,116 @@ struct Chromosome
             end
         end
 
-        new(parameter_min, parameter_max, parameter_units, genes, expressions, genotype)::Chromosome
+        new(parameter_min, parameter_max,
+            genes, expressions, genotype)::Chromosome
     end
 
-    function Chromosome(parameter_min::Real, parameter_max::Real, parameter_units::PhysicalFields.PhysicalUnits, significant_figures::Integer)
+    function Chromosome(parameter_min::PF.PhysicalScalar, 
+                        parameter_max::PF.PhysicalScalar,
+                        genes::Int, 
+                        expressions::Int64, 
+                        genotype::Vector{Gene})
 
-        p_min  = convert(Float64, parameter_min)
-        p_max  = convert(Float64, parameter_max)
-        sigfig = convert(Int64, significant_figures)
-
-        return Chromosome(p_min, p_max, parameter_units, sigfig)
-    end
-
-    function Chromosome(parameter_min::Float64, parameter_max::Float64, parameter_units::PhysicalFields.PhysicalUnits, genes::Int64, expressions::Int64, genotype::Vector{Gene})
-
-        new(parameter_min, parameter_max, parameter_units, genes, expressions, genotype)::Chromosome
+        new(parameter_min, parameter_max,
+            genes, expressions, genotype)::Chromosome
     end
 end # Chromosome
 
 # operators
 
-function Base.:(==)(cL::Chromosome, cR::Chromosome)::Bool
-    if cL.parameter_units ≠ cR.parameter_units || cL.genes ≠ cR.genes
+function Base.:(==)(chromosome_left::Chromosome,
+                    chromosome_right::Chromosome)::Bool
+    if (chromosome_left.parameter_max.units ≠ 
+        chromosome_right.parameter_max.units || 
+        chromosome_left.genes ≠ chromosome_right.genes)
         return false
     end
-    if cL.genes == 0 && cL.parameter_min ≈ cR.parameter_min
+    if (chromosome_left.genes == 0 && 
+        chromosome_left.parameter_min ≈ chromosome_right.parameter_min)
         return true
     end
-    for i in 1:cL.genes
-        if cL.genotype[i] ≠ cR.genotype[i]
+    for i in 1:chromosome_left.genes
+        if chromosome_left.genotype[i] ≠ chromosome_right.genotype[i]
             return false
         end
     end
     return true
 end # ==
 
-function Base.:≠(cL::Chromosome, cR::Chromosome)::Bool
-    if !(cL == cR)
-        return true
-    else
-        return false
-    end
+function Base.:≠(chromosome_left::Chromosome,
+                 chromosome_right::Chromosome)::Bool
+    return !(chromosome_left == chromosome_right)
 end # ≠
 
 # methods
 
-function Base.:(getindex)(c::Chromosome, index::Int)::Gene
-    if c.genes == 0
+function Base.:(getindex)(chromosome::Chromosome, index::Int)::Gene
+    if chromosome.genes == 0
         return nothing
-    elseif index ≥ 1 && index ≤ c.genes
-        gene = c.genotype[index]
+    elseif index ≥ 1 && index ≤ chromosome.genes
+        gene = chromosome.genotype[index]
     else
-        msg = string("Admissible gene indices are ∈ [1…", c.genes, "].")
+        msg = "Admissible gene indices are ∈ [1…"
+        msg = string(msg, chromosome.genes, "].")
         throw(DimensionMismatch(msg))
     end
     return copy(gene)
 end # getindex
 
-function Base.:(setindex!)(c::Chromosome, gene::Gene, index::Int)
-    if c.genes == 0
+function Base.:(setindex!)(chromosome::Chromosome, gene::Gene, index::Int)
+    if chromosome.genes == 0
         return nothing
-    elseif index ≥ 1 && index ≤ c.genes
-        set!(c.genotype[index], get(gene))
+    elseif index ≥ 1 && index ≤ chromosome.genes
+        set!(chromosome.genotype[index], get(gene))
     else
-        msg = string("Admissible gene indices are ∈ [1…", c.genes, "].")
+        msg = "Admissible gene indices are ∈ [1…"
+        msg = string(msg, chromosome.genes, "].")
         throw(DimensionMismatch(msg))
     end
     return nothing
 end # setindex!
 
-function Base.:(copy)(c::Chromosome)::Chromosome
-    parameter_min   = copy(c.parameter_min)
-    parameter_max   = copy(c.parameter_max)
-    parameter_units = PhysicalFields.copy(c.parameter_units)
-    genes           = copy(c.genes)
-    expressions     = copy(c.expressions)
+function Base.:(copy)(chromosome::Chromosome)::Chromosome
+    parameter_min   = PF.copy(chromosome.parameter_min)
+    parameter_max   = PF.copy(chromosome.parameter_max)
+    genes           = copy(chromosome.genes)
+    expressions     = copy(chromosome.expressions)
     genotype        = Vector{Gene}(undef, genes)
     for i in 1:genes
-        genotype[i] = copy(c.genotype[i])
+        genotype[i] = copy(chromosome.genotype[i])
     end
-    return Chromosome(parameter_min, parameter_max, parameter_units, genes, expressions, genotype)
+    return Chromosome(parameter_min, parameter_max, 
+                      genes, expressions, genotype)
 end # copy
 
-function toBinaryString(c::Chromosome)::String
+function toBinaryString(chromosome::Chromosome)::String
     s = ""
-    for i in 1:c.genes
-        gene = c.genotype[i]
+    for i in 1:chromosome.genes
+        gene = chromosome.genotype[i]
         s = string(s, toBinaryString(gene))
     end
     return s
 end # toBinaryString
 
-function mutate!(c::Chromosome, probability_mutation::Float64)
-    for i in 1:c.genes
-        gene = c.genotype[i]
+function toString(chromosome::Chromosome)::String
+    return PF.toString(decode(chromosome))
+end # toString
+
+function mutate!(chromosome::Chromosome, probability_mutation::Float64)
+    for i in 1:chromosome.genes
+        gene = chromosome.genotype[i]
         mutate!(gene, probability_mutation)
+        chromosome.genotype[i] = gene
     end
     return nothing
 end # mutate!
 
-function mutate!(c::Chromosome, probability_mutation::Real)
-    probability = convert(Float64, probability_mutation)
-    for i in 1:c.genes
-        gene = c.genotype[i]
-        mutate!(gene, probability)
-    end
-    return nothing
-end # mutate!
-
-"""
-Two chromosomes can reproduce creating an offspring, which is what procedure
-crossover mimics.  It accepts two parent chromosomes along with probabilities of
-occurrence for mutation (a gene swapping its expression) and crossover (a
-splitting of the chromosome between a random pair of neighboring genes).  The
-outcome is a child of the parents.  There is a small chance that the child will
-be a clone of one of its parents--a chance that is dictated by the assigned
-probabilities.
-"""
-function crossover(parentA::Chromosome, parentB::Chromosome, probability_mutation::Float64, probability_crossover::Float64)::Chromosome
+function crossover(parentA::Chromosome, parentB::Chromosome,
+                   probability_mutation::Float64,
+                   probability_crossover::Float64)::Chromosome
 
     if probability_crossover < 0.0 || probability_crossover ≥ 1.0
-        msg = "A probability of crossover must belong to unit interval [0, 1)."
-        error(msg)
+        error("Probability of crossover must belong to unit interval [0, 1).")
     end
 
     if parentA.genes == parentB.genes
@@ -373,16 +359,18 @@ function crossover(parentA::Chromosome, parentB::Chromosome, probability_mutatio
             child = copy(parentA)
             # Left side of chromosome splice belongs to parent A.
             if probability_crossover > rand()
-                if child.genes > 5
-                    xover = rand(3:child.genes-2)
+                if child.genes > 3
+                    xover = rand(2:child.genes-1)
                     for i in xover:child.genes
-                        child[i] = parentB[i]
+                        child.genotype[i] = parentB.genotype[i]
                     end
-                elseif child.genes > 3
-                    child[child.genes-1] = parentB[genes-1]
-                    child[child.genes]   = parentB[genes]
-                elseif child.genes > 0
-                    child[child.genes] = parentB[genes]
+                elseif child.genes == 3
+                    if rand() < 0.1
+                        child.genotype[2] = parentB.genotype[2]
+                    end
+                    child.genotype[3] = parentB.genotype[3]
+                elseif child.genes == 2
+                    child.genotype[2] = parentB.genotype[2]
                 else
                     # do nothing
                 end
@@ -391,16 +379,18 @@ function crossover(parentA::Chromosome, parentB::Chromosome, probability_mutatio
             child = copy(parentB)
             # Left side of chromosome splice belongs to parent B.
             if probability_crossover > rand()
-                if child.genes > 5
-                    xover = rand(3:child.genes-2)
+                if child.genes > 3
+                    xover = rand(2:child.genes-1)
                     for i in xover:child.genes
-                        child[i] = parentA[i]
+                        child.genotype[i] = parentA.genotype[i]
                     end
-                elseif child.genes > 3
-                    child[child.genes-1] = parentA[genes-1]
-                    child[child.genes]   = parentA[genes]
-                elseif child.genes > 0
-                    child[child.genes] = parentA[genes]
+                elseif child.genes == 3
+                    if rand() < 0.5
+                        child.genotype[2] = parentA.genotype[2]
+                    end
+                    child.genotype[3] = parentA.genotype[3]
+                elseif child.genes == 2
+                    child.genotype[2] = parentA.genotype[2]
                 else
                     # do nothing
                 end
@@ -416,21 +406,11 @@ function crossover(parentA::Chromosome, parentB::Chromosome, probability_mutatio
     return child
 end # crossover
 
-function crossover(parentA::Chromosome, parentB::Chromosome, probability_mutation::Real, probability_crossover::Real)::Chromosome
-    probability_m = convert(Float64, probability_mutation)
-    probability_c = convert(Float64, probability_crossover)
-    child = crossover(parentA, parentB, probability_m, probabilty_c)
-    return child
-end # crossover
-
 #=
-The decode/encode map between a real phenotype and its haploid genotype
-representation.
-
-The algorithm for converting between binary and gray codes assumes the most
-significant bit (MSB) is at the [Low] position of the code, while the least
-significant bit (LSB) associates with the [High] position of the code, in other
-words, e.g.,
+This algorithm is for mapping between binary and gray codes.  It considers the
+most significant bit (MSB) is at the [Low] position of the code, while the 
+least significant bit (LSB) associates with the [High] position of the code, 
+in other words, e.g.,
     code = [1|0|1|1|0|0|1|0]
 has a MSB of 1 and a LSB of 0.
 =#
@@ -449,36 +429,38 @@ end # _gray2binary
 
 function _binary2integer(binary::Vector{Bool})::Int64
     bits    = length(binary)
-    integer = 0
-    power   = 1
+    integer = Int64(0)
+    power   = Int64(1)
     for i in bits:-1:1
         if binary[i] == dominant
             integer = integer + power
         end
         power = 2power
     end
-    return convert(Int64, integer)
+    return integer
 end # _binary2integer
 
-function _integer2phenotype(c::Chromosome, integer::Int64)::Float64
-    phenotype = (c.parameter_min + (integer / c.expressions)
-        * (c.parameter_max - c.parameter_min))
-    if phenotype < c.parameter_min
-        phenotype = c.parameter_min
+function _integer2phenotype(chromosome::Chromosome,
+                            integer::Int64)::PF.PhysicalScalar
+    phenotype = (chromosome.parameter_min + 
+                 Float64(integer / chromosome.expressions) *
+                 (chromosome.parameter_max - chromosome.parameter_min))
+    if phenotype < chromosome.parameter_min
+        phenotype = chromosome.parameter_min
     end
-    if phenotype > c.parameter_max
-        phenotype = c.parameter_max
+    if phenotype > chromosome.parameter_max
+        phenotype = chromosome.parameter_max
     end
-    return convert(Float64, phenotype)
+    return phenotype
 end # _integer2phenotype
 
-function decode(c::Chromosome)::PhysicalFields.PhysicalScalar
-    if c.genes == 0
-        phenotype = copy(c.parameter_min)
+function decode(chromosome::Chromosome)::PF.PhysicalScalar
+    if chromosome.genes == 0
+        phenotype = copy(chromosome.parameter_min)
     else
-        gray = Vector{Bool}(undef, c.genes)
-        for i in 1:c.genes
-            if isDominant(c.genotype[i])
+        gray = Vector{Bool}(undef, chromosome.genes)
+        for i in 1:chromosome.genes
+            if isDominant(chromosome.genotype[i])
                 gray[i] = dominant
             else
                 gray[i] = recessive
@@ -486,27 +468,28 @@ function decode(c::Chromosome)::PhysicalFields.PhysicalScalar
         end
         binary    = _gray2binary(gray)
         integer   = _binary2integer(binary)
-        phenotype = _integer2phenotype(c, integer)
+        phenotype = _integer2phenotype(chromosome, integer)
     end
-    scalar = PhysicalFields.PhysicalScalar(phenotype, c.physical_units)
-    return scalar
+    return phenotype
 end # decode
 
 # Methods to encode a parameter.
 
-function _phenotype2integer(c::Chromosome, phenotype::Float64)::Int64
-    fraction = (phenotype - c.parameter_min) / (c.parameter_max - c.parameter_min)
-    integer  = Int(round(fraction * c.expressions))
+function _phenotype2integer(chromosome::Chromosome,
+                            phenotype::PF.PhysicalScalar)::Int64
+    fraction = PF.get((phenotype - chromosome.parameter_min) /
+                      (chromosome.parameter_max - chromosome.parameter_min))
+    integer  = Int64(round(fraction*chromosome.expressions))
     if integer < 0
-        integer = 0
+        integer = Int64(0)
     end
-    return convert(Int64, integer)
+    return integer
 end # _phenotype2integer
 
-function _integer2binary(c::Chromosome, integer::Int64)::Vector{Bool}
-    binary    = Vector{Bool}(undef, c.genes)
+function _integer2binary(chromosome::Chromosome, integer::Int64)::Vector{Bool}
+    binary    = Vector{Bool}(undef, chromosome.genes)
     atinteger = integer
-    gene      = c.genes
+    gene      = chromosome.genes
     while atinteger > 0
         if atinteger % 2 == 0
             binary[gene] = recessive
@@ -533,31 +516,35 @@ function _binary2gray(binary::Vector{Bool})::Vector{Bool}
     return gray
 end # _binary2gray
 
-function encode!(c::Chromosome, scalar::PhysicalFields.PhysicalScalar)
+function encode!(chromosome::Chromosome, phenotype::PF.PhysicalScalar)
     # verify input
-    if c.parameter_units ≠ scalar.units
-        msg = "The scalar's units are not equal to the chromosome's units."
-        error(msg)
+    if chromosome.parameter_max.units ≠ phenotype.units
+        error("Phenotype's units are not equal to chromosome's units.")
     end
 
-    if c.genes == 0
+    # handle the constant parameter
+    if chromosome.genes == 0
         return nothing
     end
-
-    phenotype = convert(Float64, PhysicalFields.get(scalar))
-    if phenotype ≥ c.parameter_min && phenotype ≤ c.parameter_max
-        integer = _phenotype2integer(c, phenotype)
-        binary  = _integer2binary(c, integer)
+    
+    # encode
+    if (phenotype ≥ chromosome.parameter_min && 
+        phenotype ≤ chromosome.parameter_max)
+        integer = _phenotype2integer(chromosome, phenotype)
+        binary  = _integer2binary(chromosome, integer)
         gray    = _binary2gray(binary)
-        for i in 1:c.genes
+        for i in 1:chromosome.genes
             if gray[i] == dominant
-                c.genotype[i] = Gene(dominant)
+                chromosome.genotype[i] = Gene(dominant)
             else
-                c.genotype[i] = Gene(recessive)
+                chromosome.genotype[i] = Gene(recessive)
             end
         end
     else
-        msg = "The scalar must lie within [c.parameter_min, c.parameter_max]."
+        msg = "The phenotype's value must lie within ["
+        msg = string(msg, chromosome.parameter_min.value, ", ")
+        msg = string(msg, chromosome.parameter_max.value, "] ")
+        msg = string(msg, PF.toString(phenotype.units), ".")
         error(msg)
     end
     return nothing
@@ -588,3 +575,4 @@ function fromFile(::Type{Chromosome}, json_stream::IOStream)::Chromosome
     end
     return chromosome
 end
+

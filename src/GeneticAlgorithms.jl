@@ -1,57 +1,54 @@
 #=
 Created on Thr 14 Jun 2024
-Updated on Wed 14 Aug 2024
-Translated from python (code dated 09/08/2017) with enhancements for julia.
+Updated on Fri 18 Oct 2024
+Translated from python (code dated 09/08/2017) with enhancements for Julia.
 =#
 
 """
-This Julia module implementing a genetic algorithm is the translation (with refinements and enhancements) of a Python code written by the author for teaching numerical methods to his students at TAMU.  This, in turn, was a translation from a Pascal code that, in turn, was a translation of the author's original GA written in the experimental Zonnon programming language.  The author used this Zonnon code to illustrate the art of writing object-oriented code to his students at SVSU, for which genetic algorithms are well suited.
+This Julia module implements a genetic algorithm (GA) that was a translation (with refinements and enhancements) of a Python code written by the author for teaching numerical methods to his students at TAMU. This, in turn, was a translation from a Pascal code that, in turn, was a translation of the author's original GA written in the experimental programming language Zonnon. The author used his Zonnon code to illustrate the art of writing object-oriented code to his students at SVSU, for which genetic algorithms are well suited. It turns out that genetic algorithms are also well suited for illustrating the power of Julia's multiple dispatch paradigm. A most notable difference is that the Julia implementation is blazingly fast.
 
-From a biologic interpretation, the genetic algorithm implemented here is a colony of creatures that advances their quality of life (fitness) from one generation to the next.  Class `GeneticAlgorithm` is a colony or collection of creatures whose population is sustained from one generation to the next.  Mating between creatures occurs through a process known as tournament play, where the most fit contestant from a random selection of contestants is chosen for mating.  Typically, each successive generation is more fit than its predecessor, i.e., the colony's quality improves with each new generation.
+From a biologic interpretation, the genetic algorithm implemented here is a colony of creatures that advances their quality of life (fitness) from one generation to the next. Each instance of type *GeneticAlgorithm* is a colony or collection of creatures whose population is sustained from one generation to the next. Mating between creatures occurs through a process known as tournament play, where the most fit contestant from a random selection of contestants is chosen for mating. Typically, each successive generation is more fit than its predecessor, i.e., the colony's quality improves with each new generation.
 
 To install this package, download the following packages from their URL address:
 
-```
+```julia
 using Pkg
 Pkg.add(url = "https://github.com/AlanFreed/PhysicalFields.jl")
 Pkg.add(url = "https://github.com/AlanFreed/GeneticAlgorithms.jl")
 ```
 
-JSON files, as implemented by JSON3.jl in Julia, handle the core types:
+The following *GeneticAlgorithm* types can be read-from and written-to a json file.
 
-> `Object`, `Array`, `String`, `Number`, `Bool` and `Null`
+> *Gene*, *Chromosome*, *Genome*, *Creature*, *Colony*, *ExperimentalData* and *GeneticAlgorithm*.
 
-where a `Number` is either a 64-bit integer of a 64-bit floating point number; hence, all integer fields and all real fields must be described via 64 binary bits.  A `JSON3.Object` is an immutable `Dict` type, while a `JSON3.Array` is an immutable `Vector` type. Command `copy(JSON3.Object)` will return a mutable `Dict` object, while command `copy(JSON3.Array)` will return a mutable `Vector` object.
+Users must make their `MyParameters <: AbstractParameters` struct JSON3 compatible in order to be able to read-from and write-to a file. See the examples on how to do this.
 
-The following `GeneticAlgorithm` types can be read-from and written-to a *json* file.
+Documentation is available for the module *GeneticAlgorithms* (you are reading it), for the exported types (*Gene*, *Chromosome*, *Genome*, *Creature*, *Colony*, *TheData*, *Model*, *AbstractParameters* and *GeneticAlgorithm*), and for the exported constants *dominant* and *recessive*. A template is included in the documentation of *Model*. Documentation for exported methods is included in their type's documentation.
 
-> `Gene`, `Chromosome`, `Genome`, `Creature`, `Colony`, `ExperimentalData`, and `GeneticAlgorithm`.
+Examples are included in the subdirectory /test.
 
-Users must make their *MyParameters <: AbstractParameters* struct JSON3 compatible in order to be able to read-from and write-to a file.  See the examples on how to do this.
+There is a *README.md* Markdown document that accompanies this software, too.
 
-Documentation is available for the module `GeneticAlgorithms` (you are reading it), for the exported types (`Gene`, `Chromosome`, `Genome`, `Creature`, `Colony`, `ExperimentalData`, `Model`, `AbstractParameters` and `GeneticAlgorithm`, for the exported functions `solve` and `run`, and for the exported constants `dominant`, `recessive` and `fitness_types`.  Documentation for the exported methods is provided in their type's documentation.
+**Note**: An attempt to *thread* the solver in `_evaluate` lead to bogus results. Maybe someone can figure out how to do this, maybe not.
 """
 module GeneticAlgorithms
 
 using
     JSON3,
     PhysicalFields,
-    Printf,
     Statistics,
     StatsBase,
-    StructTypes
+    StructTypes,
+    Xicor
 
 import
-    Printf: @sprintf
+    PhysicalFields as PF
 
 export
     # abstract type
     AbstractParameters,
 
     # genetic types
-    Expression,
-    Counter,
-    Variable,
     Gene,
     Chromosome,
     Genome,
@@ -99,12 +96,11 @@ export
     decode,
     encode!,
     crossover,
-    phenotypes,
+    parameters,
 
     # constants
     dominant,
-    recessive,
-    fitness_types
+    recessive
 
 include("Genes.jl")
 
@@ -121,27 +117,57 @@ include("Colonies.jl")
 # The genetic algorithm.
 
 """
-The data structure for a GA has an interface of
+Genetic algorithms are procedures whereby one can parameterize a model against data. Genetic algorithms are probabolistic, in contrast with gradient methods that are deterministic.
 
+To simplify this help, we use the alias
+```Julia
+import
+    PhysicalFields as PF
 ```
+
+# GeneticAlgorithm
+
+```Julia
 struct GeneticAlgorithm
-    c::Colony
+    colony::Colony
 end
 ```
+where a `colony` is a population of creatures that evolves from one generation to the next.
 
-with constructor
+## Constructor
 
-```
+```Julia
 ga = GeneticAlgorithm(colony)
 ```
 
-and function
+## Method
 
+```Julia
+run(ga::GeneticAlgorithm, verbose::Bool = true)
 ```
-run(ga, verbose)
-```
+Function `run` calls a solver for genetic algorithm `ga` whose population size and number of generations to advance through are determined internally. A report is written to file for the user to read. If `verbose` is `true`, the default, then a page in this report is written for each generation of the colony; otherwise, the report only contains information pertaining to the initial and final generations.
 
-Function `run` calls a solver for genetic algorithm `ga` whose population size and number of generations to advance through are determined internally.  A report is written to file for the user to read.  If `verbose` is `true`, the default, then a page in this report is written for each generation of the colony; otherwise, the report only contains information pertaining to the final generation.
+### Persistence
+
+To open or close an IOStream attached to a JSON file, call
+```julia
+json_stream = PF.openJSONWriter(<my_dir_path>, <my_file_name.json>)
+```
+> which opens a `json_stream` of type *IOStream* for a file `<my_file_name.json>` located in directory `<my_dir_path>`, both of which are strings, while
+```julia
+PF.closeJSONStream(json_stream)
+```
+> flushes the buffer and closes this `json_stream`.
+
+To write or read an instance of type *GeneticAlgorithm* to or from a JSON file, call
+```julia
+toFile(geneticAlgorithm, json_stream)
+```
+> which writes a geneticAlgorithm of type *GeneticAlgorithm* to the JSON file attached to a `json_stream` of type *IOStream*, while
+```julia
+geneticAlgorithm = fromFile(GeneticAlgorithm, json_stream)
+```
+> reads a geneticAlgorithm of type *GeneticAlgorithm* from the JSON file attached to `json_stream.
 """
 struct GeneticAlgorithm
     colony::Colony
@@ -157,23 +183,9 @@ end # GeneticAlgorithm
 
 StructTypes.StructType(::Type{GeneticAlgorithm}) = StructTypes.Struct()
 
-"""
-Method:\n
-    toFile(ga::GeneticAlgorithms.GeneticAlgorithm, json_stream::IOStream)\n
-writes a data structure `ga` to the IOStream `json_stream.`\n
-For example, consider the code fragment:\n
-    json_stream = PhysicalFields.openJSONWriter(<my_dir_path>::String, <my_file_name>::String)\n
-    ...\n
-    GeneticAlgorithms.toFile(ga::GeneticAlgorithms.GeneticAlgorithm, json_stream::IOStream)\n
-    ...\n
-    PhysicalFields.closeJSONStream(json_stream::IOStream)\n
-where <my_dir_path> is the path to your working directory wherein the file\n
-<my_file_name> that is to be written to either exists or will be created,\n
-and which must have a .json extension.
-"""
-function toFile(ga::GeneticAlgorithm, json_stream::IOStream)
+function toFile(genetic_algorithm::GeneticAlgorithm, json_stream::IOStream)
     if isopen(json_stream)
-        JSON3.write(json_stream, ga)
+        JSON3.write(json_stream, genetic_algorithm)
         write(json_stream, '\n')
     else
         msg = "The supplied JSON stream is not open."
@@ -183,78 +195,72 @@ function toFile(ga::GeneticAlgorithm, json_stream::IOStream)
     return nothing
 end
 
-"""
-Method:\n
-    fromFile(::GeneticAlgorithms.GeneticAlgorithm, json_stream::IOStream)\n
-reads an instance of type GeneticAlgorithm from the IOStream `json_stream.`\n
-For example, consider the code fragment:\n
-    json_stream = PhysicalFields.openJSONReader(<my_dir_path>::String, <my_file_name>::String)\n
-    ...\n
-    ga = GeneticAlgorithms.fromFile(::GeneticAlgorithms.GeneticAlgorithm, json_stream::IOStream)\n
-    ...\n
-    PhysicalFields.closeJSONStream(json_stream::IOStream)\n
-which returns a `ga,` an object of type GeneticAlgorithms.GeneticAlgorithm.\n
-Here <my_dir_path> is the path to your working directory wherein the file\n
-to be read from, i.e., <my_file_name>, must exist, and which is to have a\n
-.json extension.
-"""
 function fromFile(::Type{GeneticAlgorithm}, json_stream::IOStream)::GeneticAlgorithm
     if isopen(json_stream)
-        ga = JSON3.read(readline(json_stream), GeneticAlgorithm)
+        genetic_algorithm = JSON3.read(readline(json_stream), GeneticAlgorithm)
     else
         msg = "The supplied JSON stream is not open."
         error(msg)
     end
-    return ga
+    return genetic_algorithm
 end
 
 # Script for execution.
 
-function run(ga::GeneticAlgorithm, verbose::Bool=true)
-    println("Each ⋅ represents one generation advanced out of ", ga.colony.generations_to_convergence, " generations total.")
-    print("    ")
+function run!(genetic_algorithm::GeneticAlgorithm; verbose::Bool=true)
+    print("Each ⋅ represents one generation evolved out of ")
+    print(string(genetic_algorithm.colony.generations))
+    println(" generations total.")
+    print("  ")
 
     # Open an IO-stream to write to.
-    mydir = string(pwd(), "/files")
+    mydir = string(pwd(), "/files/")
     if !isdir(mydir)
         mkdir(mydir)
     end
-    myfile = string(mydir, "/ga_report.txt")
+    myfile = string(mydir, "ga_report.txt")
     if isfile(myfile)
-        mystream = open(myfile; lock=true, read=false, write=true, create=false, truncate=true, append=true)
+        mystream = open(myfile; lock=true, read=false, write=true, 
+                        create=false, truncate=true, append=true)
     else
-        mystream = open(myfile; lock=true, read=false, write=true, create=true, truncate=true, append=true)
+        mystream = open(myfile; lock=true, read=false, write=true, 
+                        create=true, truncate=true, append=true)
     end
     seekstart(mystream)
 
     # The first generation.
-    s = string("For generation ", tostring(ga.colony.generation), " of ", ga.colony.generations_to_convergence, ":\n\n")
-    s = string(s, report(ga.colony))
+    s = ""
+    g = PF.toString(genetic_algorithm.colony.generation)
+    G = string(genetic_algorithm.colony.generations)
+    s = string(s, "For generation ", g, " of ", G, ":\n\n")
+    s = string(s, report(genetic_algorithm.colony))
     write(mystream, s)
     flush(mystream)
 
     # Run the genetic algorithm.
-    for i in 2:ga.colony.generations_to_convergence-1
+    for i in 2:genetic_algorithm.colony.generations-1
         print("⋅")
-        advance_to_next_generation!(ga.colony)
+        advance!(genetic_algorithm.colony)
         if verbose
-            s = string("For generation ", tostring(ga.colony.generation), " of ", ga.colony.generations_to_convergence, ":\n\n")
-            s = string(s, report(ga.colony))
+            g = PF.toString(genetic_algorithm.colony.generation)
+            s = string("For generation ", g, " of ", G, ":\n\n")
+            s = string(s, report(genetic_algorithm.colony))
             write(mystream, s)
             flush(mystream)
         end
     end
     println("⋅")
-    advance_to_next_generation!(ga.colony)
-    println("The genetic algorithm has finished.\n\n")
-    s = string("For generation ", tostring(ga.colony.generation), " of ", ga.colony.generations_to_convergence, ":\n\n")
-    s = string(s, report(ga.colony))
+    advance!(genetic_algorithm.colony)
+    println("The genetic algorithm has finished.\n")
+    g = PF.toString(genetic_algorithm.colony.generation)
+    s = string("For generation ", g, " of ", G, ":\n\n")
+    s = string(s, report(genetic_algorithm.colony))
     write(mystream, s)
     flush(mystream)
     close(mystream)
     println("See file ", myfile, " for a report.")
 
     return nothing
-end # run
+end # run!
 
 end # module GeneticAlgorithms
