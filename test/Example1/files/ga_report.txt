@@ -1,1 +1,63 @@
+For generation 1 of 68:
+
+Fitness statistics for generation 1 with a population size of 272:
+   optimum fitness  4.87587E+01,
+   median           4.50097,
+   arithmetic mean  6.37071,
+   std deviation    6.43438,
+   skewness         3.03246,
+   excess kurtosis  1.26404E+01.
+
+The genome from the most fit creature:
+1: 101110111101101111000101001000010000010101000001
+2: 111110010000010111100100001100000001000011000110
+3: 001011110100000001110100010100011110111000001110
+
+Lists for [parameter_min, parameter_best, parameter_max]:
+1: a ∈ [0.10000, 1.25157, 1.50000] 
+2: b ∈ [0.10000, 1.05171, 1.50000] 
+3: E ∈ [0.10000, 0.39259, 1.50000] kg/(m⋅s²)
+
+Values for best parameter ± error, where a RMSE was computed wrt best values.
+Data were the parameters from all 272 adults living in generation 1.
+1: a = 1.25157 ± 0.38383
+2: b = 1.05171 ± 0.56593
+3: E = 0.39259 ± 0.57029 kg/(m⋅s²)
+
+For generation 68 of 68:
+
+Fitness statistics for generation 68 with a population size of 272:
+   optimum fitness  8.49501E+01,
+   median           8.49235E+01,
+   arithmetic mean  7.30332E+01,
+   std deviation    2.55422E+01,
+   skewness        -1.95138,
+   excess kurtosis  2.15518.
+
+To aid in assessing goodness of fit, a suite of correlation coefficients
+between experimental response and model prediction are provided.
+   Pearson's linear correlation coefficient:
+      r = 0.99871,
+   Spearman's monotonic correlation coefficient:
+      ρ = 1.00000,
+   Kendall's monotonic correlation coefficient:
+      τ = 1.00000,
+   and Chatterjee's nonlinear correlation coefficient:
+      ξ = 0.85714.
+
+The genome from the most fit creature:
+1: 101110101010100010000100000001001001000010000001
+2: 111110010001000011011000000111110100110011101011
+3: 001010101110110111100000111111000011111010010100
+
+Lists for [parameter_min, parameter_best, parameter_max]:
+1: a ∈ [0.10000, 1.25495, 1.50000] 
+2: b ∈ [0.10000, 1.05223, 1.50000] 
+3: E ∈ [0.10000, 0.38047, 1.50000] kg/(m⋅s²)
+
+Values for best parameter ± error, where a RMSE was computed wrt best values.
+Data were the parameters from all 272 adults living in generation 68.
+1: a = 1.25495 ± 0.04418
+2: b = 1.05223 ± 0.09517
+3: E = 0.38047 ± 0.07807 kg/(m⋅s²)
 
