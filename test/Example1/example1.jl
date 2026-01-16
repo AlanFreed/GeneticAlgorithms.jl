@@ -6,9 +6,9 @@ module example1
 # Pkg.add(url = "https://github.com/AlanFreed/GeneticAlgorithms.jl")
 
 using
-    CairoMakie,
     GeneticAlgorithms,
-    PhysicalFields
+    PhysicalFields,
+    Plots
 
 import
     GeneticAlgorithms as GA,
@@ -130,7 +130,7 @@ function GA.solve!(::MyParameters, mymodel::GA.Model)
     return nothing
 end # GA.solve!
 
-function plot(colony::Colony)
+function graphic(colony::Colony)
     # Create a figure illustrating a best fit of the model.
     εₑ = Vector{Float64}
     σₑ = Vector{Float64}
@@ -151,6 +151,36 @@ function plot(colony::Colony)
     σᵢ    = zeros(Float64, 2)
     σᵢ[2] = PF.get(colony.mydata.response_exp[1][1][colony.mydata.data_points[1]])
     
+    # set the graphics backend to GR
+    ENV["QT_QPA_PLATFORM"] = "wayland"
+    gr()
+
+    p1 = plot(εₑ, σₘ, label="model", linecolor=:black, linewidth=3)
+    scatter!(εₑ, σₑ, label="data", markercolor=:red, markersize=3, markeralpha=0.5)
+    plot!(legend=:topleft)
+    title!("Genetic Algorithm")
+    xlabel!("strain ε")
+    ylabel!("stress σ (Pa)")
+    
+    p2 = plot(σᵢ, σᵢ, label="perfect fit", linecolor=:black, linewidth=3)
+    scatter!(σₑ, σₘ, label="σₑ vs. σₘ", markercolor=:red, markersize=3, markeralpha=0.5)
+    plot!(legend=:topleft)
+    title!("Fit to Data")
+    xlabel!("experimental stress σₑ (Pa)")
+    ylabel!("model stress σₘ (Pa)")
+    
+    dirPath = string(pwd(), "/files/")
+    if !isdir(dirPath)
+        mkdir(dirPath)
+    end
+    figName = string("GA_example1.png")
+    figPath = string(dirPath, figName)
+    
+    plot(p1, p2, layout=(2,1))
+    plot!(size=(600, 800))  # default is (600, 400)
+    savefig(figPath)
+    
+    #=
     fig = Figure(; size = (1000, 500))
     ax1 = Axis(fig[1, 1];
         xlabel = "strain ε",
@@ -191,7 +221,9 @@ function plot(colony::Colony)
     axislegend("Legend",
         position = :lt)
     save(string(pwd(), "/files/GA_example1.png"), fig)
-end # plot
+    =#
+    
+end # graphic
 
 function run()
     # Specify it the report is to be verbose or not.
@@ -227,7 +259,7 @@ function run()
 
     genetic_algorithm = GA.GeneticAlgorithm(colony)
     GA.run!(genetic_algorithm; verbose)
-    plot(genetic_algorithm.colony)
+    graphic(genetic_algorithm.colony)
 end # run
 
 end # example1
